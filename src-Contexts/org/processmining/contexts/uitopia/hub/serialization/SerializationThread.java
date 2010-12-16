@@ -266,10 +266,19 @@ public class SerializationThread extends Thread implements ProMResource.Listener
 		if (Boot.VERBOSE == Level.ALL) {
 			System.out.println("   Starting serialization of " + resource.getName());
 		}
-		objectStream.writeObject(new SerializedResource(resource));
-		if (Boot.VERBOSE == Level.ALL) {
-			System.out.println("   Serialized " + resource.getName() + "(in " + (System.currentTimeMillis() - t) / 1000
-					+ " seconds)");
+		try {
+			objectStream.writeObject(new SerializedResource(resource));
+			if (Boot.VERBOSE == Level.ALL) {
+				System.out.println("   Serialized " + resource.getName() + "(in " + (System.currentTimeMillis() - t)
+						/ 1000 + " seconds)");
+			}
+		} catch (Exception e) {
+			// something went wrong
+			firstKey = false;
+			if (Boot.VERBOSE != Level.NONE) {
+				System.err.println("   Serialized " + resource.getName() + " failed after " + (System.currentTimeMillis() - t)
+						/ 1000 + " seconds");
+			}
 		}
 		objectStream.flush();
 		objectZipStream.getFD().sync();
