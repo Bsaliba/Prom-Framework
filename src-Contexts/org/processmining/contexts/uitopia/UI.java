@@ -58,7 +58,8 @@ public class UI {
 			// Now select the release package
 			PMPackage releasePackage = frame.getController().selectPackage(Boot.RELEASE_PACKAGE);
 			if (releasePackage == null) {
-				throw new Exception("Cannot find release package defined in ProM.ini file: " + Boot.RELEASE_PACKAGE);
+				Boot.boot(UI.class, UIPluginContext.class, args);
+				throw new Exception("Cannot find release package defined in ProM.ini file: " + Boot.RELEASE_PACKAGE+". Continuing to load ProM.");
 			}
 
 			if (releasePackage.getStatus() == PMStatus.TOUNINSTALL) {
