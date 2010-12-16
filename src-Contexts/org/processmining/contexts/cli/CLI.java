@@ -7,13 +7,14 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 import org.processmining.contexts.scripting.ScriptExecutor;
-import org.processmining.contexts.scripting.Signature;
 import org.processmining.contexts.scripting.ScriptExecutor.ScriptExecutionException;
+import org.processmining.contexts.scripting.Signature;
 import org.processmining.framework.boot.Boot;
 import org.processmining.framework.plugin.annotations.Bootable;
 import org.processmining.framework.plugin.annotations.Plugin;
@@ -24,8 +25,10 @@ import org.processmining.framework.util.Pair;
 public class CLI {
 	@Plugin(name = "CLI", parameterLabels = {}, returnLabels = {}, returnTypes = {}, userAccessible = false)
 	@Bootable
-	public Object main(CommandLineArgumentList commandlineArguments) {
-		try {
+	public Object main(CommandLineArgumentList commandlineArguments) throws Throwable {
+		//try {
+		  System.out.println("ENTERING MAIN");
+		  
 			CLIContext globalContext = new CLIContext();
 			ScriptExecutor executor = new ScriptExecutor(globalContext.getMainPluginContext());
 			Pair<List<String>, List<String>> params = parseCommandLine(commandlineArguments, executor);
@@ -43,11 +46,11 @@ public class CLI {
 					System.err.println(e);
 				}
 			}
-		} catch (Throwable t) {
-			t.printStackTrace();
-			System.err.println(t);
-			System.exit(1);
-		}
+		//} catch (Throwable t) {
+		//	t.printStackTrace();
+		//	System.err.println(t);
+			// System.exit(1);
+		//}
 		/*
 		 * try { File f = new File(OsUtil.getProMUserDirectory(),
 		 * "testrepo.xml"); Repository repo = new Repository(f.toURI().toURL());
@@ -72,7 +75,7 @@ public class CLI {
 		 * System.out.println(PackageManager.getInstance()); } catch (Exception
 		 * e) { e.printStackTrace(); }
 		 */
-		System.exit(0);
+		// System.exit(0);
 		return null;
 	}
 
@@ -147,7 +150,11 @@ public class CLI {
 		return result.toString();
 	}
 
-	public static void main(String[] args) throws Exception {
-		Boot.boot(CLI.class, CLIPluginContext.class, args);
+	public static void main(String[] args) throws Throwable {
+	  try {
+	    Boot.boot(CLI.class, CLIPluginContext.class, args);
+	  } catch (InvocationTargetException e) {
+	    throw e.getCause();
+	  }
 	}
 }
