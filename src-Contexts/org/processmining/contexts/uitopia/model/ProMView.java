@@ -204,7 +204,7 @@ public class ProMView implements View {
 					}
 				} catch (Exception e) {
 					throw new IllegalArgumentException("Failed to create visualization of " + resource, e);
-					
+
 				} finally {
 					context.getParentContext().deleteChild(context);
 
@@ -217,8 +217,8 @@ public class ProMView implements View {
 							e.printStackTrace();
 							//ignore
 						}
-						dialog.changeProgress(dialog.getMaximum());
 					}
+					dialog.changeProgress(dialog.getMaximum());
 					synchronized (working) {
 						working = false;
 					}
