@@ -57,6 +57,9 @@ public class UI {
 			frame.setIconImage(ImageLoader.load("prom_icon_32x32.png"));
 			// Now select the release package
 			PMPackage releasePackage = frame.getController().selectPackage(Boot.RELEASE_PACKAGE);
+			if (releasePackage == null) {
+				throw new Exception("Cannot find release package defined in ProM.ini file: " + Boot.RELEASE_PACKAGE);
+			}
 
 			if (releasePackage.getStatus() == PMStatus.TOUNINSTALL) {
 				// Package is upToDate and installed.
@@ -104,8 +107,8 @@ class FirstTimeOverlay extends TwoButtonOverlayDialog {
 	public FirstTimeOverlay(Overlayable mainView) {
 		super(mainView, "Starting ProM", "Cancel", "  OK  ",//
 				new JLabel("<html>All packages have been downloaded.<BR>"
-						+ "Please wait while starting ProM<BR>for the first time.<BR><BR>"+
-						"If this is the first time you run ProM on this computer, please be patient.</html>"));
+						+ "Please wait while starting ProM<BR>for the first time.<BR><BR>"
+						+ "If this is the first time you run ProM on this computer, please be patient.</html>"));
 
 		getCancelButton().setEnabled(true);
 		getOKButton().setEnabled(false);
