@@ -194,36 +194,38 @@ public class ProMView implements View {
 
 				PluginExecutionResult result = binding.getSecond().invoke(context, resource.getInstance());
 
+				JComponent content = null;
 				try {
 					context.log("Starting visualization of " + resource);
 					result.synchronize();
+					content = result.getResult(binding.getFirst());
+					if (content == null) {
+						throw new Exception(resource.toString());
+					}
 				} catch (Exception e) {
 					throw new IllegalArgumentException("Failed to create visualization of " + resource, e);
 				} finally {
 					context.getParentContext().deleteChild(context);
-				}
 
-				JComponent content = result.getResult(binding.getFirst());
-				if (content == null) {
-					throw new IllegalArgumentException("Failed to create visualization of " + resource);
-				}
-
-				component.removeAll();
-				try {
-					content.repaint();
-					component.add(content, BorderLayout.CENTER);
+					component.removeAll();
+					if (content != null) {
+						try {
+							content.repaint();
+							component.add(content, BorderLayout.CENTER);
+						} catch (Exception e) {
+							e.printStackTrace();
+							//ignore
+						}
+						dialog.changeProgress(dialog.getMaximum());
+					}
 					synchronized (working) {
 						working = false;
 					}
 					synchronized (ProMView.this) {
 						ProMView.this.notifyAll();
 					}
-				} catch (Exception e) {
-					e.printStackTrace();
-					//ignore
+					manager.getContext().getController().getMainView().hideOverlay();
 				}
-				dialog.changeProgress(dialog.getMaximum());
-				manager.getContext().getController().getMainView().hideOverlay();
 
 			}
 		});
