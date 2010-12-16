@@ -274,10 +274,9 @@ public class SerializationThread extends Thread implements ProMResource.Listener
 			}
 		} catch (Exception e) {
 			// something went wrong
-			firstKey = false;
 			if (Boot.VERBOSE != Level.NONE) {
-				System.err.println("   Serialized " + resource.getName() + " failed after " + (System.currentTimeMillis() - t)
-						/ 1000 + " seconds");
+				System.err.println("   Serialized " + resource.getName() + " failed after "
+						+ (System.currentTimeMillis() - t) / 1000 + " seconds");
 			}
 		}
 		objectStream.flush();
