@@ -540,6 +540,9 @@ public class ProMJGraph extends JGraph implements GraphModelListener, GraphLayou
 		// Before calling collapse, set the size of cell to the collapsed size
 
 		Point2D pos = layoutConnection.getPosition(source);
+		if (pos == null) {
+			pos = new Point2D.Double(10,10);
+		}
 
 		Dimension size = source.getCollapsedSize();
 

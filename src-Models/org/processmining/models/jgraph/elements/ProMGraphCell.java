@@ -48,11 +48,17 @@ public class ProMGraphCell extends DefaultGraphCell implements Cleanable, ModelO
 		if (node instanceof Expandable) {
 			Dimension2D dim = ((Expandable) node).getCollapsedSize();
 			Point2D pos = layoutConnection.getPosition(node);
+			if (pos == null) {
+				pos = new Point2D.Double(10,10);
+			}
 			Rectangle2D rect = new Rectangle2D.Double(pos.getX(), pos.getY(), dim.getWidth(), dim.getHeight());
 			GraphConstants.setBounds(getAttributes(), rect);
 		} else {
 			Dimension2D dim = layoutConnection.getSize(node);
 			Point2D pos = layoutConnection.getPosition(node);
+			if (pos == null) {
+				pos = new Point2D.Double(10,10);
+			}
 			Rectangle2D rect = new Rectangle2D.Double(pos.getX(), pos.getY(), dim.getWidth(), dim.getHeight());
 			GraphConstants.setBounds(getAttributes(), rect);
 		}
@@ -64,6 +70,9 @@ public class ProMGraphCell extends DefaultGraphCell implements Cleanable, ModelO
 		// Update the dimension / position
 		Dimension2D dim = layoutConnection.getSize(node);
 		Point2D pos = layoutConnection.getPosition(node);
+		if (pos == null) {
+			pos = new Point2D.Double(10,10);
+		}
 
 		Rectangle2D rect = new Rectangle2D.Double(pos.getX(), pos.getY(), dim.getWidth(), dim.getHeight());
 		Rectangle2D bounds = view.getBounds();//GraphConstants.getBounds(getAttributes());
