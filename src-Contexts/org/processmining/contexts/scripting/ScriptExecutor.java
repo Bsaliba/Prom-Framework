@@ -97,6 +97,9 @@ public class ScriptExecutor {
 					}
 					
 				  throw e3.getCause();
+				} else if (e2.getTarget() instanceof java.util.concurrent.CancellationException) {
+				  System.err.println("Script execution was cancelled. Message:\n"+e);
+				  throw e2.getTarget();
 				} else if (e2.getTarget() instanceof java.lang.AssertionError) {
 				  throw e2.getTarget();
 				}

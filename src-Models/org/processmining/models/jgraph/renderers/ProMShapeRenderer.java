@@ -120,18 +120,18 @@ public class ProMShapeRenderer extends VertexRenderer implements Cleanable {
 				Cast.<Decorated>cast(node).decorate(g2, b, b, d.width - 2 * b, d.height - 2 * b);
 			}
 
-			if (isGroup) {
-				g.setColor(handleColor);
-				g.fill3DRect(handle.x, handle.y, handle.width, handle.height, true);
-				g.setColor(graphForeground);
-				g.drawRect(handle.x, handle.y, handle.width, handle.height);
-				g.drawLine(handle.x + 1, handle.y + handle.height / 2, handle.x + handle.width - 2, handle.y
-						+ handle.height / 2);
-				if (view.isLeaf()) {
-					g.drawLine(handle.x + handle.width / 2, handle.y + 1, handle.x + handle.width / 2, handle.y
-							+ handle.height - 2);
-				}
-			}
+//			if (isGroup) {
+//				g.setColor(handleColor);
+//				g.fill3DRect(handle.x, handle.y, handle.width, handle.height, true);
+//				g.setColor(graphForeground);
+//				g.drawRect(handle.x, handle.y, handle.width, handle.height);
+//				g.drawLine(handle.x + 1, handle.y + handle.height / 2, handle.x + handle.width - 2, handle.y
+//						+ handle.height / 2);
+//				if (view.isLeaf()) {
+//					g.drawLine(handle.x + handle.width / 2, handle.y + 1, handle.x + handle.width / 2, handle.y
+//							+ handle.height - 2);
+//				}
+//			}
 
 		} finally {
 			selected = tmp;
@@ -165,11 +165,11 @@ public class ProMShapeRenderer extends VertexRenderer implements Cleanable {
 	 */
 	public static Rectangle handle = new Rectangle(0, 0, 7, 7);
 
-	/**
-	 * Specifies whether the current view is a rich text value, and if the image
-	 * should be stretched.
-	 */
-	protected boolean isGroup = false;
+	//	/**
+	//	 * Specifies whether the current view is a rich text value, and if the image
+	//	 * should be stretched.
+	//	 */
+	//	protected boolean isGroup = false;
 
 	/**
 	 * Holds the background and foreground of the graph.

@@ -6,7 +6,6 @@ import org.jgraph.graph.EdgeView;
 import org.jgraph.graph.PortView;
 import org.processmining.framework.util.Cleanable;
 import org.processmining.models.graphbased.ViewSpecificAttributeMap;
-import org.processmining.models.graphbased.directed.BoundaryDirectedGraphNode;
 import org.processmining.models.jgraph.elements.ProMGraphPort;
 import org.processmining.models.jgraph.renderers.ProMPortRenderer;
 
@@ -23,6 +22,7 @@ public class JGraphPortView extends PortView implements Cleanable {
 		this.cell = cell;
 		this.isPIP = isPIP;
 		this.viewSpecificAttributes = viewSpecificAttributes;
+
 		groupBounds = null;
 	}
 
@@ -57,8 +57,7 @@ public class JGraphPortView extends PortView implements Cleanable {
 		Point2D pos = super.getLocation(edge, nearest);
 		Point2D pos2 = pos;
 		if (renderer != null && nearest != null && //
-				(cell.getUserObject() instanceof BoundaryDirectedGraphNode) && //
-				(((BoundaryDirectedGraphNode) cell.getUserObject()).getBoundingNode() != null)) {
+				cell.isBoundaryNode()) {
 			pos2 = renderer.getPerimeterPoint(this, pos, nearest);
 		}
 		return pos2;

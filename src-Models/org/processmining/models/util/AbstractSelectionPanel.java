@@ -98,7 +98,8 @@ public abstract class AbstractSelectionPanel<C extends JComponent> extends JPane
 		if (viewSpecificMap == null) {
 			return;
 		}
-		for (AttributeMapOwner p : new ArrayList<AttributeMapOwner>(viewSpecificMap.keySet())) {
+		ArrayList<AttributeMapOwner> toUpdate = new ArrayList<AttributeMapOwner>(viewSpecificMap.keySet());
+		for (AttributeMapOwner p : toUpdate) {
 			// copy the original keys back into viewSpecific
 			viewSpecificMap.clearViewSpecific(p);
 			for (String key : originalSpecificMap.keySet(p)) {
@@ -108,7 +109,7 @@ public abstract class AbstractSelectionPanel<C extends JComponent> extends JPane
 		selectedNodes.clear();
 
 		if (signal) {
-			graph.getModel().getGraph().signalViews();
+			graph.update(toUpdate);
 		}
 	}
 
@@ -137,7 +138,8 @@ public abstract class AbstractSelectionPanel<C extends JComponent> extends JPane
 		}
 
 		// refresh the figure
-		graph.getModel().getGraph().signalViews();
+
+		graph.update(labelledSelection.keySet());
 	}
 
 }

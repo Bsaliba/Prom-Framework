@@ -8,6 +8,7 @@ import java.util.List;
 import org.jgraph.graph.DefaultEdge;
 import org.jgraph.graph.GraphConstants;
 import org.processmining.framework.util.Cleanable;
+import org.processmining.models.connections.GraphLayoutConnection;
 import org.processmining.models.graphbased.AttributeMap;
 import org.processmining.models.graphbased.AttributeMap.ArrowType;
 import org.processmining.models.graphbased.directed.DirectedGraphEdge;
@@ -23,19 +24,23 @@ public class ProMGraphEdge extends DefaultEdge implements Cleanable, ModelOwner,
 	private JGraphEdgeView view;
 	private final List<Point2D> internalPoints = new ArrayList<Point2D>(0);
 	private DirectedGraphEdge<?, ?> edge;
+	private final GraphLayoutConnection layoutConnection;
 
-	public ProMGraphEdge(DirectedGraphEdge<?, ?> edge, ProMGraphModel model) {
+	public ProMGraphEdge(DirectedGraphEdge<?, ?> edge, ProMGraphModel model, GraphLayoutConnection layoutConnection) {
 		super(edge.getLabel());
+		this.layoutConnection = layoutConnection;
 
 		GraphConstants.setRouting(getAttributes(), ProMLoopRouting.ROUTER);
 		GraphConstants.setLabelPosition(getAttributes(), new Point2D.Double(GraphConstants.PERMILLE / 2, 0));
 		GraphConstants.setLabelAlongEdge(getAttributes(), edge.getAttributeMap()
 				.get(AttributeMap.LABELALONGEDGE, false));
-		GraphConstants.setLineStyle(getAttributes(), edge.getAttributeMap().get(AttributeMap.STYLE,
-				GraphConstants.STYLE_SPLINE));
+		GraphConstants.setLineStyle(getAttributes(),
+				edge.getAttributeMap().get(AttributeMap.STYLE, GraphConstants.STYLE_SPLINE));
 		//GraphConstants.setLineStyle(getAttributes(), GraphConstants.STYLE_SPLINE);
-		GraphConstants.setLineWidth(getAttributes(), new Float(edge.getAttributeMap().get(AttributeMap.LINEWIDTH,
-				GraphConstants.getLineWidth(getAttributes()))));
+		GraphConstants.setLineWidth(
+				getAttributes(),
+				new Float(edge.getAttributeMap().get(AttributeMap.LINEWIDTH,
+						GraphConstants.getLineWidth(getAttributes()))));
 
 		float[] pattern = edge.getAttributeMap().get(AttributeMap.DASHPATTERN, new float[0]);
 		if (pattern.length > 0f) {
@@ -98,19 +103,13 @@ public class ProMGraphEdge extends DefaultEdge implements Cleanable, ModelOwner,
 	}
 
 	@SuppressWarnings("unchecked")
-	public void update() {
+	public void updateViewsFromMap() {
 		assert (view != null);
 		// Update should not be called before any view is created,
 
-		// Update the label
-		boolean labelChanged = !getUserObject().equals(edge.getLabel());
-		if (labelChanged) {
-			setUserObject(edge.getLabel());
-		}
-
 		// Note that List is of type List<Point2D>, until list.add is called
 		// later
-		List list = new ArrayList(edge.getAttributeMap().get(AttributeMap.EDGEPOINTS, new ArrayList(0)));
+		List list = new ArrayList(layoutConnection.getEdgePoints(edge));
 		boolean pointsChanged = !internalPoints.equals(list);
 		if (pointsChanged) {
 			internalPoints.clear();
@@ -119,7 +118,7 @@ public class ProMGraphEdge extends DefaultEdge implements Cleanable, ModelOwner,
 			list.add(0, points.get(0));
 			list.add(points.get(points.size() - 1));
 			view.setPoints(list);
-			GraphConstants.setPoints(getAttributes(), list);
+//			GraphConstants.setPoints(getAttributes(), list);
 		}
 	}
 

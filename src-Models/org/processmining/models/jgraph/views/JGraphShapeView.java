@@ -37,7 +37,7 @@ public class JGraphShapeView extends VertexView implements Cleanable {
 		node = cell.getNode();
 		shape = node.getAttributeMap().get(AttributeMap.SHAPE, RECTANGLE);
 
-		GraphConstants.setMoveable(allAttributes, node.getAttributeMap().get(AttributeMap.MOVEABLE, true));
+		GraphConstants.setMoveable(getAttributes(), node.getAttributeMap().get(AttributeMap.MOVEABLE, true));
 
 		groupBounds = null;
 		childViews = new ArrayList();
@@ -49,6 +49,7 @@ public class JGraphShapeView extends VertexView implements Cleanable {
 				}
 			}
 		}
+
 	}
 
 	@Override

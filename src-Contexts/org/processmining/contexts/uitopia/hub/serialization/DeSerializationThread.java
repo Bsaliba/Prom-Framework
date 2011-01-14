@@ -99,9 +99,6 @@ public class DeSerializationThread extends SwingWorker<Object, Object> {
 				in.close();
 			}
 		}
-		//		for (UUID uuid : deleted) {
-		//			usedRefs.remove(uuid);
-		//		}
 
 		Set<Object> referencesToKeep = new HashSet<Object>();
 		for (Set<Object> refs : usedRefs.values()) {
@@ -193,13 +190,15 @@ public class DeSerializationThread extends SwingWorker<Object, Object> {
 		} finally {
 			in.close();
 			s.close();
+
+			context.getResourceManager().getSerializationThread().start();
 		}
 		if (poList.isEmpty()) {
 			return null;
 		}
 		dialog.changeProgressCaption("Restoring workspace...");
-		//List<SerializedResource> poList = Cast.<List<SerializedResource>>cast(toSerialize[0]);
-		//List<Connection> coList = Cast.<List<Connection>>cast(toSerialize[1]);
+
+
 		int inc = Math.max(steps / (2 * poList.size() + coList.size()), 1);
 
 		Map<ProMID, ProMResource<?>> oldID2newResource;
@@ -288,8 +287,11 @@ public class DeSerializationThread extends SwingWorker<Object, Object> {
 			e.printStackTrace();
 		}
 
-		context.getResourceManager().getSerializationThread().start();
+		if (!context.getResourceManager().getSerializationThread().isAlive()) {
+			context.getResourceManager().getSerializationThread().start();
+		}
 
+		
 		System.out.println("");
 		System.out.println("deserialization took: " + (System.currentTimeMillis() - t) / 1000 + " seconds");
 	}

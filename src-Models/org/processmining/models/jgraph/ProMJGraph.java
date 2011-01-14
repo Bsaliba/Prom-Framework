@@ -6,6 +6,7 @@ import java.awt.geom.Dimension2D;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -35,10 +36,12 @@ import org.jgraph.graph.ParentMap;
 import org.processmining.framework.util.Cast;
 import org.processmining.framework.util.Cleanable;
 import org.processmining.framework.util.ui.scalableview.ScalableComponent;
+import org.processmining.models.connections.GraphLayoutConnection;
+import org.processmining.models.connections.GraphLayoutConnection.Listener;
 import org.processmining.models.graphbased.AttributeMap;
+import org.processmining.models.graphbased.AttributeMapOwner;
 import org.processmining.models.graphbased.Expandable;
 import org.processmining.models.graphbased.ExpansionListener;
-import org.processmining.models.graphbased.View;
 import org.processmining.models.graphbased.ViewSpecificAttributeMap;
 import org.processmining.models.graphbased.directed.BoundaryDirectedGraphNode;
 import org.processmining.models.graphbased.directed.ContainableDirectedGraphElement;
@@ -55,12 +58,16 @@ import org.processmining.models.jgraph.factory.ProMCellViewFactory;
 import com.jgraph.layout.JGraphFacade;
 import com.jgraph.layout.JGraphLayout;
 
-public class ProMJGraph extends JGraph implements View, GraphModelListener, GraphLayoutCacheListener,
-		GraphSelectionListener, Cleanable, ExpansionListener, ScalableComponent {
+public class ProMJGraph extends JGraph implements GraphModelListener, GraphLayoutCacheListener, GraphSelectionListener,
+		Cleanable, ExpansionListener, ScalableComponent, Listener {
 
 	private static final long serialVersionUID = -8477633603192312230L;
 
 	public static final String PIPVIEWATTRIBUTE = "signalPIPView";
+
+	private static final String Point2D = null;
+
+	private static final String POSITION = null;
 
 	private final ProMGraphModel model;
 	private final Map<DirectedGraphNode, ProMGraphCell> nodeMap = new HashMap<DirectedGraphNode, ProMGraphCell>();
@@ -73,26 +80,26 @@ public class ProMJGraph extends JGraph implements View, GraphModelListener, Grap
 
 	private final boolean isPIP;
 
-	//	public ProMJGraph(ProMGraphModel model) {
-	//		this(model, new ViewSpecificAttributeMap());
-	//	}
+	private final GraphLayoutConnection layoutConnection;
 
-	public ProMJGraph(ProMGraphModel model, ViewSpecificAttributeMap viewSpecificAttributes) {
-		this(model, false, viewSpecificAttributes);
+	public ProMJGraph(ProMGraphModel model, ViewSpecificAttributeMap viewSpecificAttributes,
+			GraphLayoutConnection layoutConnection) {
+		this(model, false, viewSpecificAttributes, layoutConnection);
 	}
 
-	public ProMJGraph(ProMGraphModel model, boolean isPIP, ViewSpecificAttributeMap viewSpecificAttributes) {
+	public ProMJGraph(ProMGraphModel model, boolean isPIP, ViewSpecificAttributeMap viewSpecificAttributes,
+			GraphLayoutConnection layoutConnection) {
 		super(model, new GraphLayoutCache(model, new ProMCellViewFactory(isPIP, viewSpecificAttributes), true));
+		this.layoutConnection = layoutConnection;
+		layoutConnection.addListener(this);
 		getGraphLayoutCache().setShowsInvisibleEditedCells(false);
 		this.isPIP = isPIP;
 		this.viewSpecificAttributes = viewSpecificAttributes;
 
-		//		ProMCellViewFactory factory = new ProMCellViewFactory(isPIP, viewSpecificAttributes);
-		//		getGraphLayoutCache().setFactory(factory);
 		getGraphLayoutCache().setMovesChildrenOnExpand(true);
-		getGraphLayoutCache().setResizesParentsOnCollapse(true);
+		// Strange: setResizesParentsOnCollapse has to be set to FALSE!
+		getGraphLayoutCache().setResizesParentsOnCollapse(false);
 		getGraphLayoutCache().setMovesParentsOnCollapse(true);
-		getGraphLayoutCache().setAutoSizeOnValueChange(true);
 
 		this.model = model;
 
@@ -162,20 +169,12 @@ public class ProMJGraph extends JGraph implements View, GraphModelListener, Grap
 		getGraphLayoutCache().insert(toInsert.toArray());
 		// Add the listeners, only AFTER copying the graph.
 
-		for (DirectedGraphNode n : nodeMap.keySet()) {
-			if (n instanceof Expandable) {
-				Expandable ex = (Expandable) n;
-				ex.getExpansionListeners().add(this);
-			}
-		}
-
 		registerAsListener();
+		layoutConnection.getExpansionListeners().add(this);
 
 		if (!isPIP) {
-			addMouseListener(new JGraphFoldingManager());
+			addMouseListener(new JGraphFoldingManager(layoutConnection));
 		}
-
-		net.addView(this);
 
 		ToolTipManager.sharedInstance().registerComponent(this);
 	}
@@ -190,7 +189,6 @@ public class ProMJGraph extends JGraph implements View, GraphModelListener, Grap
 	}
 
 	public void cleanUp() {
-		model.getGraph().removeView(this);
 
 		List<Cleanable> cells = new ArrayList<Cleanable>(nodeMap.values());
 		cells.addAll(boundaryNodeMap.values());
@@ -215,7 +213,7 @@ public class ProMJGraph extends JGraph implements View, GraphModelListener, Grap
 	}
 
 	private ProMGraphCell addCell(DirectedGraphNode node) {
-		ProMGraphCell cell = new ProMGraphCell(node, model);
+		ProMGraphCell cell = new ProMGraphCell(node, model, layoutConnection);
 
 		// TODO: This is probably wrong.
 		// cell.addPort(new Point2D.Double(0,0));
@@ -240,7 +238,7 @@ public class ProMJGraph extends JGraph implements View, GraphModelListener, Grap
 
 	private ProMGraphPort addPort(BoundaryDirectedGraphNode node, DirectedGraphNode boundingNode) {
 		ProMGraphCell cell = nodeMap.get(boundingNode);
-		ProMGraphPort port = cell.addPort(new Point2D.Float(0, 0), node);
+		ProMGraphPort port = cell.addPort(new Point2D.Float(10, 10), node);
 		assert (port.getParent() == cell);
 
 		boundaryNodeMap.put(node, port);
@@ -249,7 +247,7 @@ public class ProMJGraph extends JGraph implements View, GraphModelListener, Grap
 	}
 
 	private ProMGraphEdge addEdge(DirectedGraphEdge<?, ?> e) {
-		ProMGraphEdge edge = new ProMGraphEdge(e, model);
+		ProMGraphEdge edge = new ProMGraphEdge(e, model, layoutConnection);
 		// For now, assume a single port.
 		ProMGraphPort srcPort;
 		if ((e.getSource() instanceof BoundaryDirectedGraphNode)
@@ -286,113 +284,19 @@ public class ProMJGraph extends JGraph implements View, GraphModelListener, Grap
 		return edge;
 	}
 
-	public void added(Set<?> elements) {
-		Vector<Object> cellsToAdd = new Vector<Object>();
-		// The order in the toAdd list matters. First, nodes should be
-		// added, then ports and then edges. This ensures that all ports created for
-		// the nodes have views. When views on edges are created, they assume that ports have views.
-		elements = new HashSet<Object>(elements);
-		Iterator<?> it = elements.iterator();
-		while (it.hasNext()) {
-			Object element = it.next();
-			if (element instanceof DirectedGraphNode
-					&& (!(element instanceof BoundaryDirectedGraphNode) || ((BoundaryDirectedGraphNode) element)
-							.getBoundingNode() == null)) {
-				DirectedGraphNode n = (DirectedGraphNode) element;
-				if ((!(n instanceof ContainableDirectedGraphElement))
-						|| (((ContainableDirectedGraphElement) n).getParent() == null)) {
-					cellsToAdd.add(addCell(n));
-				} else {
-					addCell(n);
-				}
-				it.remove();
-			}
-		}
-		while (it.hasNext()) {
-			Object element = it.next();
-			if ((element instanceof BoundaryDirectedGraphNode)
-					&& ((BoundaryDirectedGraphNode) element).getBoundingNode() != null) {
-				BoundaryDirectedGraphNode n = (BoundaryDirectedGraphNode) element;
-				//				cellsToAdd.add(addPort(n));
-				addPort(n, n.getBoundingNode());
-				it.remove();
-			}
-		}
-		while (it.hasNext()) {
-			Object element = it.next();
-			if (element instanceof DirectedGraphEdge<?, ?>) {
-				DirectedGraphEdge<?, ?> e = (DirectedGraphEdge<?, ?>) element;
-				if ((e instanceof ContainableDirectedGraphElement)
-						&& ((ContainableDirectedGraphElement) e).getParent() != null) {
-					addEdge(e);
-				} else {
-					cellsToAdd.add(addEdge(e));
-				}
-				it.remove();
-			}
-		}
-		while (it.hasNext()) {
-			Object element = it.next();
-			if (element instanceof DirectedGraph<?, ?>) {
-				// graph has changed
-			}
-		}
-		getGraphLayoutCache().insert(cellsToAdd.toArray());
-	}
-
-	public boolean doViewLayout() {
-		if (layout != null) {
-			JGraphFacade facade = new JGraphFacade(this);
-
-			facade.setOrdered(false);
-			facade.setEdgePromotion(true);
-			facade.setIgnoresCellsInGroups(false);
-			facade.setIgnoresHiddenCells(false);
-			facade.setIgnoresUnconnectedCells(false);
-			facade.setDirected(true);
-			facade.resetControlPoints();
-			facade.run(layout, true);
-
-			//			layout.run(facade);
-			facade.run(layout, true);
-			model.getGraph().setLayedOut(true);
-			getGraphLayoutCache().edit(facade.createNestedMap(true, true));
-			//repositionToOrigin();//model.getGraph().getBounds();
-			return true;
-		} else {
-			return false;
-		}
-	}
-
-	public void removed(Set<?> elements) {
-		Vector<Object> cells = new Vector<Object>(elements.size());
-		for (Object element : elements) {
-			if ((element instanceof BoundaryDirectedGraphNode) ? ((BoundaryDirectedGraphNode) element)
-					.getBoundingNode() != null : false) {
-				ProMGraphPort port = boundaryNodeMap.get(element);
-				cells.add(port);
-				boundaryNodeMap.remove(element);
-			} else if (element instanceof DirectedGraphNode) {
-				ProMGraphCell cell = nodeMap.get(element);
-				cells.add(cell);
-				nodeMap.remove(element);
-			} else if (element instanceof DirectedGraphEdge<?, ?>) {
-				ProMGraphEdge cell = edgeMap.get(element);
-				cells.add(cell);
-				cell.getSource().removeEdge(cell);
-				cell.getTarget().removeEdge(cell);
-				edgeMap.remove(element);
-			} else if (element instanceof DirectedGraph<?, ?>) {
-				// graph has changed
-			} else {
-				assert (false);
-			}
-		}
-		model.remove(cells.toArray());
-		getGraphLayoutCache().removeCells(cells.toArray());
+	public void update(Object... elements) {
+		updateElements(Arrays.asList(elements));
 	}
 
 	public void update(Set<?> elements) {
+		updateElements(elements);
+	}
+
+	private void updateElements(Collection<?> elements) {
+
+		// For each updated element, find the corresponding view of the corresponding cell and copy the
+		// attributes that matter, i.e. size/position/points.
+
 		//The order in which cells, ports and edges are added matters:
 		//Cells first, ports second and edges third (because ports are attached to cells and edges to ports.)
 		Vector<ProMGraphElement> cellsToAdd = new Vector<ProMGraphElement>();
@@ -440,8 +344,13 @@ public class ProMJGraph extends JGraph implements View, GraphModelListener, Grap
 		cells.addAll(edgesToAdd);
 		Rectangle2D oldBound = GraphLayoutCache.getBounds(views.toArray(new CellView[0]));
 		for (ProMGraphElement cell : cells) {
-			cell.update();
+			cell.updateViewsFromMap();
 		}
+		if (oldBound != null) {
+			Rectangle2D.union(oldBound, GraphLayoutCache.getBounds(views.toArray(new CellView[0])), oldBound);
+		}
+		//		repaint(oldBound.getBounds());
+		getGraphLayoutCache().cellViewsChanged(views.toArray(new CellView[0]));
 		model.cellsChanged(cells.toArray(), oldBound);
 	}
 
@@ -461,20 +370,28 @@ public class ProMJGraph extends JGraph implements View, GraphModelListener, Grap
 	 * Might be overridden to signal that a change was handled
 	 */
 	protected void changeHandled() {
-
+		layoutConnection.updated();
 	}
 
 	private void handleChange(GraphLayoutCacheEvent.GraphLayoutCacheChange change) {
+		// A change originated in from the graph. This needs to be reflected in
+		// the layoutConnection (if applicable)
 		synchronized (model) {
 			boolean signalChange = false;
 			Object[] changed = change.getChanged();
+
+			Set<AttributeMapOwner> changedOwners = new HashSet<AttributeMapOwner>();
 			Set<ProMGraphEdge> edges = new HashSet<ProMGraphEdge>();
 			for (Object o : changed) {
 				if (o instanceof ProMGraphCell) {
 					// handle a change for a cell
 					ProMGraphCell cell = (ProMGraphCell) o;
+
 					DirectedGraphNode node = cell.getNode();
-					signalChange |= handleNodeChange(cell, node);
+					changedOwners.add(node);
+					if (handleNodeChange(cell, node)) {
+						signalChange = true;
+					}
 				}
 				if (o instanceof ProMGraphEdge) {
 					edges.add((ProMGraphEdge) o);
@@ -483,10 +400,13 @@ public class ProMJGraph extends JGraph implements View, GraphModelListener, Grap
 			for (ProMGraphEdge cell : edges) {
 				// handle a change for a cell
 				DirectedGraphEdge<?, ?> edge = cell.getEdge();
-				signalChange |= handleEdgeChange(cell, edge);
+				changedOwners.add(edge);
+				if (handleEdgeChange(cell, edge)) {
+					signalChange = true;
+				}
 			}
 			if (signalChange && !isPIP) {
-				model.getGraph().signalViews(this);
+				layoutConnection.updatedAttributes(this, changedOwners.toArray(new AttributeMapOwner[0]));
 			}
 		}
 	}
@@ -494,24 +414,17 @@ public class ProMJGraph extends JGraph implements View, GraphModelListener, Grap
 	private boolean handleNodeChange(ProMGraphCell cell, DirectedGraphNode node) {
 		boolean changed = false;
 
-		// LABEL
-		String label = cell.getUserObject();
-		// The change should NOT be communicated back to this graph, since that
-		// would trigger an update of the cells in the graph, leading to
-		// excessive
-		// prcessing times
-		changed |= node.getAttributeMap().put(AttributeMap.LABEL, label);
-
-		Rectangle2D rect = GraphConstants.getBounds(cell.getAttributes());
+		// get the view's bounds and put them in the attributemap
+		Rectangle2D rect = cell.getView().getBounds();
 
 		if (rect != null) {
 			// SIZE
 			Dimension2D size = new Dimension((int) rect.getWidth(), (int) rect.getHeight());
-			changed |= node.getAttributeMap().put(AttributeMap.SIZE, size);
+			changed |= layoutConnection.setSize(node, size);
 
 			// POSITION
 			Point2D pos = new Point2D.Double(rect.getX(), rect.getY());
-			changed |= node.getAttributeMap().put(AttributeMap.POSITION, pos);
+			changed |= layoutConnection.setPosition(node, pos);
 
 		}
 
@@ -521,12 +434,8 @@ public class ProMJGraph extends JGraph implements View, GraphModelListener, Grap
 	private boolean handleEdgeChange(ProMGraphEdge cell, DirectedGraphEdge<?, ?> edge) {
 		boolean changed = false;
 
-		// LABEL
-		String label = cell.getUserObject();
-		changed |= edge.getAttributeMap().put(AttributeMap.LABEL, label);
-
-		// POINTS
-		List<?> points = GraphConstants.getPoints(cell.getAttributes());
+		// Get the view's points and put them in the attributemap
+		List<?> points = cell.getView().getPoints();
 		List<Point2D> list = new ArrayList<Point2D>(3);
 		if (points != null) {
 			for (int i = 1; i < points.size() - 1; i++) {
@@ -534,7 +443,7 @@ public class ProMJGraph extends JGraph implements View, GraphModelListener, Grap
 				list.add(new Point2D.Double(point.getX(), point.getY()));
 			}
 		}
-		changed |= edge.getAttributeMap().put(AttributeMap.EDGEPOINTS, list);
+		changed |= layoutConnection.setEdgePoints(edge, list);
 
 		return changed;
 	}
@@ -542,9 +451,13 @@ public class ProMJGraph extends JGraph implements View, GraphModelListener, Grap
 	public void graphLayoutCacheChanged(GraphLayoutCacheEvent e) {
 		handleChange(e.getChange());
 		changeHandled();
+		for (UpdateListener l : updateListeners) {
+			l.updated();
+		}
 	}
 
 	public void valueChanged(GraphSelectionEvent e) {
+		// Ignore for now
 	}
 
 	@Override
@@ -568,15 +481,8 @@ public class ProMJGraph extends JGraph implements View, GraphModelListener, Grap
 	}
 
 	// returns the original origin
-	public Point2D repositionToOrigin() {
-		JGraphFacade facade = new JGraphFacade(this);
-		/*
-		 * First, push everything towards the lower left corner. Provided that
-		 * we will not have many groups inside groups, 100 should be sufficient.
-		 * This step is needed to assure that we do not have negative
-		 * coordinates for the important second step. For some some reason,
-		 * getGraphOrigin() returns 0.0 instead of negative coordinates.
-		 */
+	public void repositionToOrigin() {
+
 		//		facade.translateCells(facade.getVertices(), 100.0, 100.0);
 		//		facade.translateCells(facade.getEdges(), 100.0, 100.0);
 		//		getGraphLayoutCache().edit(facade.createNestedMap(true, false));
@@ -584,13 +490,23 @@ public class ProMJGraph extends JGraph implements View, GraphModelListener, Grap
 		 * Second, pull everything back to (2,2). Works like a charm, even when
 		 * a hack...
 		 */
-		//TODO
+		//TODO Doesn't correctly handle collapsed nodes.
+
+		JGraphFacade facade = new JGraphFacade(this);
+		facade.setIgnoresHiddenCells(true);
+		facade.setIgnoresCellsInGroups(false);
+		facade.setIgnoresUnconnectedCells(false);
+
 		double x = facade.getGraphOrigin().getX();
 		double y = facade.getGraphOrigin().getY();
-		facade.translateCells(facade.getVertices(), 2.0 - x, 2.0 - y);
-		facade.translateCells(facade.getEdges(), 2.0 - x, 2.0 - y);
-		getGraphLayoutCache().edit(facade.createNestedMap(true, false));
-		return new Point2D.Double(x - 2., y - 2.);
+
+		ArrayList cells = new ArrayList();
+		cells.addAll(facade.getVertices());
+		cells.addAll(facade.getEdges());
+		facade.translateCells(cells, 2.0 - x, 2.0 - y);
+		Map map = facade.createNestedMap(true, false);
+		getGraphLayoutCache().edit(map);
+
 	}
 
 	public DirectedGraph<? extends DirectedGraphNode, ? extends DirectedGraphEdge<? extends DirectedGraphNode, ? extends DirectedGraphNode>> getProMGraph() {
@@ -621,6 +537,14 @@ public class ProMJGraph extends JGraph implements View, GraphModelListener, Grap
 
 	public void nodeCollapsed(Expandable source) {
 		ProMGraphCell cell = (nodeMap.get(source));
+		// Before calling collapse, set the size of cell to the collapsed size
+
+		Point2D pos = layoutConnection.getPosition(source);
+
+		Dimension size = source.getCollapsedSize();
+
+		Rectangle2D bounds = GraphConstants.getBounds(cell.getAttributes());
+		bounds.setFrame(pos.getX(), pos.getY(), size.getWidth(), size.getHeight());
 		getGraphLayoutCache().collapse(DefaultGraphModel.getDescendants(model, new Object[] { cell }).toArray());
 	}
 
@@ -642,6 +566,10 @@ public class ProMJGraph extends JGraph implements View, GraphModelListener, Grap
 
 	public void removeUpdateListener(UpdateListener listener) {
 		updateListeners.remove(listener);
+	}
+
+	public void layoutConnectionUpdated(AttributeMapOwner... owners) {
+		update((Object[]) owners);
 	}
 
 }

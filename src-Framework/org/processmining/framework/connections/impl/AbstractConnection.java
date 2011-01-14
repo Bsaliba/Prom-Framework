@@ -12,6 +12,7 @@ import java.util.Set;
 import org.processmining.framework.connections.Connection;
 import org.processmining.framework.connections.ConnectionAnnotation;
 import org.processmining.framework.connections.ConnectionID;
+import org.processmining.framework.connections.ConnectionManager;
 import org.processmining.framework.util.collection.HashMultiSet;
 import org.processmining.framework.util.collection.MultiSet;
 
@@ -42,11 +43,16 @@ public abstract class AbstractConnection implements Connection {
 	private String label;
 
 	private final ConnectionID id;
+	protected transient ConnectionManager manager = null;
 
 	protected AbstractConnection(String label) {
 		this.label = label;
 		id = new ConnectionIDImpl();
 		mapping = new HashMap<String, WeakReference<?>>();
+	}
+
+	public void setManager(ConnectionManager manager) {
+		this.manager = manager;
 	}
 
 	public String getLabel() {
@@ -175,8 +181,21 @@ public abstract class AbstractConnection implements Connection {
 	 * @param name
 	 */
 	public void setLabel(String name) {
+		boolean changed = name.equals(label);
 		this.label = name;
-
+		if (changed) {
+			updated();
+		}
 	}
 
+	public void updated() {
+		if (manager != null) {
+			manager.getConnectionListeners().fireConnectionUpdated(id);
+		}
+	}
+
+	private Object readResolve() {
+		manager = null;
+		return this;
+	}
 }

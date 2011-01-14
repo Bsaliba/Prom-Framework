@@ -1,7 +1,5 @@
 package org.processmining.models.graphbased.directedhypergraph;
 
-import java.awt.geom.Point2D;
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.SortedSet;
@@ -25,15 +23,10 @@ public abstract class AbstractDirectedIncomingHyperedge<S extends AbstractDirect
 		assert (target.getGraph() instanceof AbstractDirectedHypergraph<?, ?, ?>);
 		this.graph = Cast.<AbstractDirectedHypergraph<?, ?, ?>>cast(target.getGraph());
 		getAttributeMap().put(AttributeMap.LABEL, label);
-		getAttributeMap().put(AttributeMap.EDGEPOINTS, new ArrayList<Point2D>(0));
 	}
 
 	public AbstractDirectedHypergraph<?, ?, ?> getGraph() {
 		return graph;
-	}
-
-	public void attributeChanged(String key, Object oldValue, Object newValue, AttributeMap map) {
-		graph.graphElementChanged(this);
 	}
 
 	public int compareTo(AbstractGraphEdge<Set<S>, T> edge) {

@@ -37,7 +37,7 @@ public class ProMGroupShapeRenderer extends ProMShapeRenderer {
 	/**
 	 * Default handle bounds for renderer, '+' or '-'
 	 */
-	public static Rectangle handle = new Rectangle(0, 0, 7, 7);
+	public static Rectangle handle = new Rectangle(0, 0, 20, 20);
 
 	/**
 	 * Specifies whether the current view is a rich text value, and if the image

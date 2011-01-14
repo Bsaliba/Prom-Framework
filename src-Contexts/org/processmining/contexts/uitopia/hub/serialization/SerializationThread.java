@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.util.Iterator;
 import java.util.UUID;
+import java.util.WeakHashMap;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.zip.GZIPOutputStream;
@@ -38,6 +39,7 @@ public class SerializationThread extends Thread implements ProMResource.Listener
 	private boolean firstKey = false;
 	private FileOutputStream objectZipStream;
 	private FileOutputStream indexZipStream;
+	private WeakHashMap<ProMResource<?>, ProMResource<?>> serializeOnExit = new WeakHashMap<ProMResource<?>, ProMResource<?>>();
 
 	public SerializationThread(ProMResourceManager manager) {
 		super();
@@ -71,6 +73,12 @@ public class SerializationThread extends Thread implements ProMResource.Listener
 				try {
 					// make sure all queues are empty
 					System.out.println("Waiting for serialization queues to be written to disk");
+					for (ProMResource<?> resource : serializeOnExit.keySet()) {
+						if (!resource.isDestroyed()) {
+							registerResourceForImmediateSerialization(resource);
+						}
+					}
+
 					closing = true;
 					synchronized (lock) {
 						lock.notify();
@@ -94,19 +102,14 @@ public class SerializationThread extends Thread implements ProMResource.Listener
 		});
 
 		// Now write the already available resources;
-		try {
-			queue = new LinkedBlockingQueue<IDResourcePair>();
-			for (ProMResource<?> res : manager.getAllResources()) {
-				queue.put(new IDResourcePair(res.getID(), res, QType.SERIALIZE));
-			}
-			super.start();
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		queue = new LinkedBlockingQueue<IDResourcePair>();
+		super.start();
+		if (Boot.VERBOSE == Level.ALL) {
+			System.out.println("Serialization thread Alive");
 		}
 	}
 
-	public void registerResource(ProMResource<?> resource) {
+	public void registerResourceForImmediateSerialization(ProMResource<?> resource) {
 		try {
 			if (queue != null) {
 				removePending(resource.getID());
@@ -121,7 +124,11 @@ public class SerializationThread extends Thread implements ProMResource.Listener
 		}
 	}
 
-	public void unRegisterResource(ProMID id) {
+	public void registerResourceForSerializationOnExit(ProMResource<?> resource) {
+		serializeOnExit.put(resource, resource);
+	}
+
+	public void unRegisterScheduledResource(ProMID id) {
 		try {
 			if (queue != null) {
 				removePending(id);
@@ -144,7 +151,6 @@ public class SerializationThread extends Thread implements ProMResource.Listener
 					removePending(resource.getID());
 					// signal a removal
 					this.queue.put(new IDResourcePair(resource.getID(), resource, QType.DELETE));
-
 					// and an insert
 					this.queue.put(new IDResourcePair(resource.getID(), resource, QType.SERIALIZE));
 				} else {
@@ -277,7 +283,9 @@ public class SerializationThread extends Thread implements ProMResource.Listener
 			if (Boot.VERBOSE != Level.NONE) {
 				System.err.println("   Serialized " + resource.getName() + " failed after "
 						+ (System.currentTimeMillis() - t) / 1000 + " seconds");
+				e.printStackTrace();
 			}
+
 		}
 		objectStream.flush();
 		objectZipStream.getFD().sync();
@@ -290,12 +298,12 @@ public class SerializationThread extends Thread implements ProMResource.Listener
 
 			indexStream.writeObject(new IDReferencePair(referencingContext.getID().getUUID(), MType.REFERENCE,
 					existingReferenceKey));
-			if (Boot.VERBOSE == Level.ALL) {
-				System.out.println("   Key added: " + existingReferenceKey + " of resource: "
-						+ map.get(existingReferenceKey));
-				System.out.println("   Reference added: " + existingReferenceKey + " to resource: "
-						+ referencingContext);
-			}
+			//			if (Boot.VERBOSE == Level.ALL) {
+			//				System.out.println("   Key added: " + existingReferenceKey + " of resource: "
+			//						+ map.get(existingReferenceKey));
+			//				System.out.println("   Reference added: " + existingReferenceKey + " to resource: "
+			//						+ referencingContext);
+			//			}
 			indexStream.flush();
 			indexZipStream.getFD().sync();
 		} catch (IOException e) {
@@ -371,6 +379,10 @@ class IDReferencePair {
 	public IDReferencePair(UUID id, MType type, Object referenceKey) {
 		this(id, type);
 		this.referenceKey = referenceKey;
+	}
+
+	public String toString() {
+		return id.toString() + " " + type + " " + referenceKey.toString();
 	}
 
 }

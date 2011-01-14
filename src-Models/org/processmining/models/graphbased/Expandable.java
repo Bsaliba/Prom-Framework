@@ -1,14 +1,18 @@
 package org.processmining.models.graphbased;
 
-public interface Expandable {
+import java.awt.Dimension;
 
-	ExpansionListener.ListenerList getExpansionListeners();
+public interface Expandable extends AttributeMapOwner {
 
-	void expand();
+	Dimension getCollapsedSize();
 
-	void collapse();
-
-	boolean isCollapsed();
-
-	boolean isExpanded();
+	//	ExpansionListener.ListenerList getExpansionListeners();
+	//
+	//	void expand();
+	//
+	//	void collapse();
+	//
+	//	boolean isCollapsed();
+	//
+	//	boolean isExpanded();
 }

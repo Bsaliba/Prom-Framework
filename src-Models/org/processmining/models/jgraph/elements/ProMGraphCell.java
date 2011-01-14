@@ -1,7 +1,6 @@
 package org.processmining.models.jgraph.elements;
 
 import java.awt.Color;
-import java.awt.Dimension;
 import java.awt.geom.Dimension2D;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
@@ -11,7 +10,9 @@ import javax.swing.SwingConstants;
 import org.jgraph.graph.DefaultGraphCell;
 import org.jgraph.graph.GraphConstants;
 import org.processmining.framework.util.Cleanable;
+import org.processmining.models.connections.GraphLayoutConnection;
 import org.processmining.models.graphbased.AttributeMap;
+import org.processmining.models.graphbased.Expandable;
 import org.processmining.models.graphbased.directed.DirectedGraphNode;
 import org.processmining.models.jgraph.ModelOwner;
 import org.processmining.models.jgraph.ProMGraphModel;
@@ -23,48 +24,54 @@ public class ProMGraphCell extends DefaultGraphCell implements Cleanable, ModelO
 	private DirectedGraphNode node;
 	private ProMGraphModel model;
 	private JGraphShapeView view;
+	private GraphLayoutConnection layoutConnection;
 
-	public ProMGraphCell(DirectedGraphNode node, ProMGraphModel model) {
+	public ProMGraphCell(DirectedGraphNode node, ProMGraphModel model, GraphLayoutConnection layoutConnection) {
 		super(node.getLabel());
 		this.node = node;
 		this.model = model;
+		this.layoutConnection = layoutConnection;
 		// update();
 		GraphConstants.setConstrained(getAttributes(), node.getAttributeMap().get(AttributeMap.SQUAREBB, false));
 		GraphConstants.setSizeable(getAttributes(), node.getAttributeMap().get(AttributeMap.RESIZABLE, true));
 		GraphConstants.setResize(getAttributes(), node.getAttributeMap().get(AttributeMap.AUTOSIZE, false));
 		GraphConstants.setHorizontalAlignment(getAttributes(), SwingConstants.CENTER);
 		GraphConstants.setInset(getAttributes(), node.getAttributeMap().get(AttributeMap.INSET, 20));
-		GraphConstants.setLineWidth(getAttributes(), new Float(node.getAttributeMap().get(AttributeMap.LINEWIDTH,
-				GraphConstants.getLineWidth(getAttributes()))));
+		GraphConstants.setLineWidth(
+				getAttributes(),
+				new Float(node.getAttributeMap().get(AttributeMap.LINEWIDTH,
+						GraphConstants.getLineWidth(getAttributes()))));
 		GraphConstants.setForeground(getAttributes(), node.getAttributeMap().get(AttributeMap.LABELCOLOR, Color.black));
-		GraphConstants.setOrientation(getAttributes(), node.getAttributeMap().get(AttributeMap.PREF_ORIENTATION,
-				SwingConstants.NORTH));
+		GraphConstants.setOrientation(getAttributes(),
+				node.getAttributeMap().get(AttributeMap.PREF_ORIENTATION, SwingConstants.NORTH));
+
+		if (node instanceof Expandable) {
+			Dimension2D dim = ((Expandable) node).getCollapsedSize();
+			Point2D pos = layoutConnection.getPosition(node);
+			Rectangle2D rect = new Rectangle2D.Double(pos.getX(), pos.getY(), dim.getWidth(), dim.getHeight());
+			GraphConstants.setBounds(getAttributes(), rect);
+		} else {
+			Dimension2D dim = layoutConnection.getSize(node);
+			Point2D pos = layoutConnection.getPosition(node);
+			Rectangle2D rect = new Rectangle2D.Double(pos.getX(), pos.getY(), dim.getWidth(), dim.getHeight());
+			GraphConstants.setBounds(getAttributes(), rect);
+		}
+
 	}
 
-	public void update() {
+	public void updateViewsFromMap() {
 		assert (view != null);
 		// Update the dimension / position
-		Dimension2D dim = node.getAttributeMap().get(AttributeMap.SIZE, new Dimension(50, 50));
-		Point2D pos = node.getAttributeMap().get(AttributeMap.POSITION, new Point2D.Double(100, 100));
+		Dimension2D dim = layoutConnection.getSize(node);
+		Point2D pos = layoutConnection.getPosition(node);
 
 		Rectangle2D rect = new Rectangle2D.Double(pos.getX(), pos.getY(), dim.getWidth(), dim.getHeight());
-		Rectangle2D bounds = GraphConstants.getBounds(getAttributes());
+		Rectangle2D bounds = view.getBounds();//GraphConstants.getBounds(getAttributes());
 
 		boolean boundsChanged = !rect.equals(bounds);
 		if (boundsChanged) {
-			GraphConstants.setBounds(getAttributes(), rect);
+			//			GraphConstants.setBounds(getAttributes(), rect);
 			view.setBounds(rect);
-		}
-
-		// Update the label
-		boolean labelChanged;
-		if (getUserObject() != null) {
-			labelChanged = !getUserObject().equals(node.getLabel());
-		} else {
-			labelChanged = !node.getLabel().isEmpty();
-		}
-		if (labelChanged) {
-			setUserObject(node.getLabel());
 		}
 	}
 
@@ -94,13 +101,14 @@ public class ProMGraphCell extends DefaultGraphCell implements Cleanable, ModelO
 		view = null;
 		model = null;
 		node = null;
+		layoutConnection = null;
 
 	}
 
 	// This method is called by all other addPort methods.
 	@Override
 	public ProMGraphPort addPort(Point2D offset, Object userObject) {
-		ProMGraphPort port = new ProMGraphPort(userObject, model);
+		ProMGraphPort port = new ProMGraphPort(userObject, model, layoutConnection);
 		if (offset == null) {
 			add(port);
 		} else {

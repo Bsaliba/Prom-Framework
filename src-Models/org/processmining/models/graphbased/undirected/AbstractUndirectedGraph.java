@@ -1,6 +1,5 @@
 package org.processmining.models.graphbased.undirected;
 
-import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.Collection;
 
@@ -31,18 +30,6 @@ public abstract class AbstractUndirectedGraph<N extends UndirectedGraphNode, E e
 					+ target.toString() + ", since one of these nodes is not in the graph.");
 		}
 
-	}
-
-	/**
-	 * Uses the attributes of all its nodes and edges to get a bounding box
-	 */
-	@SuppressWarnings("unchecked")
-	public Rectangle2D getBounds() {
-		ArrayList elements = new ArrayList();
-		elements.addAll(getNodes());
-		elements.addAll(getEdges());
-
-		return getBounds(elements);
 	}
 
 	public Collection<E> getEdges(UndirectedGraphNode node) {

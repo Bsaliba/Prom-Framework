@@ -20,6 +20,14 @@ public class SerializedResource {
 		}
 	}
 
+	public Class<?> type;
+	public Object instance;
+	public String name;
+	public boolean favorite;
+	public Set<ProMID> parents;
+	public long creationTime;
+	public ProMID id;
+
 	public SerializedResource() {
 
 	}
@@ -39,11 +47,4 @@ public class SerializedResource {
 		}
 	}
 
-	public Class<?> type;
-	public Object instance;
-	public ProMID id;
-	public String name;
-	public boolean favorite;
-	public Set<ProMID> parents;
-	public long creationTime;
 }

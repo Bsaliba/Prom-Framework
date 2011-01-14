@@ -1,7 +1,6 @@
 package org.processmining.models.graphbased.directed;
 
 import org.processmining.models.graphbased.AbstractGraphEdge;
-import org.processmining.models.graphbased.AttributeMap;
 
 public abstract class AbstractDirectedGraphEdge<S extends AbstractDirectedGraphNode, T extends AbstractDirectedGraphNode>
 		extends AbstractGraphEdge<S, T> implements DirectedGraphEdge<S, T> {
@@ -16,10 +15,6 @@ public abstract class AbstractDirectedGraphEdge<S extends AbstractDirectedGraphN
 
 	public AbstractDirectedGraph<?, ?> getGraph() {
 		return graph;
-	}
-
-	public void attributeChanged(String key, Object oldValue, Object newValue, AttributeMap map) {
-		graph.graphElementChanged(this);
 	}
 
 	public int compareTo(AbstractGraphEdge<S, T> edge) {

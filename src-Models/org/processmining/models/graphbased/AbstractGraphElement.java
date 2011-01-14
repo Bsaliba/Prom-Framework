@@ -5,7 +5,7 @@ public abstract class AbstractGraphElement implements AttributeMapOwner {
 	private final AttributeMap map;
 
 	public AbstractGraphElement() {
-		map = new AttributeMap(this);
+		map = new AttributeMap();
 	}
 
 	public String getLabel() {

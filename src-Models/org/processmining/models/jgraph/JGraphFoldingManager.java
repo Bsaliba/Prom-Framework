@@ -10,6 +10,7 @@ import javax.swing.event.MouseInputAdapter;
 import org.jgraph.JGraph;
 import org.jgraph.graph.CellView;
 import org.processmining.framework.util.Pair;
+import org.processmining.models.connections.GraphLayoutConnection;
 import org.processmining.models.graphbased.Expandable;
 import org.processmining.models.graphbased.directed.DirectedGraphNode;
 import org.processmining.models.jgraph.renderers.ProMGroupShapeRenderer;
@@ -19,6 +20,14 @@ import org.processmining.models.jgraph.views.JGraphShapeView;
  * Mananges the folding and unfolding of groups
  */
 public class JGraphFoldingManager extends MouseInputAdapter {
+
+	private final GraphLayoutConnection layoutConnection;
+
+	public JGraphFoldingManager(GraphLayoutConnection layoutConnection) {
+		super();
+		this.layoutConnection = layoutConnection;
+
+	}
 
 	/**
 	 * Called when the mouse button is released to see if a collapse or expand
@@ -30,9 +39,11 @@ public class JGraphFoldingManager extends MouseInputAdapter {
 			Pair<Expandable, CellView> pair = getGroupByFoldingHandle(graph, e.getPoint());
 			if (pair != null) {
 				if (pair.getSecond().isLeaf()) {
-					pair.getFirst().expand();
+					layoutConnection.expand(pair.getFirst());
+					layoutConnection.updated();
 				} else {
-					pair.getFirst().collapse();
+					layoutConnection.collapse(pair.getFirst());
+					layoutConnection.updated();
 				}
 			}
 			e.consume();

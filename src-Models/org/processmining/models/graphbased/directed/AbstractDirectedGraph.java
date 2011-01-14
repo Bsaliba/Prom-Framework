@@ -1,6 +1,5 @@
 package org.processmining.models.graphbased.directed;
 
-import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -10,7 +9,6 @@ import java.util.Map;
 
 import org.processmining.framework.util.Cast;
 import org.processmining.models.graphbased.AbstractGraph;
-import org.processmining.models.graphbased.Expandable;
 
 public abstract class AbstractDirectedGraph<N extends DirectedGraphNode, E extends DirectedGraphEdge<? extends N, ? extends N>>
 		extends AbstractGraph implements DirectedGraph<N, E> {
@@ -58,18 +56,6 @@ public abstract class AbstractDirectedGraph<N extends DirectedGraphNode, E exten
 					+ target.toString() + ", since one of these nodes is not in the graph.");
 		}
 
-	}
-
-	/**
-	 * Uses the attributes of all its nodes and edges to get a bounding box
-	 */
-	@SuppressWarnings("unchecked")
-	public Rectangle2D getBounds() {
-		ArrayList elements = new ArrayList();
-		elements.addAll(getNodes());
-		elements.addAll(getEdges());
-
-		return getBounds(elements);
 	}
 
 	public Collection<E> getInEdges(DirectedGraphNode node) {
@@ -150,14 +136,4 @@ public abstract class AbstractDirectedGraph<N extends DirectedGraphNode, E exten
 		AbstractDirectedGraph<?, ?> graph = (AbstractDirectedGraph<?, ?>) o;
 		return id.compareTo(graph.id);
 	}
-
-	public void expandAll() {
-		for (N node : getNodes()) {
-			if (node instanceof Expandable) {
-				((Expandable) node).expand();
-			}
-		}
-		signalViews();
-	}
-
 }

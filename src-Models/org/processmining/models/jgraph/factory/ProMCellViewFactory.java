@@ -31,7 +31,6 @@ public class ProMCellViewFactory extends DefaultCellViewFactory {
 		ProMGraphCell cell = (ProMGraphCell) v;
 		JGraphShapeView view = new JGraphShapeView(cell, isPIP, viewSpecificAttributes);
 		cell.setView(view);
-		cell.update();
 		return view;
 	}
 
@@ -46,7 +45,6 @@ public class ProMCellViewFactory extends DefaultCellViewFactory {
 		ProMGraphEdge cell = Cast.<ProMGraphEdge>cast(e);
 		JGraphEdgeView view = new JGraphEdgeView(cell, isPIP, viewSpecificAttributes);
 		cell.setView(view);
-		cell.update();
 		return view;
 	}
 
@@ -61,7 +59,7 @@ public class ProMCellViewFactory extends DefaultCellViewFactory {
 		ProMGraphPort cell = Cast.<ProMGraphPort>cast(e);
 		JGraphPortView view = new JGraphPortView(cell, isPIP, viewSpecificAttributes);
 		cell.setView(view);
-		cell.update();
+		cell.updateViewsFromMap();
 		return view;
 	}
 

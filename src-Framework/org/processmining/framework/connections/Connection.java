@@ -18,7 +18,7 @@ import org.processmining.framework.util.collection.MultiSet;
  * earliest occasion.
  * 
  * All implementations of this class should carry the @ConnectionAnnotation
- * annotation! 
+ * annotation!
  * 
  * @author bfvdonge
  * 
@@ -75,6 +75,11 @@ public interface Connection {
 	/**
 	 * Return all objects contained in this connection, without their labels.
 	 * 
+	 * By contract, this method should always return the same set of objects
+	 * after the connections was created, i.e. connections may only be changed
+	 * by changing the contents of the objects, but not by changing the
+	 * pointers.
+	 * 
 	 * @return
 	 */
 	public MultiSet<Object> getObjects();
@@ -112,5 +117,24 @@ public interface Connection {
 	 * @param name
 	 */
 	public void setLabel(String name);
+
+	/**
+	 * This method should be called as soon as the connection is changed, for
+	 * example if the label changed, or if the contents of one of the connected
+	 * objects changes.
+	 * 
+	 * By calling this method, the connection manager should be notified.
+	 */
+	public void updated();
+
+	/**
+	 * Sets the manager for the connection. This method is called by the
+	 * connection manager as soon as this connection is added to that manager. A
+	 * connection should keep a reference to the manager only in a transient
+	 * field.
+	 * 
+	 * @param manager
+	 */
+	void setManager(ConnectionManager manager);
 
 }

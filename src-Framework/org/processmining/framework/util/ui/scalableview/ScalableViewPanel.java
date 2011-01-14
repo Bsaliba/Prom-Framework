@@ -2,6 +2,7 @@ package org.processmining.framework.util.ui.scalableview;
 
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Container;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.ActionListener;
@@ -276,6 +277,9 @@ public class ScalableViewPanel extends JLayeredPane implements Cleanable, Change
 			p.setLocation(p.getX() - p2.getX() + TAB_HEIGHT, p.getY() - p2.getY() + TAB_HEIGHT);
 		}
 		Component c = findComponentAt(p.x, p.y);
+		if (c == null) {
+			return;
+		}
 		if ((c == this || c == getComponent())) {
 			turnPanelOff();
 		} else {
@@ -285,18 +289,36 @@ public class ScalableViewPanel extends JLayeredPane implements Cleanable, Change
 				JPanel panelOff = entry.getValue().getSecond();
 				ViewInteractionPanel panel = entry.getKey();
 				if (panelOff.getBounds().contains(p)) {
-					setSize(entry.getKey(), panelOff, panelOn);
-					setLocation(entry.getKey(), panelOff, panelOn);
-					turnPanelOff();
-					panel.willChangeVisibility(true);
-					panelOn.setVisible(true);
-					panelOn.setEnabled(true);
-					panelOff.setVisible(false);
-					panelOff.setEnabled(false);
-					visiblePanel = entry.getKey();
+					if (panelOff == c || isParentPanel(c, panelOff)) {
+
+						setSize(entry.getKey(), panelOff, panelOn);
+						setLocation(entry.getKey(), panelOff, panelOn);
+						turnPanelOff();
+						panel.willChangeVisibility(true);
+						panelOn.setVisible(true);
+						panelOn.setEnabled(true);
+						panelOff.setVisible(false);
+						panelOff.setEnabled(false);
+						visiblePanel = entry.getKey();
+					}
 				}
 			}
 		}
+	}
+
+	private boolean isParentPanel(Component topmost, JPanel panel) {
+
+		Container c = topmost.getParent();
+		while (c != null) {
+
+			if (c == panel) {
+				return true;
+			}
+
+			c = c.getParent();
+		}
+
+		return false;
 	}
 
 	private void turnPanelOff() {
@@ -558,7 +580,7 @@ public class ScalableViewPanel extends JLayeredPane implements Cleanable, Change
 			invalidate();
 		}
 		for (ViewInteractionPanel panel : panels.keySet()) {
-			panel.setScalableComponent(scalable); 
+			panel.setScalableComponent(scalable);
 			panel.updated();
 		}
 	}

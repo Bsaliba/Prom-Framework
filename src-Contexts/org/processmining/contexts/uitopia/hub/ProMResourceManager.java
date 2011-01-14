@@ -42,6 +42,7 @@ import org.processmining.framework.connections.ConnectionAnnotation;
 import org.processmining.framework.connections.ConnectionCannotBeObtained;
 import org.processmining.framework.connections.ConnectionID;
 import org.processmining.framework.connections.ConnectionManager;
+import org.processmining.framework.connections.DynamicConnection;
 import org.processmining.framework.plugin.PluginContext;
 import org.processmining.framework.plugin.PluginExecutionResult;
 import org.processmining.framework.plugin.PluginParameterBinding;
@@ -446,7 +447,7 @@ public class ProMResourceManager extends UpdateSignaller implements ResourceMana
 
 	public void providedObjectDeleted(ProvidedObjectID id) {
 		if (resources.remove(id) != null) {
-			serializationThread.unRegisterResource(id);
+			serializationThread.unRegisterScheduledResource(id);
 			signalUpdate();
 		}
 	}
@@ -470,7 +471,7 @@ public class ProMResourceManager extends UpdateSignaller implements ResourceMana
 							Collections.<Collection<ProMPOResource>>emptyList());
 					addResource(id, res);
 				}
-				serializationThread.registerResource(res);
+				serializationThread.registerResourceForImmediateSerialization(res);
 			} catch (ProvidedObjectDeletedException e) {
 				// If the object has been deleted, try the next one
 				return;
@@ -581,6 +582,10 @@ public class ProMResourceManager extends UpdateSignaller implements ResourceMana
 		}
 	}
 
+	//********************************************************************
+	// ConnectionListener.
+	//
+
 	public void connectionCreated(ConnectionID id) {
 		if (!resources.containsKey(id)) {
 			Connection conn;
@@ -602,7 +607,11 @@ public class ProMResourceManager extends UpdateSignaller implements ResourceMana
 					ProMCResource res = new ProMCResource(context, null, getResourceTypeFor(conn.getClass()), id,
 							values);
 					resources.put(id, res);
-					serializationThread.registerResource(res);
+					if (conn instanceof DynamicConnection) {
+						serializationThread.registerResourceForSerializationOnExit(res);
+					} else {
+						serializationThread.registerResourceForImmediateSerialization(res);
+					}
 					signalUpdate();
 				}
 			} catch (ConnectionCannotBeObtained e) {
@@ -613,7 +622,15 @@ public class ProMResourceManager extends UpdateSignaller implements ResourceMana
 
 	public void connectionDeleted(ConnectionID id) {
 		resources.remove(id);
-		serializationThread.unRegisterResource(id);
+		// No need to alert serializer, the connection will not be serialized if it has
+		// been removed/destroyed.
+	}
+
+	public void connectionUpdated(ConnectionID id) {
+		assert (resources.containsKey(id));
+		// No need to alert the serializer, the connections is not serialized yet, it will
+		// be on exit, not earlier.
+		signalUpdate();
 	}
 
 }

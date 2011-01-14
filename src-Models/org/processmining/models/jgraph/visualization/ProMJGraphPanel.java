@@ -12,8 +12,6 @@ import javax.swing.JLabel;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 
-import org.jgraph.event.GraphSelectionEvent;
-import org.jgraph.event.GraphSelectionListener;
 import org.jgraph.graph.BasicMarqueeHandler;
 import org.processmining.framework.util.ui.scalableview.ScalableViewPanel;
 import org.processmining.models.graphbased.directed.DirectedGraphEdge;
@@ -46,45 +44,6 @@ public class ProMJGraphPanel extends ScalableViewPanel {
 
 	@Override
 	protected void initialize() {
-		getGraph().addGraphSelectionListener(new GraphSelectionListener() {
-
-			@SuppressWarnings("unchecked")
-			public void valueChanged(GraphSelectionEvent e) {
-				Object[] cells = e.getCells();
-				Collection nodesAdded = new ArrayList();
-				Collection edgesAdded = new ArrayList();
-				Collection nodesRemoved = new ArrayList();
-				Collection edgesRemoved = new ArrayList();
-				Collection<?> nodes = getGraph().getProMGraph().getNodes();
-				Collection<?> edges = getGraph().getProMGraph().getEdges();
-				for (int i = 0; i < cells.length; i++) {
-					Collection nodeList;
-					Collection edgeList;
-					if (e.isAddedCell(i)) {
-						nodeList = nodesAdded;
-						edgeList = edgesAdded;
-					} else {
-						nodeList = nodesRemoved;
-						edgeList = edgesRemoved;
-					}
-					if (cells[i] instanceof ProMGraphCell) {
-						DirectedGraphNode node = ((ProMGraphCell) cells[i]).getNode();
-						if (nodes.contains(node)) {
-							nodeList.add(node);
-						}
-					} else if (cells[i] instanceof ProMGraphEdge) {
-						DirectedGraphEdge<?, ?> edge = ((ProMGraphEdge) cells[i]).getEdge();
-						if (edges.contains(edge)) {
-							edgeList.add(((ProMGraphEdge) cells[i]).getEdge());
-						}
-					}
-				}
-				//				SelectionListener.SelectionChangeEvent event = new SelectionListener.SelectionChangeEvent(nodesAdded,
-				//						edgesAdded, nodesRemoved, edgesRemoved);
-
-			}
-
-		});
 		getGraph().setTolerance(4);
 
 		getGraph().setMarqueeHandler(new BasicMarqueeHandler() {

@@ -44,6 +44,7 @@ public class ConnectionManagerImpl implements ConnectionManager {
 	public <T extends Connection> T addConnection(T connection) {
 		synchronized (connections) {
 			connections.put(connection.getID(), connection);
+			connection.setManager(this);
 			connectionListeners.fireConnectionCreated(connection.getID());
 		}
 		return connection;

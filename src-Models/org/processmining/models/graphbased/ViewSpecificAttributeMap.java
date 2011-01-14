@@ -73,18 +73,13 @@ public class ViewSpecificAttributeMap {
 	 * @return
 	 */
 	public boolean putViewSpecific(AttributeMapOwner owner, String key, Object value) {
-		AttributeMap map = maps.get(owner);
-		if (map == null) {
-			map = new AttributeMap(null);
-			maps.put(owner, map);
-		}
+		AttributeMap map = getMapFor(owner);
 		Object old = map.get(key);
 		map.put(key, value);
 		if (value == old) {
 			return false;
 		}
 		if ((value == null) || (old == null) || !value.equals(old)) {
-			owner.attributeChanged(key, old, value, map);
 			return true;
 		}
 		return false;
@@ -100,6 +95,15 @@ public class ViewSpecificAttributeMap {
 
 	public Set<AttributeMapOwner> keySet() {
 		return maps.keySet();
+	}
+
+	public AttributeMap getMapFor(AttributeMapOwner node) {
+		AttributeMap m = maps.get(node);
+		if (m == null) {
+			m = new AttributeMap();
+			maps.put(node, m);
+		}
+		return m;
 	}
 
 }

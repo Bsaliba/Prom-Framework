@@ -1,6 +1,5 @@
 package org.processmining.models.graphbased.directedhypergraph;
 
-import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Set;
@@ -44,19 +43,6 @@ public abstract class AbstractDirectedHypergraph<N extends DirectedHypergraphNod
 					+ target.toString() + ", since one of these nodes is not in the graph.");
 		}
 
-	}
-
-	/**
-	 * Uses the attributes of all its nodes and edges to get a bounding box
-	 */
-	@SuppressWarnings("unchecked")
-	public Rectangle2D getBounds() {
-		ArrayList elements = new ArrayList();
-		elements.addAll(getNodes());
-		elements.addAll(getInEdges());
-		elements.addAll(getOutEdges());
-
-		return getBounds(elements);
 	}
 
 	public Collection<I> getIncomingInEdges(DirectedHypergraphNode node) {

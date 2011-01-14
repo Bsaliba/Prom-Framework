@@ -76,11 +76,15 @@ public class ProMUnMarshaller extends TreeUnmarshaller {
 	}
 
 	protected Object getReferenceKey(String reference) {
-		return reference;
+		return Long.valueOf(reference);
 	}
 
 	protected Object getCurrentReferenceKey() {
 		String attributeName = getMapper().aliasForSystemAttribute("id");
-		return attributeName == null ? null : reader.getAttribute(attributeName);
+		if (attributeName == null) {
+			return null;
+		}
+		String val = reader.getAttribute(attributeName);
+		return val == null ? null : getReferenceKey(val);
 	}
 }

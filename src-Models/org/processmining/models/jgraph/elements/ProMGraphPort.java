@@ -9,7 +9,7 @@ import java.util.List;
 import org.jgraph.graph.DefaultPort;
 import org.jgraph.graph.GraphConstants;
 import org.processmining.framework.util.Cleanable;
-import org.processmining.models.graphbased.AttributeMap;
+import org.processmining.models.connections.GraphLayoutConnection;
 import org.processmining.models.graphbased.directed.BoundaryDirectedGraphNode;
 import org.processmining.models.jgraph.ModelOwner;
 import org.processmining.models.jgraph.ProMGraphModel;
@@ -20,15 +20,23 @@ public class ProMGraphPort extends DefaultPort implements Cleanable, ModelOwner,
 	private static final long serialVersionUID = 34423826783834456L;
 	private JGraphPortView view;
 	private ProMGraphModel model;
+	private boolean isBoundaryNode = false;
+	private BoundaryDirectedGraphNode node;
+	private final GraphLayoutConnection layoutConnection;
 
-	public ProMGraphPort(Object userObject, ProMGraphModel model) {
+	public ProMGraphPort(Object userObject, ProMGraphModel model, GraphLayoutConnection layoutConnection) {
 		super(userObject);
 		this.model = model;
-		if ((getUserObject() instanceof BoundaryDirectedGraphNode) ? ((BoundaryDirectedGraphNode) getUserObject())
-				.getBoundingNode() != null : false) {
-			BoundaryDirectedGraphNode node = (BoundaryDirectedGraphNode) getUserObject();
-			GraphConstants.setOffset(getAttributes(), node.getAttributeMap().get(AttributeMap.PORTOFFSET,
-					new Point2D.Double(GraphConstants.PERMILLE / 4, GraphConstants.PERMILLE)));
+		this.layoutConnection = layoutConnection;
+		if (userObject != null && userObject instanceof BoundaryDirectedGraphNode) {
+			node = (BoundaryDirectedGraphNode) userObject;
+			layoutConnection.getPortOffset(node);
+			Dimension size = layoutConnection.getSize(node);
+			Point2D offset = layoutConnection.getPortOffset(node);
+
+			GraphConstants.setSize(getAttributes(), size);
+			GraphConstants.setOffset(getAttributes(), offset);
+			isBoundaryNode = true;
 		}
 	}
 
@@ -59,27 +67,27 @@ public class ProMGraphPort extends DefaultPort implements Cleanable, ModelOwner,
 		return model;
 	}
 
-	public void update() {
+	public void updateViewsFromMap() {
 		assert (view != null);
 
 		if ((getUserObject() instanceof BoundaryDirectedGraphNode) ? ((BoundaryDirectedGraphNode) getUserObject())
 				.getBoundingNode() != null : false) {
-			BoundaryDirectedGraphNode node = (BoundaryDirectedGraphNode) getUserObject();
 
 			// Update the port size
 			// Note: the width and the height of a port should always be equal 			
-			Dimension size = node.getAttributeMap().get(AttributeMap.SIZE, new Dimension(50, 50));
-			Dimension currSize = GraphConstants.getSize(getAttributes());
+			Dimension size = layoutConnection.getSize(node);
+			Dimension currSize = new Dimension((int) view.getBounds().getWidth(), (int) view.getBounds().getHeight());// GraphConstants.getSize(getAttributes());
 			if (!size.equals(currSize)) {
-				GraphConstants.setSize(getAttributes(), size);
+				//				GraphConstants.setSize(getAttributes(), size);
 				view.setPortSize((int) size.getWidth());
 			}
 
-			Point2D offset = node.getAttributeMap().get(AttributeMap.PORTOFFSET,
-					new Point2D.Double(GraphConstants.PERMILLE / 4, GraphConstants.PERMILLE));
-			Point2D currOffset = GraphConstants.getOffset(getAttributes());
+			Point2D offset = layoutConnection.getPortOffset(node);
+			//			Point2D currOffset = new Point2D.Double(view.getBounds().getX(), view.getBounds().getY()); // GraphConstants.getOffset(getAttributes());
+			Point2D currOffset = GraphConstants.getOffset(view.getAttributes());
 			if (!offset.equals(currOffset)) {
-				GraphConstants.setOffset(getAttributes(), offset);
+				//				GraphConstants.setOffset(getAttributes(), offset);
+				GraphConstants.setOffset(view.getAttributes(), offset);
 			}
 		}
 	}
@@ -90,6 +98,14 @@ public class ProMGraphPort extends DefaultPort implements Cleanable, ModelOwner,
 	 */
 	public boolean equals(Object o) {
 		return o == this;
+	}
+
+	public boolean isBoundaryNode() {
+		return isBoundaryNode;
+	}
+
+	public BoundaryDirectedGraphNode getBoundingNode() {
+		return node;
 	}
 
 }
