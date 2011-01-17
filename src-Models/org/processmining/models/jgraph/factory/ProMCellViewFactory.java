@@ -1,8 +1,12 @@
 package org.processmining.models.jgraph.factory;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.jgraph.graph.DefaultCellViewFactory;
 import org.jgraph.graph.Edge;
 import org.jgraph.graph.EdgeView;
+import org.jgraph.graph.GraphConstants;
 import org.jgraph.graph.Port;
 import org.jgraph.graph.PortView;
 import org.jgraph.graph.VertexView;
@@ -43,6 +47,12 @@ public class ProMCellViewFactory extends DefaultCellViewFactory {
 	@Override
 	protected EdgeView createEdgeView(Object e) {
 		ProMGraphEdge cell = Cast.<ProMGraphEdge>cast(e);
+
+		List list = new ArrayList(cell.getInternalPoints());
+		list.add(0, cell.getSource().getView());
+		list.add(cell.getTarget().getView());
+		GraphConstants.setPoints(cell.getAttributes(), list);
+
 		JGraphEdgeView view = new JGraphEdgeView(cell, isPIP, viewSpecificAttributes);
 		cell.setView(view);
 		return view;

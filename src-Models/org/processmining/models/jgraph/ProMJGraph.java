@@ -351,7 +351,6 @@ public class ProMJGraph extends JGraph implements GraphModelListener, GraphLayou
 		}
 		//		repaint(oldBound.getBounds());
 		getGraphLayoutCache().cellViewsChanged(views.toArray(new CellView[0]));
-		model.cellsChanged(cells.toArray(), oldBound);
 	}
 
 	public String toString() {
@@ -388,8 +387,16 @@ public class ProMJGraph extends JGraph implements GraphModelListener, GraphLayou
 					ProMGraphCell cell = (ProMGraphCell) o;
 
 					DirectedGraphNode node = cell.getNode();
-					changedOwners.add(node);
-					if (handleNodeChange(cell, node)) {
+
+					Rectangle2D rect;
+					if (change.getSource() instanceof ProMGraphModel) {
+						rect = GraphConstants.getBounds(cell.getAttributes());
+					} else {
+						rect = cell.getView().getBounds();
+					}
+
+					if (handleNodeChange(cell, node, rect)) {
+						changedOwners.add(node);
 						signalChange = true;
 					}
 				}
@@ -400,22 +407,31 @@ public class ProMJGraph extends JGraph implements GraphModelListener, GraphLayou
 			for (ProMGraphEdge cell : edges) {
 				// handle a change for a cell
 				DirectedGraphEdge<?, ?> edge = cell.getEdge();
-				changedOwners.add(edge);
-				if (handleEdgeChange(cell, edge)) {
+
+				List<?> points;
+				if (change.getSource() instanceof ProMGraphModel) {
+					points = GraphConstants.getPoints(cell.getAttributes());
+				} else {
+					points = cell.getView().getPoints();
+				}
+
+				if (handleEdgeChange(cell, edge, points)) {
+					changedOwners.add(edge);
 					signalChange = true;
 				}
 			}
 			if (signalChange && !isPIP) {
-				layoutConnection.updatedAttributes(this, changedOwners.toArray(new AttributeMapOwner[0]));
+				layoutConnection.updatedAttributes( changedOwners.toArray(new AttributeMapOwner[0]));
 			}
 		}
 	}
 
-	private boolean handleNodeChange(ProMGraphCell cell, DirectedGraphNode node) {
+	private boolean handleNodeChange(ProMGraphCell cell, DirectedGraphNode node, Rectangle2D rect) {
 		boolean changed = false;
 
-		// get the view's bounds and put them in the attributemap
-		Rectangle2D rect = cell.getView().getBounds();
+		//		// get the view's bounds and put them in the attributemap
+		//		Rectangle2D rect = cell.getView().getBounds();
+		//		rect = GraphConstants.getBounds(cell.getAttributes());
 
 		if (rect != null) {
 			// SIZE
@@ -431,11 +447,9 @@ public class ProMJGraph extends JGraph implements GraphModelListener, GraphLayou
 		return changed;
 	}
 
-	private boolean handleEdgeChange(ProMGraphEdge cell, DirectedGraphEdge<?, ?> edge) {
+	private boolean handleEdgeChange(ProMGraphEdge cell, DirectedGraphEdge<?, ?> edge, List<?> points) {
 		boolean changed = false;
 
-		// Get the view's points and put them in the attributemap
-		List<?> points = cell.getView().getPoints();
 		List<Point2D> list = new ArrayList<Point2D>(3);
 		if (points != null) {
 			for (int i = 1; i < points.size() - 1; i++) {
@@ -541,7 +555,7 @@ public class ProMJGraph extends JGraph implements GraphModelListener, GraphLayou
 
 		Point2D pos = layoutConnection.getPosition(source);
 		if (pos == null) {
-			pos = new Point2D.Double(10,10);
+			pos = new Point2D.Double(10, 10);
 		}
 
 		Dimension size = source.getCollapsedSize();

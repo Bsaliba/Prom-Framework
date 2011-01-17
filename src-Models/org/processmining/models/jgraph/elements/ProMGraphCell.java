@@ -45,23 +45,21 @@ public class ProMGraphCell extends DefaultGraphCell implements Cleanable, ModelO
 		GraphConstants.setOrientation(getAttributes(),
 				node.getAttributeMap().get(AttributeMap.PREF_ORIENTATION, SwingConstants.NORTH));
 
+		Dimension2D dim;
+		Point2D pos;
+
 		if (node instanceof Expandable) {
-			Dimension2D dim = ((Expandable) node).getCollapsedSize();
-			Point2D pos = layoutConnection.getPosition(node);
-			if (pos == null) {
-				pos = new Point2D.Double(10,10);
-			}
-			Rectangle2D rect = new Rectangle2D.Double(pos.getX(), pos.getY(), dim.getWidth(), dim.getHeight());
-			GraphConstants.setBounds(getAttributes(), rect);
+			dim = ((Expandable) node).getCollapsedSize();
+			pos = layoutConnection.getPosition(node);
 		} else {
-			Dimension2D dim = layoutConnection.getSize(node);
-			Point2D pos = layoutConnection.getPosition(node);
-			if (pos == null) {
-				pos = new Point2D.Double(10,10);
-			}
-			Rectangle2D rect = new Rectangle2D.Double(pos.getX(), pos.getY(), dim.getWidth(), dim.getHeight());
-			GraphConstants.setBounds(getAttributes(), rect);
+			dim = layoutConnection.getSize(node);
+			pos = layoutConnection.getPosition(node);
 		}
+		if (pos == null) {
+			pos = new Point2D.Double(10, 10);
+		}
+		Rectangle2D rect = new Rectangle2D.Double(pos.getX(), pos.getY(), dim.getWidth(), dim.getHeight());
+		GraphConstants.setBounds(getAttributes(), rect);
 
 	}
 
@@ -71,7 +69,7 @@ public class ProMGraphCell extends DefaultGraphCell implements Cleanable, ModelO
 		Dimension2D dim = layoutConnection.getSize(node);
 		Point2D pos = layoutConnection.getPosition(node);
 		if (pos == null) {
-			pos = new Point2D.Double(10,10);
+			pos = new Point2D.Double(10, 10);
 		}
 
 		Rectangle2D rect = new Rectangle2D.Double(pos.getX(), pos.getY(), dim.getWidth(), dim.getHeight());

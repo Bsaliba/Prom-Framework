@@ -114,10 +114,10 @@ public class ProMJGraphVisualizer {
 			Map<?, ?> nested = facade.createNestedMap(true, true);
 
 			jgraph.getGraphLayoutCache().edit(nested);
+//			jgraph.repositionToOrigin();
 			layoutConnection.setLayedOut(true);
 
 		}
-		//jgraph.repositionToOrigin();
 
 		jgraph.setUpdateLayout(layout);
 

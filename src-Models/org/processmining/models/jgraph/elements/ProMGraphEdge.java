@@ -100,6 +100,9 @@ public class ProMGraphEdge extends DefaultEdge implements Cleanable, ModelOwner,
 
 		this.edge = edge;
 		this.model = model;
+
+		internalPoints.addAll(layoutConnection.getEdgePoints(edge));
+
 	}
 
 	@SuppressWarnings("unchecked")
@@ -118,8 +121,11 @@ public class ProMGraphEdge extends DefaultEdge implements Cleanable, ModelOwner,
 			list.add(0, points.get(0));
 			list.add(points.get(points.size() - 1));
 			view.setPoints(list);
-//			GraphConstants.setPoints(getAttributes(), list);
 		}
+	}
+
+	public List<Point2D> getInternalPoints() {
+		return internalPoints;
 	}
 
 	public String toString() {

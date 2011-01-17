@@ -49,6 +49,7 @@ public class JGraphShapeView extends VertexView implements Cleanable {
 				}
 			}
 		}
+		setCachedBounds(GraphConstants.getBounds(cell.getAttributes()));
 
 	}
 

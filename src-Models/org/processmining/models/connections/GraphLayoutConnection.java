@@ -191,14 +191,8 @@ public class GraphLayoutConnection extends AbstractConnection implements Dynamic
 	}
 
 	public void updatedAttributes(AttributeMapOwner... owners) {
-		updatedAttributes(null, owners);
-	}
-
-	public void updatedAttributes(Listener toExclude, AttributeMapOwner... owners) {
 		for (Listener l : listeners) {
-			if (l != toExclude) {
-				l.layoutConnectionUpdated(owners);
-			}
+			l.layoutConnectionUpdated(owners);
 		}
 		super.updated();
 	}

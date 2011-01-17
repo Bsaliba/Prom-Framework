@@ -27,7 +27,9 @@ public class JGraphEdgeView extends EdgeView implements Cleanable {
 		edge = cell.getEdge();
 		points = new ArrayList(2);
 		points.add(cell.getSource().getView());
+		points.addAll(cell.getInternalPoints());
 		points.add(cell.getTarget().getView());
+
 		groupBounds = null;
 	}
 
