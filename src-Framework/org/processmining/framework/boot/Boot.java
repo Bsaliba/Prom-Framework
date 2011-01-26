@@ -177,7 +177,9 @@ public class Boot {
 			System.out.println("Loading from: classpath");
 		}
 
-		String libPath = new File("." + File.separator + LIB_FOLDER).getCanonicalPath();
+		File f = new File("." + File.separator + LIB_FOLDER);
+		String libPath = f.getCanonicalPath();
+		addURLToClasspath(f.toURI().toURL());
 		for (URL url : defaultURLs) {
 			if (VERBOSE == Level.ALL) {
 				System.out.println("Processing url: " + url);
@@ -207,9 +209,7 @@ public class Boot {
 	}
 
 	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
+	 * (non-Javadoc) * @see
 	 * org.processmining.framework.plugin.PluginManager#boot(java.lang.Class,
 	 * java.lang.String[])
 	 */
@@ -255,6 +255,10 @@ public class Boot {
 			// plugins and other annotations.
 			if (f.isDirectory()) {
 				addJarsFromPackageDirectory(f, verbose, plugins);
+				try {
+					addURLToClasspath(f.toURI().toURL());
+				} catch (MalformedURLException e) {
+				}
 			}
 		}
 		// Now scan the jar files in the package root folder.
