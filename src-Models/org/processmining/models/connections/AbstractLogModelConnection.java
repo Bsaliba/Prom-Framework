@@ -30,7 +30,7 @@ public abstract class AbstractLogModelConnection<N extends DirectedGraphNode, E 
 	private int minActivityPerNode = Integer.MAX_VALUE;
 	private int maxActivityPerNode = Integer.MIN_VALUE;
 	private final Collection<WeakReference<N>> mappableNodes;
-
+	
 	private AbstractLogModelConnection(XLog log, XEventClasses classes, DirectedGraph<N, E> graph,
 			Collection<? extends N> mappableNodes) {
 		super(graph.getLabel() + " generated from " + XConceptExtension.instance().extractName(log));
@@ -129,4 +129,7 @@ public abstract class AbstractLogModelConnection<N extends DirectedGraphNode, E 
 		return Collections.unmodifiableCollection(set);
 	}
 
+	public XEventClasses getEventClasses() {
+		return (XEventClasses) get(CLASSES);
+	}
 }
