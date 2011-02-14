@@ -139,6 +139,12 @@ class ToggleSelectionModel extends DefaultListSelectionModel {
 	private static final long serialVersionUID = -8595521046515667658L;
 	boolean gestureStarted = false;
 
+	// HV: Allow only a single selection, as only one will be shown.
+	public ToggleSelectionModel() {
+		super ();
+		this.setSelectionMode(SINGLE_SELECTION);
+	}
+	
 	public void setSelectionInterval(int index0, int index1) {
 		if (isSelectedIndex(index0) && !gestureStarted) {
 			super.removeSelectionInterval(index0, index1);

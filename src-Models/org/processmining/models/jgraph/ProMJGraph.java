@@ -349,8 +349,10 @@ public class ProMJGraph extends JGraph implements GraphModelListener, GraphLayou
 		if (oldBound != null) {
 			Rectangle2D.union(oldBound, GraphLayoutCache.getBounds(views.toArray(new CellView[0])), oldBound);
 		}
-		//		repaint(oldBound.getBounds());
+//		repaint(oldBound.getBounds());
 		getGraphLayoutCache().cellViewsChanged(views.toArray(new CellView[0]));
+		// HV: Refresh the graph to show the changes.
+		this.refresh();
 	}
 
 	public String toString() {

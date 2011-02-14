@@ -4,6 +4,7 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 
 import javax.swing.BorderFactory;
@@ -109,15 +110,18 @@ public abstract class AbstractSelectionPanel<C extends JComponent> extends JPane
 		selectedNodes.clear();
 
 		if (signal) {
-			graph.update(toUpdate);
+			// HV: Convert toUpdate to a set of AttributeMapOwners, as otherwise the update 
+			//     gets an array containing the set as only element, which it does not handle properly.
+			graph.update(new HashSet<AttributeMapOwner>(toUpdate));
 		}
 	}
 
 	public void willChangeVisibility(boolean to) {
 		if (to) {
-			if (!selectedNodes.keySet().isEmpty()) {
-				selectElements(new HashMap<DirectedGraphElement, String>(selectedNodes));
-			}
+			// HV: Also show if the selection has become empty.
+			//			if (!selectedNodes.keySet().isEmpty()) {
+			selectElements(new HashMap<DirectedGraphElement, String>(selectedNodes));
+			//			}
 		}
 	}
 

@@ -580,7 +580,8 @@ public class ScalableViewPanel extends JLayeredPane implements Cleanable, Change
 			invalidate();
 		}
 		for (ViewInteractionPanel panel : panels.keySet()) {
-			panel.setScalableComponent(scalable);
+			// HV: Do not call setScalableComponent now, as it changes the originalAttributeMap of the scalable.
+//			panel.setScalableComponent(scalable);
 			panel.updated();
 		}
 	}
