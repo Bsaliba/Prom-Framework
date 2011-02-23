@@ -292,8 +292,8 @@
 		<echo message="Performing nightly build (${DSTAMP}) for Java ${bytecode_format}" />
 		<buildBinaryArchive name="ProM-nightly-${DSTAMP}-${bytecode_format}" />
 		<sequential>
-			<copy file="${dist}//ProM-nightly-${DSTAMP}-${bytecode_format}.tar.gz" tofile="D://Websites//tools//prom6//nightly//ProM-nightly-${DSTAMP}-${bytecode_format}.tar.gz" overwrite="true" />
-			<copy todir="D://Websites//tools//prom6//nightly//doc">
+			<copy file="${dist}//ProM-nightly-${DSTAMP}-${bytecode_format}.tar.gz" tofile="//home/hudson//nightly//ProM-nightly-${DSTAMP}-${bytecode_format}.tar.gz" overwrite="true" />
+			<copy todir="//home//hudson//nightly//doc">
 				<fileset dir="${doc}" />
 			</copy>
 		</sequential>
