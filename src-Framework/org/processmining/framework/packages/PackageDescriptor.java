@@ -13,7 +13,7 @@ public class PackageDescriptor implements Comparable<PackageDescriptor> {
 
 	public static enum OS {
 		WIN64("win64", OsUtil.isRunningWindows() && OsUtil.is64Bit()), //
-		WIN32("win32", OsUtil.isRunningWindows()), //
+		WIN32("win32", OsUtil.isRunningWindows() && OsUtil.is32Bit()), //
 		LIN32("linux32", OsUtil.isRunningLinux() && OsUtil.is32Bit()), //
 		LIN64("linux64", OsUtil.isRunningLinux() && OsUtil.is64Bit()), //
 		MAC("mac", OsUtil.isRunningMacOsX()), //
