@@ -4,11 +4,13 @@ import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.Rectangle;
 import java.awt.Stroke;
+import java.awt.geom.AffineTransform;
 import java.awt.geom.GeneralPath;
 import java.awt.geom.Point2D;
 
@@ -18,6 +20,7 @@ import javax.swing.SwingConstants;
 
 import org.jgraph.JGraph;
 import org.jgraph.graph.CellView;
+import org.jgraph.graph.GraphConstants;
 import org.jgraph.graph.VertexRenderer;
 import org.processmining.framework.util.Cast;
 import org.processmining.framework.util.Cleanable;
@@ -31,8 +34,15 @@ import org.processmining.models.shapes.Shape;
 // ************************************************************************
 public class ProMShapeRenderer extends VertexRenderer implements Cleanable {
 
+	static {
+		// Change the default font
+		GraphConstants.DEFAULTFONT = GraphConstants.DEFAULTFONT.deriveFont(Font.PLAIN);
+		GraphConstants.DEFAULTFONT = GraphConstants.DEFAULTFONT.deriveFont(9.0f);
+		GraphConstants.DEFAULTFONT = GraphConstants.DEFAULTFONT.deriveFont(AffineTransform.getScaleInstance(0.75, 1.0));
+	}
+
 	private static final long serialVersionUID = 9118304969661088440L;
-	private static final Stroke SELECTIONSTROKE = new BasicStroke(3f);
+	private static final Stroke SELECTIONSTROKE = new BasicStroke(2f);
 
 	/**
 	 * Return a slightly larger preferred size than for a rectangle.
@@ -83,7 +93,7 @@ public class ProMShapeRenderer extends VertexRenderer implements Cleanable {
 		}
 
 		borderWidth = map.get(node, AttributeMap.BORDERWIDTH, borderWidth);
-		int b = borderWidth;
+		int b = borderWidth-1;
 		Graphics2D g2 = (Graphics2D) g;
 
 		boolean tmp = selected;
@@ -120,18 +130,18 @@ public class ProMShapeRenderer extends VertexRenderer implements Cleanable {
 				Cast.<Decorated>cast(node).decorate(g2, b, b, d.width - 2 * b, d.height - 2 * b);
 			}
 
-//			if (isGroup) {
-//				g.setColor(handleColor);
-//				g.fill3DRect(handle.x, handle.y, handle.width, handle.height, true);
-//				g.setColor(graphForeground);
-//				g.drawRect(handle.x, handle.y, handle.width, handle.height);
-//				g.drawLine(handle.x + 1, handle.y + handle.height / 2, handle.x + handle.width - 2, handle.y
-//						+ handle.height / 2);
-//				if (view.isLeaf()) {
-//					g.drawLine(handle.x + handle.width / 2, handle.y + 1, handle.x + handle.width / 2, handle.y
-//							+ handle.height - 2);
-//				}
-//			}
+			//			if (isGroup) {
+			//				g.setColor(handleColor);
+			//				g.fill3DRect(handle.x, handle.y, handle.width, handle.height, true);
+			//				g.setColor(graphForeground);
+			//				g.drawRect(handle.x, handle.y, handle.width, handle.height);
+			//				g.drawLine(handle.x + 1, handle.y + handle.height / 2, handle.x + handle.width - 2, handle.y
+			//						+ handle.height / 2);
+			//				if (view.isLeaf()) {
+			//					g.drawLine(handle.x + handle.width / 2, handle.y + 1, handle.x + handle.width / 2, handle.y
+			//							+ handle.height - 2);
+			//				}
+			//			}
 
 		} finally {
 			selected = tmp;
