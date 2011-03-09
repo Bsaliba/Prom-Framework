@@ -271,7 +271,9 @@ public class Boot {
 						System.out.println("  scanning for plugins: " + url);
 					}
 					addURLToClasspath(url);
-					plugins.register(url);
+					if (f.getAbsolutePath().endsWith(PluginManager.JAR_EXTENSION)) {
+						plugins.register(url);
+					}
 				} catch (MalformedURLException e) {
 					e.printStackTrace();
 				}
