@@ -159,13 +159,6 @@ public class ProMResourceManager extends UpdateSignaller implements ResourceMana
 
 		if ((returnVal == JFileChooser.APPROVE_OPTION) && (fc.getSelectedFile() != null)) {
 			File file = fc.getSelectedFile();
-			// HV Remember last file exported (and imported if not initialized yet).
-			lastExportedFile = file;
-			preferences.put(LASTEXPORTFILE, file.getAbsolutePath());
-			if (lastImportedFile == null) {
-				lastImportedFile = file;
-				preferences.put(LASTIMPORTFILE, file.getAbsolutePath());
-			}
 			FileNameExtensionFilter selectedFilter = (FileNameExtensionFilter) fc.getFileFilter();
 
 			String postfix = "." + selectedFilter.getExtensions()[0];
@@ -177,6 +170,14 @@ public class ProMResourceManager extends UpdateSignaller implements ResourceMana
 				}
 			}
 
+			// HV Remember last file exported (and imported if not initialized yet).
+			lastExportedFile = file;
+			preferences.put(LASTEXPORTFILE, file.getAbsolutePath());
+			if (lastImportedFile == null) {
+				lastImportedFile = file;
+				preferences.put(LASTIMPORTFILE, file.getAbsolutePath());
+			}
+			
 			PluginParameterBinding binding = exportplugins.get(selectedFilter);
 
 			UIPluginContext importContext = context.getMainPluginContext().createChildContext(
