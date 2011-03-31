@@ -11,6 +11,7 @@ import org.processmining.framework.connections.ConnectionID;
 import org.processmining.framework.connections.ConnectionManager;
 import org.processmining.framework.plugin.PluginContext;
 import org.processmining.framework.util.ui.scalableview.ScalableViewPanel;
+import org.processmining.framework.util.ui.scalableview.interaction.ExportInteractionPanel;
 import org.processmining.framework.util.ui.scalableview.interaction.PIPInteractionPanel;
 import org.processmining.framework.util.ui.scalableview.interaction.ZoomInteractionPanel;
 import org.processmining.models.connections.GraphLayoutConnection;
@@ -125,6 +126,7 @@ public class ProMJGraphVisualizer {
 
 		panel.addViewInteractionPanel(new PIPInteractionPanel(panel), SwingConstants.NORTH);
 		panel.addViewInteractionPanel(new ZoomInteractionPanel(panel, ScalableViewPanel.MAX_ZOOM), SwingConstants.WEST);
+		panel.addViewInteractionPanel(new ExportInteractionPanel(panel), SwingConstants.SOUTH);
 
 		layoutConnection.updated();
 
