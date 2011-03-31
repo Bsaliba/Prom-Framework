@@ -40,6 +40,7 @@ public class SerializationThread extends Thread implements ProMResource.Listener
 	private FileOutputStream objectZipStream;
 	private FileOutputStream indexZipStream;
 	private WeakHashMap<ProMResource<?>, ProMResource<?>> serializeOnExit = new WeakHashMap<ProMResource<?>, ProMResource<?>>();
+	private boolean running;
 
 	public SerializationThread(ProMResourceManager manager) {
 		super();
@@ -50,6 +51,7 @@ public class SerializationThread extends Thread implements ProMResource.Listener
 	}
 
 	public void start() {
+		running = true;
 		try {
 			objectZipStream = new FileOutputStream(
 					SerializationConstants.getFile(SerializationConstants.OBJECTPERSISTENCYFILE));
@@ -168,6 +170,7 @@ public class SerializationThread extends Thread implements ProMResource.Listener
 	}
 
 	private void terminate() {
+		running = false;
 		// should terminate
 		try {
 			objectStream.flush();
@@ -217,9 +220,12 @@ public class SerializationThread extends Thread implements ProMResource.Listener
 					}
 				}
 				if (closing && queue.isEmpty()) {
-					synchronized (closingLock) {
-						// notify the shutdown hook waiting on this object.
-						closingLock.notify();
+					while (running) {
+						synchronized (closingLock) {
+							// notify the shutdown hook waiting on this object.
+							closingLock.notify();
+						}
+						Thread.sleep(1000);
 					}
 					return;
 				}
