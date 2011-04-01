@@ -599,7 +599,7 @@ public class ScalableViewPanel extends JLayeredPane implements Cleanable, Change
 		scalable.setScale(Math.min(rx, ry));
 	}
 
-	protected JComponent getComponent() {
+	public JComponent getComponent() {
 		return component;
 	}
 
