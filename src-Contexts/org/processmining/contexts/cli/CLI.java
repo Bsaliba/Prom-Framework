@@ -128,18 +128,18 @@ public class CLI {
 				.getRemainingArgs())));
 	}
 
-	private String readFile(String scriptFile) throws IOException {
+	public static String readFile(String scriptFile) throws IOException {
 		InputStream is = new FileInputStream(scriptFile);
 		String result = readWholeStream(is);
 		is.close();
 		return result;
 	}
 
-	private String readFromStdin() throws IOException {
+	private static String readFromStdin() throws IOException {
 		return readWholeStream(System.in);
 	}
 
-	private String readWholeStream(InputStream is) throws IOException {
+	private static String readWholeStream(InputStream is) throws IOException {
 		InputStreamReader reader = new InputStreamReader(new BufferedInputStream(is));
 		StringBuffer result = new StringBuffer();
 		int c;

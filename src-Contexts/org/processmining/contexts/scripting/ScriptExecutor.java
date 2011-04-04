@@ -124,6 +124,7 @@ public class ScriptExecutor {
 
 		for (PluginDescriptor plugin : context.getPluginManager().getAllPlugins())
 		{
+			
 			System.out.println("checking "+plugin.getName());
 
 			// method signatures of this plugin
@@ -196,9 +197,9 @@ public class ScriptExecutor {
 					}
 				}
 
-				pluginInterpreter.eval(init.toString());
+				//pluginInterpreter.eval(init.toString());
 				workingPlugins.addLast(plugin);		// this plugin works, remeber it
-				
+			
 			} catch (EvalError e) {
 				System.err.println("Failed to load plugin "+plugin.getName());
 				failedPlugins.addAll(thisPluginSignatures);
@@ -207,8 +208,8 @@ public class ScriptExecutor {
 				System.err.println("Failed to load plugin "+plugin.getName());
 				System.err.println("Missing class "+e.getMessage());
 				failedPlugins.addAll(thisPluginSignatures);
-
 			}
+			workingPlugins.addLast(plugin);
 		}
 		return workingPlugins;
 	}
@@ -224,7 +225,10 @@ public class ScriptExecutor {
 		
     System.out.println("init all plugins");
 	
-		for (PluginDescriptor plugin : workingPlugins()) {
+    	for (PluginDescriptor plugin : context.getPluginManager().getAllPlugins()) {
+    	// skip scanning for working plugins. question: why does scanning for working plugins
+    	// take so much more time?
+		//for (PluginDescriptor plugin : workingPlugins()) {
 			
 			System.out.println("init "+plugin.getName());
 				// the right context type is checked at start by the
@@ -296,6 +300,7 @@ public class ScriptExecutor {
 			System.err.println("Failed to load one of the plugins.");
 			throw new ScriptExecutionException("Missing class "+e.getMessage());
 		}
+		
 	}
 
 	private Signature getSignature(PluginDescriptor plugin, int index) {
