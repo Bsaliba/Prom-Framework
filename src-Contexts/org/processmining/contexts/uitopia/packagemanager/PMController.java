@@ -2,6 +2,8 @@ package org.processmining.contexts.uitopia.packagemanager;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
 import java.util.Set;
 
 import org.processmining.framework.boot.Boot;
@@ -21,10 +23,8 @@ public class PMController {
 		try {
 			manager.update(false, verbose);
 		} catch (CancelledException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (UnknownPackageTypeException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 
@@ -153,12 +153,54 @@ public class PMController {
 		t.start();
 	}
 
+	public void update(final Collection<PMPackage> packs, final PMWorkspaceView view) {
+		Thread t = new Thread(new Runnable() {
+
+			public void run() {
+				try {
+					List<PackageDescriptor> pds = new ArrayList<PackageDescriptor>();
+					for (PMPackage p : packs) {
+						pds.add(p.getDescriptor());
+					}
+					manager.install(pds);
+					view.updatePackages();
+				} catch (CancelledException e) {
+					e.printStackTrace();
+				} catch (UnknownPackageTypeException e) {
+					e.printStackTrace();
+				}
+			}
+
+		});
+		t.start();
+	}
+
 	public void remove(final PMPackage pack, final PMWorkspaceView view) {
 		Thread t = new Thread(new Runnable() {
 
 			public void run() {
 				try {
 					manager.uninstall(Arrays.asList(new PackageDescriptor[] { pack.getDescriptor() }));
+					view.updatePackages();
+				} catch (CancelledException e) {
+					e.printStackTrace();
+				}
+			}
+
+		});
+		t.start();
+	}
+
+	public void remove(final Collection<PMPackage> packs, final PMWorkspaceView view) {
+		Thread t = new Thread(new Runnable() {
+
+			public void run() {
+				try {
+					List<PackageDescriptor> pds = new ArrayList<PackageDescriptor>();
+					for (PMPackage p : packs) {
+						pds.add(p.getDescriptor());
+					}
+					manager.uninstall(pds);
 					view.updatePackages();
 				} catch (CancelledException e) {
 					e.printStackTrace();

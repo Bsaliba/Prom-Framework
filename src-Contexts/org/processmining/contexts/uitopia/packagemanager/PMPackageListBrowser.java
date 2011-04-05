@@ -6,6 +6,8 @@ import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 
 import javax.swing.BorderFactory;
@@ -103,7 +105,7 @@ public class PMPackageListBrowser extends JPanel {
 		packageList = new JList(listModel);
 		packageList.setBackground(new Color(160, 160, 160));
 		packageList.setCellRenderer(new PMPackageListCellRenderer());
-		packageList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+		packageList.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
 		packageList.addListSelectionListener(new ListSelectionListener() {
 			public void valueChanged(ListSelectionEvent e) {
 				updateViewport();
@@ -241,9 +243,13 @@ public class PMPackageListBrowser extends JPanel {
 
 	private void updateViewport() {
 		viewport.removeAll();
-		PMPackage selected = (PMPackage) packageList.getSelectedValue();
-		if (selected != null) {
-			pmPackageView = new PMPackageView(selected, controller);
+		Object[] selected = packageList.getSelectedValues();
+		Collection<PMPackage> selectedPacks = new HashSet<PMPackage>();
+		for (int i = 0; i < selected.length; i++) {
+			selectedPacks.add((PMPackage) selected[i]);
+		}
+		if (!selectedPacks.isEmpty()) {
+			pmPackageView = new PMPackageView(selectedPacks, controller);
 			viewport.add(pmPackageView, BorderLayout.CENTER);
 		}
 		viewport.revalidate();

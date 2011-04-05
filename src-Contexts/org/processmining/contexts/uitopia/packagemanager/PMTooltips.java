@@ -1,9 +1,9 @@
 package org.processmining.contexts.uitopia.packagemanager;
 
 public class PMTooltips {
-	public static final String REMOVEBUTTON = "Remove this package";
-	public static final String UPDATEBUTTON = "Update this package";
-	public static final String INSTALLBUTTON = "Install this package";
+	public static final String REMOVEBUTTON = "Remove selected packages";
+	public static final String UPDATEBUTTON = "Update selected packages";
+	public static final String INSTALLBUTTON = "Install selected packages";
 
 	public static final String PARENTBUTTON = "Show required packages";
 	public static final String CHILDRENBUTTON = "Show supported packages";
