@@ -10,6 +10,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 
+import org.processmining.framework.boot.Boot;
+import org.processmining.framework.boot.Boot.Level;
 import org.processmining.framework.plugin.PluginContext;
 import org.processmining.framework.plugin.PluginDescriptor;
 import org.processmining.framework.plugin.annotations.CLI;
@@ -124,8 +126,7 @@ public class ScriptExecutor {
 
 		for (PluginDescriptor plugin : context.getPluginManager().getAllPlugins())
 		{
-			
-			System.out.println("checking "+plugin.getName());
+			if (Boot.VERBOSE == Level.ALL) System.out.println("checking "+plugin.getName());
 
 			// method signatures of this plugin
 			Set<Signature> thisPluginSignatures = new HashSet<Signature>();
@@ -223,75 +224,91 @@ public class ScriptExecutor {
 		interpreter = new Interpreter();
 		interpreter.set("__main_context", context);
 		
-    System.out.println("init all plugins");
+		System.out.println("initializing all plugins");
 	
     	for (PluginDescriptor plugin : context.getPluginManager().getAllPlugins()) {
     	// skip scanning for working plugins. question: why does scanning for working plugins
     	// take so much more time?
 		//for (PluginDescriptor plugin : workingPlugins()) {
 			
-			System.out.println("init "+plugin.getName());
-				// the right context type is checked at start by the
-				// pluginmanager
-				// if
-				// (plugin.getContextType().isAssignableFrom(context.getClass()))
-				// {
-				for (int j = 0; j < plugin.getParameterTypes().size(); j++) {
-					Signature signature = getSignature(plugin, j);
-	
-					if (!availablePlugins.contains(signature)) {
-						availablePlugins.add(signature);
-						pluginIndex++;
-	
-						interpreter.set("__plugin_descriptor" + pluginIndex, plugin);
-						interpreter.set("__plugin_method_index" + pluginIndex, j);
-	
-						if (signature.getReturnTypes().size() == 1) {
-							init.append(Object.class.getCanonicalName());
-						} else {
-							init.append(Object[].class.getCanonicalName());
-						}
-						init.append(" " + signature.getName() + "(");
-	
-						int index = 0;
-						for (Class<?> cl : signature.getParameterTypes()) {
-							if (index > 0) {
-								init.append(", ");
-							}
-							init.append(cl.getCanonicalName());
-							init.append(" p" + index++);
-						}
-						init.append(") {" + nl);
-						init.append("    " + PluginContext.class.getCanonicalName()
-								+ " context = __main_context.createChildContext(\"Result of ");
-						init.append(signature.getName() + "\");" + nl);
-	
-						init.append("    __plugin_descriptor" + pluginIndex + ".invoke(__plugin_method_index"
-								+ pluginIndex + ", context, new " + (Object[].class.getCanonicalName()) + " { ");
-						for (int i = 0; i < signature.getParameterTypes().size(); i++) {
-							if (i > 0) {
-								init.append(", ");
-							}
-							init.append("p" + i);
-						}
-						init.append(" });" + nl);
-	
-						if (signature.getReturnTypes().size() > 1) {
-							init.append("    context.getResult().synchronize();" + nl);
-							init.append("    " + Object[].class.getCanonicalName() + " result = new "
-									+ Object.class.getCanonicalName() + "[context.getResult().getSize()];" + nl);
-							init
-									.append("    for (int i = 0; i < result.length; i++) { result[i] = context.getResult().getResult(i); }"
-											+ nl);
-							init.append("    return result;" + nl);
-						} else {
-							init.append("    return context.getFutureResult(0).get();" + nl);
-						}
-						init.append("}" + nl);
+			if (Boot.VERBOSE == Level.ALL) System.out.println("initializing "+plugin.getName());
+			// the right context type is checked at start by the pluginmanager
+			// if (plugin.getContextType().isAssignableFrom(context.getClass()))
+			// {
+			for (int j = 0; j < plugin.getParameterTypes().size(); j++) {
+				Signature signature = getSignature(plugin, j);
+
+				if (!availablePlugins.contains(signature)) {
+					availablePlugins.add(signature);
+					pluginIndex++;
+
+					interpreter.set("__plugin_descriptor" + pluginIndex, plugin);
+					interpreter.set("__plugin_method_index" + pluginIndex, j);
+
+					// The following code generates a piece of Java code which declares a Java method.
+					// This Java method is a wrapper for the plugin method we are currently initializing.
+					// The name of the new Java method is a transcription of the name that was declared in
+					// the @PluginVariant{} annotation of the plugin (or the name of the owning @Plugin class).
+					// The body of the wrapper method uses ProM's invocation context and plugin descriptor
+					// to correctly call the plugin with the given parameters, it also returns the results
+					// after the plugin had been executed.
+
+					// A script can then use the transcribed name of the Java plugin to call the plugin.
+
+					// signature of the wrapper method: return type, name, ...
+					if (signature.getReturnTypes().size() == 1) {
+						init.append(Object.class.getCanonicalName());
+					} else {
+						init.append(Object[].class.getCanonicalName());
 					}
+					init.append(" " + signature.getName() + "(");
+
+					// signature of the wrapper method: ... parameters ...
+					int index = 0;
+					for (Class<?> cl : signature.getParameterTypes()) {
+						if (index > 0) {
+							init.append(", ");
+						}
+						init.append(cl.getCanonicalName());
+						init.append(" p" + index++);
+					}
+
+					// body of the wrapper method: get execution context and invoke plugin
+					init.append(") {" + nl);
+					init.append("    " + PluginContext.class.getCanonicalName()
+							+ " context = __main_context.createChildContext(\"Result of ");
+					init.append(signature.getName() + "\");" + nl);
+
+					init.append("    __plugin_descriptor" + pluginIndex + ".invoke(__plugin_method_index"
+							+ pluginIndex + ", context, new " + (Object[].class.getCanonicalName()) + " { ");
+					for (int i = 0; i < signature.getParameterTypes().size(); i++) {
+						if (i > 0) {
+							init.append(", ");
+						}
+						init.append("p" + i);
+					}
+					init.append(" });" + nl);
+
+					// body of the wrapper method: wait for plugin method to complete and return result
+					if (signature.getReturnTypes().size() > 1) {
+						init.append("    context.getResult().synchronize();" + nl);
+						init.append("    " + Object[].class.getCanonicalName() + " result = new "
+								+ Object.class.getCanonicalName() + "[context.getResult().getSize()];" + nl);
+						init
+						.append("    for (int i = 0; i < result.length; i++) { result[i] = context.getResult().getResult(i); }"
+								+ nl);
+						init.append("    return result;" + nl);
+					} else {
+						init.append("    return context.getFutureResult(0).get();" + nl);
+					}
+					init.append("}" + nl);
+					// finished declaring wrapper method 
 				}
-			}
-			interpreter.eval(init.toString());
+			} // for each plugin variant
+    	} // for each plugin
+
+    	// compile the Java code for all wrapper methods
+    	interpreter.eval(init.toString());
 				
 		} catch (EvalError e) {
 			System.err.println("Failed to load one of the plugins.");
@@ -300,7 +317,6 @@ public class ScriptExecutor {
 			System.err.println("Failed to load one of the plugins.");
 			throw new ScriptExecutionException("Missing class "+e.getMessage());
 		}
-		
 	}
 
 	private Signature getSignature(PluginDescriptor plugin, int index) {

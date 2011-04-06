@@ -16,6 +16,7 @@ import org.processmining.contexts.scripting.ScriptExecutor;
 import org.processmining.contexts.scripting.ScriptExecutor.ScriptExecutionException;
 import org.processmining.contexts.scripting.Signature;
 import org.processmining.framework.boot.Boot;
+import org.processmining.framework.boot.Boot.Level;
 import org.processmining.framework.plugin.annotations.Bootable;
 import org.processmining.framework.plugin.annotations.Plugin;
 import org.processmining.framework.util.AutoHelpCommandLineParser;
@@ -27,25 +28,27 @@ public class CLI {
 	@Bootable
 	public Object main(CommandLineArgumentList commandlineArguments) throws Throwable {
 		//try {
-		  System.out.println("ENTERING MAIN");
-		  
-			CLIContext globalContext = new CLIContext();
-			ScriptExecutor executor = new ScriptExecutor(globalContext.getMainPluginContext());
-			Pair<List<String>, List<String>> params = parseCommandLine(commandlineArguments, executor);
+		if (Boot.VERBOSE != Level.NONE) {
+			System.out.println("Starting script execution engine...");
+		}
 
-			if (params != null) {
-				List<String> scripts = params.getFirst();
-				List<String> scriptArguments = params.getSecond();
-				try {
-					executor.bind("arguments", scriptArguments);
+		CLIContext globalContext = new CLIContext();
+		ScriptExecutor executor = new ScriptExecutor(globalContext.getMainPluginContext());
+		Pair<List<String>, List<String>> params = parseCommandLine(commandlineArguments, executor);
 
-					for (String script : scripts) {
-						executor.execute(script);
-					}
-				} catch (ScriptExecutionException e) {
-					System.err.println(e);
+		if (params != null) {
+			List<String> scripts = params.getFirst();
+			List<String> scriptArguments = params.getSecond();
+			try {
+				executor.bind("arguments", scriptArguments);
+
+				for (String script : scripts) {
+					executor.execute(script);
 				}
+			} catch (ScriptExecutionException e) {
+				System.err.println(e);
 			}
+		}
 		//} catch (Throwable t) {
 		//	t.printStackTrace();
 		//	System.err.println(t);
