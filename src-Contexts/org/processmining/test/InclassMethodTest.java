@@ -3,10 +3,13 @@
 package org.processmining.test;
 
 import java.io.BufferedInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.PrintStream;
 import java.lang.reflect.Method;
 
 import junit.framework.Assert;
@@ -47,13 +50,32 @@ public class InclassMethodTest {
 	 */
 	@FactoryTest
 	public void test() throws Throwable {
+		
+
+		// depending on the test, we redirect System.out to a new output stream
+		// which we then compare against the expected result
+		PrintStream oldSystemOut = System.out;
+		OutputStream resultOutStream = new ByteArrayOutputStream();
+		PrintStream tempSystemOut = new PrintStream(resultOutStream);
+		
+		if (AllInclassMethodTests.testResultFromSystemOut(test)) {
+			// write System.out temporarily into the resultOutStream 
+			System.setOut(tempSystemOut);
+		}
+		
 		// run test and get test result
 		String result = (String)test.invoke(null);
+		if (AllInclassMethodTests.testResultFromSystemOut(test)) {
+			// get test result from resultOutStream and restore old output system out
+			result = resultOutStream.toString();
+			System.setOut(oldSystemOut);
+		}
+		
 		// load expected result
 		String expected = null;
-		if (AllInclassMethodTests.testResultFromOutputAnnotation(test)) {
+		if (AllInclassMethodTests.testExpectedFromOutputAnnotation(test)) {
 			expected = test.getAnnotation(TestMethod.class).output();
-		} else if (AllInclassMethodTests.testResultFromFile(test)) {
+		} else if (AllInclassMethodTests.testExpectedFromFile(test)) {
 			expected = readFile(testFileRoot+"/"+test.getAnnotation(TestMethod.class).filename());
 		}
 		

@@ -257,7 +257,7 @@ public class AllInclassMethodTests {
 		assert(method.isAnnotationPresent(TestMethod.class));
 		
 		// check annotations
-		if (!testResultFromFile(method) && !testResultFromOutputAnnotation(method)) {
+		if (!testExpectedFromFile(method) && !testExpectedFromOutputAnnotation(method)) {
 			if (Boot.VERBOSE != Level.NONE) {
 				System.err.println("Test " + method.toString() + " could not be loaded. "
 						+ "No expected test result specified.");
@@ -301,7 +301,7 @@ public class AllInclassMethodTests {
 	 *         {@link TestMethod#filename()}. Then the result of the test will
 	 *         be compared to the contents of a file.
 	 */
-	public static boolean testResultFromFile(Method method) {
+	public static boolean testExpectedFromFile(Method method) {
 		assert(method.isAnnotationPresent(TestMethod.class));		
 		return 
 			method.getAnnotation(TestMethod.class).filename() != null
@@ -314,11 +314,24 @@ public class AllInclassMethodTests {
 	 *         {@link TestMethod#output()}. Then the result of the test will
 	 *         be compared to the specified string.
 	 */
-	public static boolean testResultFromOutputAnnotation(Method method) {
+	public static boolean testExpectedFromOutputAnnotation(Method method) {
 		assert(method.isAnnotationPresent(TestMethod.class));
 		return
 			method.getAnnotation(TestMethod.class).output() != null
 			&& !method.getAnnotation(TestMethod.class).output().isEmpty();
+	}
+	
+	/**
+	 * @param method
+	 * @return <code>true</code> iff the method is annotated with
+	 *         <code>{@link TestMethod#returnSystemOut()} == true</code>.
+	 *         Then the return result of the method will be everything the
+	 *         method wrote to {@link System#out}.
+	 */
+	public static boolean testResultFromSystemOut(Method method) {
+		assert(method.isAnnotationPresent(TestMethod.class));
+		return
+			method.getAnnotation(TestMethod.class).returnSystemOut() == true;
 	}
 	
 	
@@ -335,5 +348,12 @@ public class AllInclassMethodTests {
 	@TestMethod(filename="testresult_AllInclassMethodTests_basicFileTest.txt", output="correct output")
 	public static String test_dualTest() {
 		return "correct output";
+	}
+	
+	@TestMethod(filename="testresult_AllInclassMethodTests_basicFileTest.txt", returnSystemOut=true)
+	public static String test_basicFileTest_OutputStream() {
+		System.out.print("correct output");
+		System.out.print(" (filetest)");
+		return null;
 	}
 }

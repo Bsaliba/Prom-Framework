@@ -30,5 +30,7 @@ public @interface TestMethod {
 	String filename() default "";
 
 	String output() default "";
+	
+	boolean returnSystemOut() default false;
 
 }
