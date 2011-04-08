@@ -1,4 +1,4 @@
-package org.processmining.test;
+package org.processmining.contexts.test;
 
 import java.io.File;
 import java.util.LinkedList;

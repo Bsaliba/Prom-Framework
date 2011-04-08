@@ -1,6 +1,6 @@
 
 
-package org.processmining.test;
+package org.processmining.contexts.test;
 
 import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
@@ -14,8 +14,8 @@ import java.lang.reflect.Method;
 
 import junit.framework.Assert;
 
+import org.processmining.contexts.test.factory.FactoryTest;
 import org.processmining.framework.annotations.TestMethod;
-import org.processmining.test.factory.FactoryTest;
 
 /**
  * Encapsulate a method (annotated with {@link TestMethod}) in a 

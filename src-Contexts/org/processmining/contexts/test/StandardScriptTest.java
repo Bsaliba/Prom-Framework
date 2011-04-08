@@ -1,7 +1,7 @@
-package org.processmining.test;
+package org.processmining.contexts.test;
 
 import org.processmining.contexts.cli.CLI;
-import org.processmining.test.factory.FactoryTest;
+import org.processmining.contexts.test.factory.FactoryTest;
 
 public class StandardScriptTest {
 	

@@ -1,4 +1,4 @@
-package org.processmining.test;
+package org.processmining.contexts.test;
 
 import java.lang.reflect.Method;
 import java.util.Collection;
@@ -8,9 +8,9 @@ import java.util.List;
 import junit.framework.TestCase;
 
 import org.junit.runner.RunWith;
+import org.processmining.contexts.test.factory.FactoryRunner;
+import org.processmining.contexts.test.factory.TestFactory;
 import org.processmining.framework.annotations.TestMethod;
-import org.processmining.test.factory.FactoryRunner;
-import org.processmining.test.factory.TestFactory;
 
 /**
  * The base class for unit tests in ProM. A class the extends this class is a JUnit

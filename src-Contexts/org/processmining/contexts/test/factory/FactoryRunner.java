@@ -5,7 +5,7 @@
  * 
  * Code adapted for ProM by Dirk Fahland.
  ****************************************************************************/
-package org.processmining.test.factory;
+package org.processmining.contexts.test.factory;
 
 import java.lang.reflect.Modifier;
 import java.util.Arrays;
