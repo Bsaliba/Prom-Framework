@@ -51,7 +51,7 @@ public class InclassMethodTest {
 	@FactoryTest
 	public void test() throws Throwable {
 		
-
+		System.out.flush();
 		// depending on the test, we redirect System.out to a new output stream
 		// which we then compare against the expected result
 		PrintStream oldSystemOut = System.out;
@@ -68,6 +68,7 @@ public class InclassMethodTest {
 		if (AllInclassMethodTests.testResultFromSystemOut(test)) {
 			// get test result from resultOutStream and restore old output system out
 			result = resultOutStream.toString();
+			tempSystemOut.close();
 			System.setOut(oldSystemOut);
 		}
 		
@@ -78,6 +79,9 @@ public class InclassMethodTest {
 		} else if (AllInclassMethodTests.testExpectedFromFile(test)) {
 			expected = readFile(testFileRoot+"/"+test.getAnnotation(TestMethod.class).filename());
 		}
+		
+		expected = expected.replace("\r", "");
+		result = result.replace("\r", "");
 		
 		Assert.assertEquals(getTestName(test), expected, result);
 	}
