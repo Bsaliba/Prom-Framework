@@ -21,7 +21,6 @@ import org.processmining.framework.annotations.TestMethod;
 import org.processmining.framework.boot.Boot;
 import org.processmining.framework.boot.Boot.Level;
 import org.processmining.framework.plugin.PluginManager;
-import org.processmining.framework.plugin.impl.PluginCacheEntry;
 
 /**
  * Utility class to collect all methods annotated with <code>@TestMethod</code>
@@ -52,6 +51,8 @@ public class AllInclassMethodTests {
 	 * @param lookUpDir
 	 */
 	public void collectAllTestMethods(String lookUpDir)  {
+		
+		System.out.println("Collecting inclass method tests from "+lookUpDir);
 
 		try {
 	
@@ -150,33 +151,24 @@ public class AllInclassMethodTests {
 	
 	private void scanUrl(URL url) {
 		URLClassLoader loader = new URLClassLoader(new URL[] { url });
-		PluginCacheEntry cached = new PluginCacheEntry(url, Boot.VERBOSE);
+		try {
+			InputStream is = url.openStream();
+			JarInputStream jis = new JarInputStream(is);
+			JarEntry je;
+			List<String> loadedClasses = new ArrayList<String>();
 
-		if (cached.isInCache()) {
-			for (String className : cached.getCachedClassNames()) {
-				loadClass(loader, url, className);
-			}
-		} else {
-			try {
-				InputStream is = url.openStream();
-				JarInputStream jis = new JarInputStream(is);
-				JarEntry je;
-				List<String> loadedClasses = new ArrayList<String>();
-
-				while ((je = jis.getNextJarEntry()) != null) {
-					if (!je.isDirectory() && je.getName().endsWith(PluginManager.CLASS_EXTENSION)) {
-						String loadedClass = loadClassFromFile(loader, url, je.getName());
-						loadedClasses.add(loadedClass);
-					}
+			while ((je = jis.getNextJarEntry()) != null) {
+				if (!je.isDirectory() && je.getName().endsWith(PluginManager.CLASS_EXTENSION)) {
+					String loadedClass = loadClassFromFile(loader, url, je.getName());
+					loadedClasses.add(loadedClass);
 				}
-				jis.close();
-				is.close();
-
-				cached.update(loadedClasses);
-			} catch (IOException e) {
-				//fireError(url, e, null);
-				System.err.println(e);
 			}
+			jis.close();
+			is.close();
+
+		} catch (IOException e) {
+			//fireError(url, e, null);
+			System.err.println(e);
 		}
 	}
 
@@ -334,6 +326,9 @@ public class AllInclassMethodTests {
 			method.getAnnotation(TestMethod.class).returnSystemOut() == true;
 	}
 	
+	public static String getTestName (Method m) {
+		return m.getClass().toString()+"."+m.getName();
+	}
 	
 	@TestMethod(output="correct output")
 	public static String test_basicOutputTest() {

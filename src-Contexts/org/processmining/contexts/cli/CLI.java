@@ -30,6 +30,7 @@ public class CLI {
 		//try {
 		if (Boot.VERBOSE != Level.NONE) {
 			System.out.println("Starting script execution engine...");
+			System.out.println(commandlineArguments);
 		}
 
 		CLIContext globalContext = new CLIContext();
@@ -46,7 +47,9 @@ public class CLI {
 					executor.execute(script);
 				}
 			} catch (ScriptExecutionException e) {
+				System.err.println("Error while executing '"+commandlineArguments+"'");
 				System.err.println(e);
+				throw e;
 			}
 		}
 		//} catch (Throwable t) {

@@ -19,6 +19,8 @@ public class AllStandardScriptTests {
 	 */
 	public static List<String> getAllTestScripts(String lookUpDir) {
 		
+		System.out.println("Collecting scripted tests from "+lookUpDir);
+		
 		List<String> testScriptFiles = new LinkedList<String>();
 		
 		File dir = new File(lookUpDir);

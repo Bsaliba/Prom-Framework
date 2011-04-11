@@ -29,13 +29,13 @@ import org.processmining.framework.annotations.TestMethod;
  */
 @RunWith(FactoryRunner.class)
 public class PromTest extends TestCase {
-
+	
 	/**
 	 * Default location of test files that is used if the system property
 	 * <code>test.testFileRoot</code> is not set. Overwrite this value if
 	 * necessary. Default value {@value #defaultTestDir}.
 	 */
-	public static String defaultTestDir = "./tests/testfiles";
+	public static final String defaultTestDir = "./tests/testfiles";
 	
 	/**
 	 * Default location of test script files inside {@link #defaultTestDir}
@@ -43,34 +43,15 @@ public class PromTest extends TestCase {
 	 * is not set. By default, this location is {@value #defaultTestScriptDir}.
 	 * Overwrite this value if necessary.
 	 */
-	public static String defaultTestScriptDir = "autoscripts";
+	public static final String defaultTestScriptDir = "autoscripts";
 	
 	/**
 	 * Default location of class files that contain methods which are annotated
 	 * with {@link TestMethod} and which shall be run in the JUnit test. Overwrite
 	 * this value if necessary. Default value {@value #defaultTestDir}.
 	 */
-	public static String[] defaultClassFileLocations = { "./bin" };
+	public static final String defaultClassFileLocations = "./bin";
 	
-	/**
-	 * @return default location of the test files; defaults to
-	 *         {@value #defaultTestDir}; override this method to set a different
-	 *         default location
-	 */
-	public String getDefaultTestDir() {
-		return defaultTestDir;
-	}
-	
-	/**
-	 * @return default location of the test scripts that can be run
-	 *         automatically; defaults to {@value #defaultTestScriptDir} within
-	 *         {@value #defaultTestDir}; override this method to set a different
-	 *         default location
-	 */
-	public String getDefaultTestScriptDir() {
-		return getDefaultTestDir()+"/"+defaultTestScriptDir;
-	}
-
 	@TestFactory
 	public static Collection<? extends Object> testScripts() {
 
@@ -80,6 +61,7 @@ public class PromTest extends TestCase {
 		List<String> testScripts = AllStandardScriptTests.getAllTestScripts(testScriptRoot);
 		List<StandardScriptTest> tests = new LinkedList<StandardScriptTest>();
 		for (String scriptFile : testScripts) {
+			System.out.println(" found "+testScriptRoot+"/"+scriptFile);
 			tests.add(new StandardScriptTest(testScriptRoot+"/"+scriptFile));	
 		}
 		
@@ -90,14 +72,25 @@ public class PromTest extends TestCase {
 	public static Collection<? extends Object> inlineTests() {
 
 		String testFileRoot = System.getProperty("test.testFileRoot", defaultTestDir);
+		String lookUpDirString = System.getProperty("test.inclassTestsAt", defaultClassFileLocations);
+		
+		LinkedList<String> lookUpDirs = new LinkedList<String>();
+		int comma;
+		while ((comma = lookUpDirString.indexOf(",")) >= 0) {
+			String dir = lookUpDirString.substring(0, comma);
+			lookUpDirs.add(dir);
+			lookUpDirString = lookUpDirString.substring(comma+1);
+		}
+		lookUpDirs.add(lookUpDirString);
 		
 		AllInclassMethodTests testCollector = new AllInclassMethodTests();
-		for (String classFileLocation : defaultClassFileLocations)
+		for (String classFileLocation : lookUpDirs)
 			testCollector.collectAllTestMethods(classFileLocation);
 		
 		List<Method> testMethods = testCollector.getAllTestMethods();
 		List<InclassMethodTest> tests = new LinkedList<InclassMethodTest>();
 		for (Method m : testMethods) {
+			System.out.println(" found "+AllInclassMethodTests.getTestName(m));
 			tests.add(new InclassMethodTest(m, testFileRoot));	
 		}
 

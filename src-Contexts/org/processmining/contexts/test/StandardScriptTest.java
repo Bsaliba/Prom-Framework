@@ -13,7 +13,7 @@ public class StandardScriptTest {
 
 	@FactoryTest
 	public void test() throws Throwable {
-	    String args[] = new String[] {"-f", testScript};
+		String args[] = new String[] {"-f", testScript};
 		CLI.main(args);
 	}
 	
