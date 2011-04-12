@@ -190,14 +190,14 @@ public class DeSerializationThread extends SwingWorker<Object, Object> {
 		} finally {
 			in.close();
 			s.close();
-
-			context.getResourceManager().getSerializationThread().start();
+			if (Boot.DO_SERIALIZATION) {
+				context.getResourceManager().getSerializationThread().start();
+			}
 		}
 		if (poList.isEmpty()) {
 			return null;
 		}
 		dialog.changeProgressCaption("Restoring workspace...");
-
 
 		int inc = Math.max(steps / (2 * poList.size() + coList.size()), 1);
 
@@ -287,11 +287,10 @@ public class DeSerializationThread extends SwingWorker<Object, Object> {
 			e.printStackTrace();
 		}
 
-		if (!context.getResourceManager().getSerializationThread().isAlive()) {
+		if (Boot.DO_SERIALIZATION && !context.getResourceManager().getSerializationThread().isAlive()) {
 			context.getResourceManager().getSerializationThread().start();
 		}
 
-		
 		System.out.println("");
 		System.out.println("deserialization took: " + (System.currentTimeMillis() - t) / 1000 + " seconds");
 	}

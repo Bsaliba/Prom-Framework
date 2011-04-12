@@ -37,6 +37,7 @@ import org.processmining.contexts.uitopia.model.ProMPOResource;
 import org.processmining.contexts.uitopia.model.ProMResource;
 import org.processmining.contexts.uitopia.model.ProMResourceType;
 import org.processmining.framework.ProMID;
+import org.processmining.framework.boot.Boot;
 import org.processmining.framework.connections.Connection;
 import org.processmining.framework.connections.ConnectionAnnotation;
 import org.processmining.framework.connections.ConnectionCannotBeObtained;
@@ -107,7 +108,9 @@ public class ProMResourceManager extends UpdateSignaller implements ResourceMana
 		name = preferences.get(LASTEXPORTFILE, null);
 		lastExportedFile = name == null ? null : new File(name);
 
-		serializationThread = new SerializationThread(this);
+		if (Boot.DO_SERIALIZATION) {
+			serializationThread = new SerializationThread(this);
+		}
 
 	}
 
@@ -177,7 +180,7 @@ public class ProMResourceManager extends UpdateSignaller implements ResourceMana
 				lastImportedFile = file;
 				preferences.put(LASTIMPORTFILE, file.getAbsolutePath());
 			}
-			
+
 			PluginParameterBinding binding = exportplugins.get(selectedFilter);
 
 			UIPluginContext importContext = context.getMainPluginContext().createChildContext(
@@ -448,7 +451,9 @@ public class ProMResourceManager extends UpdateSignaller implements ResourceMana
 
 	public void providedObjectDeleted(ProvidedObjectID id) {
 		if (resources.remove(id) != null) {
-			serializationThread.unRegisterScheduledResource(id);
+			if (Boot.DO_SERIALIZATION) {
+				serializationThread.unRegisterScheduledResource(id);
+			}
 			signalUpdate();
 		}
 	}
@@ -472,7 +477,9 @@ public class ProMResourceManager extends UpdateSignaller implements ResourceMana
 							Collections.<Collection<ProMPOResource>>emptyList());
 					addResource(id, res);
 				}
-				serializationThread.registerResourceForImmediateSerialization(res);
+				if (Boot.DO_SERIALIZATION) {
+					serializationThread.registerResourceForImmediateSerialization(res);
+				}
 			} catch (ProvidedObjectDeletedException e) {
 				// If the object has been deleted, try the next one
 				return;
@@ -493,7 +500,9 @@ public class ProMResourceManager extends UpdateSignaller implements ResourceMana
 		// the last version of the object is always returned by the resource
 		if (resources.containsKey(id)) {
 			signalUpdate();
-			serializationThread.changed(resources.get(id), true);
+			if (Boot.DO_SERIALIZATION) {
+				serializationThread.changed(resources.get(id), true);
+			}
 		}
 	}
 
@@ -608,10 +617,12 @@ public class ProMResourceManager extends UpdateSignaller implements ResourceMana
 					ProMCResource res = new ProMCResource(context, null, getResourceTypeFor(conn.getClass()), id,
 							values);
 					resources.put(id, res);
-					if (conn instanceof DynamicConnection) {
-						serializationThread.registerResourceForSerializationOnExit(res);
-					} else {
-						serializationThread.registerResourceForImmediateSerialization(res);
+					if (Boot.DO_SERIALIZATION) {
+						if (conn instanceof DynamicConnection) {
+							serializationThread.registerResourceForSerializationOnExit(res);
+						} else {
+							serializationThread.registerResourceForImmediateSerialization(res);
+						}
 					}
 					signalUpdate();
 				}
