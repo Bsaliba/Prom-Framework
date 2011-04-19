@@ -51,12 +51,10 @@
 		<pathelement location="${dir.test-env-bin}"/>
 		  -->
 		<!-- unconmment these lines if the test shall be run against the local build -->
-		<pathelement location="${bin}"/>
-		<!-- comment these lines if the test shall be run against the packaged jars of the build
+		<!-- pathelement location="${bin}"/-->
 		<fileset dir="${home}/dist/">
         	<include name="**/*.jar"/>
       	</fileset>
-		-->
       	<fileset dir="${home}/lib/">
         	<include name="**/*.jar"/>
       	</fileset>
