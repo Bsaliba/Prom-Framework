@@ -121,7 +121,7 @@ public class InclassMethodTest {
 	 * @return qualified Java name pointing to the location of the test in the Java class
 	 */
 	private static String getTestName (Method m) {
-		return m.getClass().toString()+"."+m.getName();
+		return m.getDeclaringClass().toString()+"."+m.getName();
 	}
 	
 	/*
