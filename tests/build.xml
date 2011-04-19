@@ -7,7 +7,7 @@
 
 	<!-- location of plugin code, binaries, and test files (can be modified) -->
 	<property name="home" location=".." />
-	<property name="bin" location="${home}/bin" />
+	<property name="bin" location="${home}/bindist" />
 	<property name="src-Framework" location="${home}/src-Framework" />
 	<property name="src-Plugins" location="${home}/src-Plugins" />
 	<property name="src-Contexts" location="${home}/src-Contexts" />
