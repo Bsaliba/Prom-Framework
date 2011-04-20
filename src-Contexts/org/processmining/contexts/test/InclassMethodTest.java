@@ -13,6 +13,7 @@ import java.io.PrintStream;
 import java.lang.reflect.Method;
 
 import junit.framework.Assert;
+import junit.framework.AssertionFailedError;
 
 import org.processmining.contexts.test.factory.FactoryTest;
 import org.processmining.framework.annotations.TestMethod;
@@ -64,7 +65,18 @@ public class InclassMethodTest {
 		}
 		
 		// run test and get test result
-		String result = (String)test.invoke(null);
+		String result = "";
+		
+		try {
+			result = (String)test.invoke(null);
+		} catch (java.lang.reflect.InvocationTargetException e) {
+			// if a user used JUnit Assertion statements in the routine, then the failed
+			// assertions are wrappted in InvocationTargetExceptions, unwrap and rethrow
+			if (e.getCause() instanceof AssertionFailedError) {
+				throw e.getCause();
+			}
+		}
+		
 		if (AllInclassMethodTests.testResultFromSystemOut(test)) {
 			// get test result from resultOutStream and restore old output system out
 			result = resultOutStream.toString();

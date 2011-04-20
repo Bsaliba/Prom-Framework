@@ -39,7 +39,7 @@
     	<include name="org/processmining/models/**/*.class"/>
 		
 		<!-- do not create coverage report for test environment (DO NOT MODIFY) -->
-	    <exclude name="**/test/*.class"/>
+	    <!-- exclude name="**/test/*.class"/ -->
 	</fileset>
 	
 	

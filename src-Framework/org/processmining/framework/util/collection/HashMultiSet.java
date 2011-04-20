@@ -4,8 +4,6 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.processmining.framework.annotations.TestMethod;
-
 public class HashMultiSet<T> extends AbstractMultiSet<T, Map<T, Integer>> {
 
 	/**
@@ -51,35 +49,5 @@ public class HashMultiSet<T> extends AbstractMultiSet<T, Map<T, Integer>> {
 
 	MultiSet<T> newMultiSet() {
 		return new HashMultiSet<T>();
-	}
-
-	@TestMethod(output="true true")
-	public static String test() {
-		
-		String result = "";
-		
-		HashMultiSet<Integer> hms1 = new HashMultiSet<Integer>();
-		hms1.add(1);
-		hms1.add(2, 2);
-		hms1.add(3, 3);
-		
-		HashMultiSet<Integer> hms2 = new HashMultiSet<Integer>();
-		hms2.add(1);
-		hms2.add(2);
-		hms2.add(3);
-		hms2.add(2);
-		hms2.add(3);
-		hms2.add(3);
-		
-		result += Boolean.toString(hms1.equals(hms2))+" ";
-		
-		hms1.remove(3);
-		hms1.remove(3);
-		hms2.remove(3);
-		hms2.remove(3);
-		
-		result += Boolean.toString(hms1.equals(hms2));
-		
-		return result;
 	}
 }
