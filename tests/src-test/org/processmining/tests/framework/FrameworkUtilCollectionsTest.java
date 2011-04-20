@@ -81,6 +81,7 @@ public class FrameworkUtilCollectionsTest {
 		Assert.assertFalse(hms2+" does not contain all "+hms1, hms2.containsAll(hms1));
 	}
 	
+	@Test
 	public void test_HashMultiSet_retainAll() {
 		
 		// create two identical multisets
