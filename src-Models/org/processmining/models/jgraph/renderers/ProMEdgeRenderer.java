@@ -49,7 +49,7 @@ public class ProMEdgeRenderer extends EdgeRenderer implements Cleanable {
 			setForeground(map.get(edge, AttributeMap.EDGECOLOR, Color.BLACK));
 		}
 		if (map.get(edge, AttributeMap.LINEWIDTH, null) != null) {
-			lineWidth = map.get(edge, AttributeMap.LINEWIDTH, null);
+			lineWidth = map.<Float>get(edge, AttributeMap.LINEWIDTH, null);
 		}
 		super.paint(g);
 	}
