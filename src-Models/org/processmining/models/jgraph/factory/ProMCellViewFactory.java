@@ -44,6 +44,7 @@ public class ProMCellViewFactory extends DefaultCellViewFactory {
 		return createEdgeView((Object) e);
 	}
 
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@Override
 	protected EdgeView createEdgeView(Object e) {
 		ProMGraphEdge cell = Cast.<ProMGraphEdge>cast(e);
