@@ -1,6 +1,8 @@
 package org.processmining.models.jgraph.views;
 
+import java.awt.Dimension;
 import java.awt.geom.Point2D;
+import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 
 import org.jgraph.graph.EdgeView;
@@ -92,4 +94,14 @@ public class JGraphShapeView extends VertexView implements Cleanable {
 		return isPIP;
 	}
 
+	@Override
+	public Rectangle2D getBounds() {
+		Dimension d = (Dimension) viewSpecificAttributes.get(node, AttributeMap.SIZE);
+		Rectangle2D b = super.getBounds();
+		if (d != null && (d.getWidth() != b.getWidth() || d.getHeight() != b.getHeight())) {
+			return new Rectangle2D.Double(b.getX(), b.getY(), d.getWidth(), d.getHeight());
+		} else {
+			return b;
+		}
+	}
 }

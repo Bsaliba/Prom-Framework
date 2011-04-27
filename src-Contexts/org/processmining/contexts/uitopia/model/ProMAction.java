@@ -153,8 +153,8 @@ public class ProMAction implements Action, Comparable<ProMAction> {
 
 		// This cast is safe, since ProMResource is a final class, i.e. the given collection
 		// cannot be based on subtypes. 
-		List<Collection<ProMResource>> promParameterValues = Cast
-				.<java.util.List<Collection<ProMResource>>>cast(parameterValues);
+		List<Collection<ProMResource<?>>> promParameterValues = Cast
+				.<java.util.List<Collection<ProMResource<?>>>>cast(parameterValues);
 
 		List<PluginParameterBinding> bindings = getBindings(promParameterValues, true);
 

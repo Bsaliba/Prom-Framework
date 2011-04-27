@@ -29,7 +29,7 @@ public class ProMViewType extends AbstractAuthored implements ViewType {
 
 	public View createView(Resource res) throws IllegalArgumentException {
 		assert (res instanceof ProMResource);
-		ProMResource pr = ((ProMResource) res);
+		ProMResource<?> pr = ((ProMResource<?>) res);
 		return new ProMView(manager, this, pr, res.getName(), binding);
 	}
 

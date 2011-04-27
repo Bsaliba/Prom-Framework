@@ -13,6 +13,7 @@ import java.awt.Stroke;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.GeneralPath;
 import java.awt.geom.Point2D;
+import java.awt.geom.Rectangle2D;
 
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
@@ -61,7 +62,18 @@ public class ProMShapeRenderer extends VertexRenderer implements Cleanable {
 		highlightColor = Color.ORANGE;
 		lockedHandleColor = Color.RED;
 		DirectedGraphNode node = ((JGraphShapeView) view).getNode();
-		Dimension d = getSize();
+		//		Dimension d = (Dimension) map.get(node,AttributeMap.SIZE);
+		//		d.setSize(d.getWidth() * 1.4, d.getHeight() * 1.4);
+
+		Dimension d = (Dimension) map.get(node, AttributeMap.SIZE);
+		if (d == null) {
+			d = getSize();
+		} else {
+			Rectangle2D bounds = view.getBounds();
+			view.setBounds(new Rectangle2D.Double(bounds.getX(), bounds.getY(), d.getWidth(), d.getHeight()));
+			setSize(d);
+		}
+
 		//assert(d.equals(node.getAttributeMap().get(AttributeMap.SIZE)));
 
 		if (!map.get(node, AttributeMap.SHOWLABEL, true) || ((JGraphShapeView) view).isPIP()) {
@@ -93,7 +105,7 @@ public class ProMShapeRenderer extends VertexRenderer implements Cleanable {
 		}
 
 		borderWidth = map.get(node, AttributeMap.BORDERWIDTH, borderWidth);
-		int b = borderWidth-1;
+		int b = borderWidth - 1;
 		Graphics2D g2 = (Graphics2D) g;
 
 		boolean tmp = selected;

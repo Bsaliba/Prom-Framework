@@ -33,7 +33,7 @@ public class ProMView implements View {
 	private final JPanel component;
 	private final ProMViewManager manager;
 	private String name;
-	private final ProMResource resource;
+	private final ProMResource<?> resource;
 	protected static GraphicsConfiguration gc;
 	private final ProMViewType type;
 	private BufferedImage original;
@@ -41,7 +41,7 @@ public class ProMView implements View {
 	private final Pair<Integer, PluginParameterBinding> binding;
 	private Boolean working = true;
 
-	public ProMView(ProMViewManager manager, ProMViewType type, ProMResource resource, String name,
+	public ProMView(ProMViewManager manager, ProMViewType type, ProMResource<?> resource, String name,
 			Pair<Integer, PluginParameterBinding> binding) {
 		this.manager = manager;
 		this.type = type;
@@ -203,8 +203,8 @@ public class ProMView implements View {
 						throw new Exception(resource.toString());
 					}
 				} catch (Exception e) {
-					throw new IllegalArgumentException("Failed to create visualization of " + resource, e);
-
+					//throw new IllegalArgumentException("Failed to create visualization of " + resource, e);
+					manager.getContext().getController().getMainView().showWorkspaceView();
 				} finally {
 					context.getParentContext().deleteChild(context);
 
