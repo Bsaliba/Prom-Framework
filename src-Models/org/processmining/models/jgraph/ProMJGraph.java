@@ -349,7 +349,7 @@ public class ProMJGraph extends JGraph implements GraphModelListener, GraphLayou
 		if (oldBound != null) {
 			Rectangle2D.union(oldBound, GraphLayoutCache.getBounds(views.toArray(new CellView[0])), oldBound);
 		}
-//		repaint(oldBound.getBounds());
+		//		repaint(oldBound.getBounds());
 		getGraphLayoutCache().cellViewsChanged(views.toArray(new CellView[0]));
 		// HV: Refresh the graph to show the changes.
 		this.refresh();
@@ -423,7 +423,7 @@ public class ProMJGraph extends JGraph implements GraphModelListener, GraphLayou
 				}
 			}
 			if (signalChange && !isPIP) {
-				layoutConnection.updatedAttributes( changedOwners.toArray(new AttributeMapOwner[0]));
+				layoutConnection.updatedAttributes(changedOwners.toArray(new AttributeMapOwner[0]));
 			}
 		}
 	}
@@ -497,6 +497,7 @@ public class ProMJGraph extends JGraph implements GraphModelListener, GraphLayou
 	}
 
 	// returns the original origin
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public void repositionToOrigin() {
 
 		//		facade.translateCells(facade.getVertices(), 100.0, 100.0);
