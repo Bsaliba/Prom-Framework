@@ -81,7 +81,7 @@ public class FrameworkUtilCollectionsTest {
 		Assert.assertFalse(hms2+" does not contain all "+hms1, hms2.containsAll(hms1));
 	}
 	
-	@Test(expected=java.util.ConcurrentModificationException.class)
+	@Test()
 	public void test_HashMultiSet_retainAll() {
 		
 		// FIXME: fix bug where ConcurrentModificationException is thrown and remove annotation
@@ -94,8 +94,10 @@ public class FrameworkUtilCollectionsTest {
 
 		HashMultiSet<Integer> hms2 = new HashMultiSet<Integer>();
 		hms2.add(3, 1);
+		hms2.add(4, 1);
 		
 		hms1.retainAll(hms2);
-		Assert.assertEquals(hms2.toString(), "[3]");
+		Assert.assertEquals(hms2.toString(), "[(3,1) (4,1)]");
+		Assert.assertEquals(hms1.toString(), "[(3,1)]");
 	}
 }

@@ -7,9 +7,9 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.NoSuchElementException;
 import java.util.Set;
-import java.util.Map.Entry;
 
 import org.processmining.framework.util.Cast;
 
@@ -70,17 +70,19 @@ public abstract class AbstractMultiSet<T, M extends Map<T, Integer>> extends Abs
 	 */
 	public boolean retainAll(MultiSet<?> c) {
 		boolean changed = false;
-		for (Map.Entry<T, Integer> entry : map.entrySet()) {
-			Integer occToRetain = c.occurrences(entry.getKey());
-			Integer occInThis = entry.getValue();
+		Iterator<T> it = map.keySet().iterator();
+		while (it.hasNext()) {
+			T key = it.next();
+			
+			Integer occToRetain = c.occurrences(key);
+			Integer occInThis = occurrences(key);
 			if (occInThis >= occToRetain) {
 				// keep occToRetain
 				size -= (occInThis - occToRetain);
 				if (occToRetain == 0) {
-					map.remove(entry.getKey());
+					it.remove();
 				} else {
-					assert (occToRetain > 0);
-					map.put(entry.getKey(), occToRetain);
+					map.put(key, occToRetain);
 				}
 				changed = true;
 				hashValid = false;
