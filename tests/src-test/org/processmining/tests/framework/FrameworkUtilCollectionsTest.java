@@ -84,8 +84,6 @@ public class FrameworkUtilCollectionsTest {
 	@Test()
 	public void test_HashMultiSet_retainAll() {
 		
-		// FIXME: fix bug where ConcurrentModificationException is thrown and remove annotation
-		
 		// create two identical multisets
 		HashMultiSet<Integer> hms1 = new HashMultiSet<Integer>();
 		hms1.add(1);
