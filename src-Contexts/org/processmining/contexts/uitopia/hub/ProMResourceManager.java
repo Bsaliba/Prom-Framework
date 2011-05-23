@@ -1,6 +1,5 @@
 package org.processmining.contexts.uitopia.hub;
 
-import java.awt.Frame;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -107,6 +106,9 @@ public class ProMResourceManager extends UpdateSignaller implements ResourceMana
 		lastImportedFile = name == null ? null : new File(name);
 		name = preferences.get(LASTEXPORTFILE, null);
 		lastExportedFile = name == null ? null : new File(name);
+		if (lastExportedFile != null && lastExportedFile.getParent() != null) {
+			lastExportedFile.getParent();
+		}
 
 		if (Boot.DO_SERIALIZATION) {
 			serializationThread = new SerializationThread(this);
@@ -158,54 +160,61 @@ public class ProMResourceManager extends UpdateSignaller implements ResourceMana
 		}
 		fc.setAcceptAllFileFilterUsed(false);
 
-		int returnVal = fc.showSaveDialog((Frame) null);
+		askForFile: while (true) {
+			int returnVal = fc.showSaveDialog(context.getUI());
 
-		if ((returnVal == JFileChooser.APPROVE_OPTION) && (fc.getSelectedFile() != null)) {
-			File file = fc.getSelectedFile();
-			FileNameExtensionFilter selectedFilter = (FileNameExtensionFilter) fc.getFileFilter();
+			if ((returnVal == JFileChooser.APPROVE_OPTION) && (fc.getSelectedFile() != null)) {
+				File file = fc.getSelectedFile();
+				FileNameExtensionFilter selectedFilter = (FileNameExtensionFilter) fc.getFileFilter();
 
-			String postfix = "." + selectedFilter.getExtensions()[0];
-			if (!file.getAbsolutePath().endsWith(postfix)) {
-				String name = file.getAbsolutePath() + postfix;
-				file = new File(name);
-				if (!file.createNewFile()) {
-					return false;
+				String postfix = "." + selectedFilter.getExtensions()[0];
+				if (!file.getAbsolutePath().endsWith(postfix)) {
+					String name = file.getAbsolutePath() + postfix;
+					file = new File(name);
+					if (!file.createNewFile()) {
+						int ow = JOptionPane.showConfirmDialog(context.getUI(), "Are you sure you want to overwrite "
+								+ name, "Confirm overwrite", JOptionPane.YES_NO_OPTION);
+						if (ow == JOptionPane.NO_OPTION) {
+							continue askForFile;
+						}
+					}
 				}
+
+				// HV Remember last file exported (and imported if not initialized yet).
+				lastExportedFile = file;
+				preferences.put(LASTEXPORTFILE, file.getAbsolutePath());
+				if (lastImportedFile == null) {
+					lastImportedFile = file;
+					preferences.put(LASTIMPORTFILE, file.getAbsolutePath());
+				}
+
+				PluginParameterBinding binding = exportplugins.get(selectedFilter);
+
+				UIPluginContext importContext = context.getMainPluginContext().createChildContext(
+						"Saving file with " + binding.getPlugin().getName());
+
+				PluginExecutionResult result = binding.invoke(importContext, file,
+						((ProMResource<?>) resource).getInstance());
+				context.getProvidedObjectManager().createProvidedObjects(importContext);
+
+				try {
+					result.synchronize();
+				} catch (CancellationException e) {
+					context.getMainPluginContext().log("Export of " + file + " cancelled.");
+					return false;
+				} catch (Exception e) {
+					JOptionPane.showMessageDialog(context.getUI(),
+							"<html>Error with export of " + file + ":<br>" + e.getMessage() + "</html>",
+							"Error while exporting", JOptionPane.ERROR_MESSAGE);
+					return false;
+				} finally {
+					importContext.getParentContext().deleteChild(importContext);
+				}
+				return true;
 			}
 
-			// HV Remember last file exported (and imported if not initialized yet).
-			lastExportedFile = file;
-			preferences.put(LASTEXPORTFILE, file.getAbsolutePath());
-			if (lastImportedFile == null) {
-				lastImportedFile = file;
-				preferences.put(LASTIMPORTFILE, file.getAbsolutePath());
-			}
-
-			PluginParameterBinding binding = exportplugins.get(selectedFilter);
-
-			UIPluginContext importContext = context.getMainPluginContext().createChildContext(
-					"Saving file with " + binding.getPlugin().getName());
-
-			PluginExecutionResult result = binding.invoke(importContext, file,
-					((ProMResource<?>) resource).getInstance());
-			context.getProvidedObjectManager().createProvidedObjects(importContext);
-
-			try {
-				result.synchronize();
-			} catch (CancellationException e) {
-				context.getMainPluginContext().log("Export of " + file + " cancelled.");
-				return false;
-			} catch (Exception e) {
-				context.getMainPluginContext().log("Error with export of " + file + ".", MessageLevel.ERROR);
-				context.getMainPluginContext().log(e);
-				return false;
-			} finally {
-				importContext.getParentContext().deleteChild(importContext);
-			}
-			return true;
+			return false;
 		}
-
-		return false;
 	}
 
 	public java.util.List<ProMResource<?>> getAllResources() {
@@ -295,15 +304,16 @@ public class ProMResourceManager extends UpdateSignaller implements ResourceMana
 			fc.addChoosableFileFilter(filter);
 		}
 		fc.setAcceptAllFileFilterUsed(true);
+		fc.setMultiSelectionEnabled(true);
 
 		int returnVal = fc.showOpenDialog(context.getUI());
 
 		if (returnVal == JFileChooser.APPROVE_OPTION) {
-			File file = fc.getSelectedFile();
+			File[] files = fc.getSelectedFiles();
 
 			FileFilter selectedFilter = fc.getFileFilter();
 			PluginParameterBinding binding = importplugins.get(selectedFilter);
-			return importResource(file, binding);
+			return importResource(binding, files);
 
 		} else {
 			return false;
@@ -311,7 +321,7 @@ public class ProMResourceManager extends UpdateSignaller implements ResourceMana
 		}
 	}
 
-	public synchronized boolean importResource(File file, PluginParameterBinding binding) {
+	public synchronized boolean importResource(PluginParameterBinding binding, File... files) {
 		synchronized (importPluginAdded) {
 			if (importPluginAdded) {
 				buildImportPlugins();
@@ -320,18 +330,18 @@ public class ProMResourceManager extends UpdateSignaller implements ResourceMana
 		}
 
 		// HV Remember the location of the last file imported (and exported if not initialized yet).
-		lastImportedFile = file;
-		preferences.put(LASTIMPORTFILE, file.getAbsolutePath());
+		lastImportedFile = files[0];
+		preferences.put(LASTIMPORTFILE, lastImportedFile.getAbsolutePath());
 		if (lastExportedFile == null) {
-			lastExportedFile = file;
-			preferences.put(LASTEXPORTFILE, file.getAbsolutePath());
+			lastExportedFile = lastImportedFile;
+			preferences.put(LASTEXPORTFILE, lastImportedFile.getAbsolutePath());
 		}
 
 		if (binding == null) {
 			// user chose the "all files" option
 			Map<String, PluginParameterBinding> bindings = new HashMap<String, PluginParameterBinding>();
 			for (FileFilter filter : importplugins.keySet()) {
-				if (filter.accept(file)) {
+				if (filter.accept(files[0])) {
 					bindings.put(filter.getDescription(), importplugins.get(filter));
 				}
 			}
@@ -341,6 +351,11 @@ public class ProMResourceManager extends UpdateSignaller implements ResourceMana
 				for (FileFilter filter : importplugins.keySet()) {
 					bindings.put(filter.getDescription(), importplugins.get(filter));
 				}
+			}
+			if (bindings.size() == 0) {
+				JOptionPane.showMessageDialog(context.getUI(), "No import plugins available",
+						"No input plugins available!", JOptionPane.ERROR_MESSAGE);
+				return false;
 			}
 
 			binding = bindings.values().iterator().next();
@@ -358,39 +373,41 @@ public class ProMResourceManager extends UpdateSignaller implements ResourceMana
 			return false;
 		}
 
-		UIPluginContext importContext = context.getMainPluginContext().createChildContext(
-				"Opening file with " + binding.getPlugin().getName());
-		importContext.getPluginLifeCycleEventListeners().add(this);
+		for (File f : files) {
+			UIPluginContext importContext = context.getMainPluginContext().createChildContext(
+					"Opening file with " + binding.getPlugin().getName());
+			importContext.getPluginLifeCycleEventListeners().add(this);
 
-		ProgressOverlayDialog progress = new ProgressOverlayDialog(context.getController().getMainView(),
-				importContext, "Importing " + binding.getPlugin().getName());
-		context.getController().getMainView().showOverlay(progress);
-		Thread.yield();
+			ProgressOverlayDialog progress = new ProgressOverlayDialog(context.getController().getMainView(),
+					importContext, "Importing " + binding.getPlugin().getName());
+			context.getController().getMainView().showOverlay(progress);
+			Thread.yield();
 
-		PluginExecutionResult result = binding.invoke(importContext, file);
-		context.getProvidedObjectManager().createProvidedObjects(importContext);
+			PluginExecutionResult result = binding.invoke(importContext, f);
+			context.getProvidedObjectManager().createProvidedObjects(importContext);
 
-		try {
-			result.synchronize();
-		} catch (CancellationException e) {
+			try {
+				result.synchronize();
+			} catch (CancellationException e) {
+				context.getController().getMainView().hideOverlay();
+				JOptionPane.showMessageDialog(context.getUI(), "Import of " + files + " cancelled.",
+						"Import cancelled", JOptionPane.WARNING_MESSAGE);
+				context.getMainPluginContext().log("Import of " + files + " cancelled.");
+				return false;
+			} catch (Exception e) {
+				context.getController().getMainView().hideOverlay();
+				JOptionPane.showMessageDialog(context.getUI(),
+						"<html>Error with import of " + files + ":<br>" + e.getMessage() + "</html>", "Import failed",
+						JOptionPane.ERROR_MESSAGE);
+				context.getMainPluginContext().log("Error with import of " + files + ".", MessageLevel.ERROR);
+				context.getMainPluginContext().log(e);
+				return false;
+			} finally {
+				importContext.getParentContext().deleteChild(importContext);
+			}
+
 			context.getController().getMainView().hideOverlay();
-			JOptionPane.showMessageDialog(context.getUI(), "Import of " + file + " cancelled.", "Import cancelled",
-					JOptionPane.WARNING_MESSAGE);
-			context.getMainPluginContext().log("Import of " + file + " cancelled.");
-			return false;
-		} catch (Exception e) {
-			context.getController().getMainView().hideOverlay();
-			JOptionPane.showMessageDialog(context.getUI(),
-					"<html>Error with import of " + file + ":<br>" + e.getMessage() + "</html>", "Import failed",
-					JOptionPane.ERROR_MESSAGE);
-			context.getMainPluginContext().log("Error with import of " + file + ".", MessageLevel.ERROR);
-			context.getMainPluginContext().log(e);
-			return false;
-		} finally {
-			importContext.getParentContext().deleteChild(importContext);
 		}
-
-		context.getController().getMainView().hideOverlay();
 		return true;
 
 	}

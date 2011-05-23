@@ -42,7 +42,7 @@ public class UI {
 		for (String cmd : commandlineArguments) {
 			File f = new File(cmd);
 			if (f.exists() && f.isFile()) {
-				globalContext.getResourceManager().importResource(f, null);
+				globalContext.getResourceManager().importResource(null, f);
 			}
 		}
 
@@ -59,7 +59,8 @@ public class UI {
 			PMPackage releasePackage = frame.getController().selectPackage(Boot.RELEASE_PACKAGE);
 			if (releasePackage == null) {
 				Boot.boot(UI.class, UIPluginContext.class, args);
-				throw new Exception("Cannot find release package defined in ProM.ini file: " + Boot.RELEASE_PACKAGE+". Continuing to load ProM.");
+				throw new Exception("Cannot find release package defined in ProM.ini file: " + Boot.RELEASE_PACKAGE
+						+ ". Continuing to load ProM.");
 			}
 
 			if (releasePackage.getStatus() == PMStatus.TOUNINSTALL) {
