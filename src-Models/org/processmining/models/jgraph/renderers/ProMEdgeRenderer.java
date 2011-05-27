@@ -25,7 +25,7 @@ public class ProMEdgeRenderer extends EdgeRenderer implements Cleanable {
 		ViewSpecificAttributeMap map = ((JGraphEdgeView) view).getViewSpecificAttributeMap();
 		DirectedGraphEdge<?, ?> edge = ((JGraphEdgeView) view).getEdge();
 		if (map.get(edge, AttributeMap.SHOWLABEL, false) && !((JGraphEdgeView) view).isPIP()) {
-			super.paintLabel(g, map.get(edge, AttributeMap.LABEL, label), p, mainLabel);
+			super.paintLabel(g, mainLabel ? map.get(edge, AttributeMap.LABEL, label) : label, p, mainLabel);
 		}
 	}
 
