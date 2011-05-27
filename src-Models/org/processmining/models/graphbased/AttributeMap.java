@@ -63,6 +63,17 @@ public class AttributeMap {
 	public static final String SIZE = "size";
 	public static final String PORTOFFSET = "portoffset";
 
+	/**
+	 * The value of this attribute should be an array of type Point2D[]
+	 * (size>0), as used in the method GraphConstants.setExtraLabelPositions()
+	 */
+	public static final String EXTRALABELPOSITIONS = "Label positions";
+	/**
+	 * The value of this attribute should be an array of type String[] (size>0),
+	 * as used in the method GraphConstants.setExtraLabels()
+	 */
+	public static final String EXTRALABELS = "Extra Labels";
+
 	private final Map<String, Object> mapping = new LinkedHashMap<String, Object>();
 
 	public AttributeMap() {

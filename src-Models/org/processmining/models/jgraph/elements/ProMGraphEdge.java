@@ -98,6 +98,16 @@ public class ProMGraphEdge extends DefaultEdge implements Cleanable, ModelOwner,
 			GraphConstants.setEndFill(getAttributes(), edge.getAttributeMap().get(AttributeMap.EDGEENDFILLED, true));
 		}
 
+		if (edge.getAttributeMap().containsKey(AttributeMap.EXTRALABELPOSITIONS)) {
+			assert ((Point2D[]) edge.getAttributeMap().get(AttributeMap.EXTRALABELPOSITIONS)).length == ((String[]) edge
+					.getAttributeMap().get(AttributeMap.EXTRALABELS)).length;
+			Point2D[] points = (Point2D[]) edge.getAttributeMap().get(AttributeMap.EXTRALABELPOSITIONS);
+			String[] labels = (String[]) edge.getAttributeMap().get(AttributeMap.EXTRALABELS);
+			GraphConstants.setExtraLabelPositions(getAttributes(), points);
+			GraphConstants.setExtraLabels(getAttributes(), labels);
+
+		}
+
 		this.edge = edge;
 		this.model = model;
 
