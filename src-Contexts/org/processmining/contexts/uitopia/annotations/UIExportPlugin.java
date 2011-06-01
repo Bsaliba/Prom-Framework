@@ -12,4 +12,5 @@ public @interface UIExportPlugin {
 
 	public String extension();
 
+	public String pack() default "";
 }

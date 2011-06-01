@@ -20,4 +20,6 @@ public @interface UIImportPlugin {
 	public String description();
 
 	public String[] extensions();
+	
+	public String pack() default "";
 }

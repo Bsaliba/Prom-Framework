@@ -33,6 +33,7 @@ public class ProMAction implements Action, Comparable<ProMAction> {
 	private final int[] resourceIndex;
 	private final Author author;
 	private final PluginManager pluginManager;
+	private final String pack;
 
 	public ProMAction(ProMResourceManager resourceManager, PluginManager pluginManager, final PluginDescriptor plugin,
 			final int methodIndex) {
@@ -45,6 +46,7 @@ public class ProMAction implements Action, Comparable<ProMAction> {
 		} else if (name.equals(UITopiaVariant.USEVARIANT)) {
 			name = plugin.getMethodLabel(methodIndex);
 		}
+		pack = plugin.getAnnotation(UITopiaVariant.class, methodIndex).pack();
 
 		author = new Author() {
 
@@ -124,6 +126,10 @@ public class ProMAction implements Action, Comparable<ProMAction> {
 
 	public String getName() {
 		return name;
+	}
+
+	public String getPackage() {
+		return pack;
 	}
 
 	public List<Parameter> getOutput() {

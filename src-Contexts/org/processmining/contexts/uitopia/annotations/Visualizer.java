@@ -18,4 +18,5 @@ public @interface Visualizer {
 	 */
 	public String name() default USEPLUGINNAME;
 
+	public String pack() default "";
 }

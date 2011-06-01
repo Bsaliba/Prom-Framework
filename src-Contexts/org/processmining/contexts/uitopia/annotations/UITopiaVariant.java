@@ -23,4 +23,6 @@ public @interface UITopiaVariant {
 	String author();
 
 	String website() default "http://www.processmining.org";
+	
+	String pack() default "";
 }
