@@ -191,7 +191,7 @@ public class Boot {
 				if (VERBOSE == Level.ALL) {
 					System.out.println("Scanning for plugins: " + url);
 				}
-				plugins.register(url);
+				plugins.register(url, null);
 			} else {
 				if (VERBOSE == Level.ALL) {
 					System.out.println("Skipping: " + url.getFile() + " while scanning for plugins.");
@@ -275,7 +275,7 @@ public class Boot {
 					}
 					addURLToClasspath(url);
 					if (f.getAbsolutePath().endsWith(PluginManager.JAR_EXTENSION)) {
-						plugins.register(url);
+						plugins.register(url, pack);
 					}
 				} catch (MalformedURLException e) {
 					e.printStackTrace();

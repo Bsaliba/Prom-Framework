@@ -11,6 +11,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.processmining.framework.packages.PackageDescriptor;
 import org.processmining.framework.plugin.PluginContext;
 import org.processmining.framework.plugin.PluginDescriptor;
 import org.processmining.framework.plugin.PluginDescriptorID;
@@ -31,10 +32,12 @@ public class PluginDescriptorImpl extends AbstractPluginDescriptor {
 	private final String name;
 	//	public Class<? extends PluginContext> contextType = null;
 	private final Class<?> declaringClass;
+	private final PackageDescriptor pack;
 
-	PluginDescriptorImpl(Method method) throws Exception {
+	PluginDescriptorImpl(Method method, PackageDescriptor pack) throws Exception {
 		assert (method != null);
 		assert (method.isAnnotationPresent(Plugin.class));
+		this.pack = pack;
 		id = new PluginDescriptorIDImpl(method);
 		parameterTypes = new ArrayList<List<Class<?>>>(1);
 		ArrayList<Class<?>> list = new ArrayList<Class<?>>(method.getParameterTypes().length - 1);
@@ -51,6 +54,7 @@ public class PluginDescriptorImpl extends AbstractPluginDescriptor {
 
 		annotatedElement = method;
 		name = method.getAnnotation(Plugin.class).name();
+		System.out.println("PluginDescriptorImpl,\"" + name + "\",\"" + pack.getName() + "\"");
 
 		parameterNames = Arrays.asList(getAnnotation(Plugin.class).parameterLabels());
 		if (parameterNames.size() == 0) {
@@ -65,10 +69,11 @@ public class PluginDescriptorImpl extends AbstractPluginDescriptor {
 		returnNames = Arrays.asList(getAnnotation(Plugin.class).returnLabels());
 	}
 
-	PluginDescriptorImpl(Class<?> type, Class<? extends PluginContext> acceptedContext) throws Exception {
+	PluginDescriptorImpl(Class<?> type, Class<? extends PluginContext> acceptedContext, PackageDescriptor pack) throws Exception {
 		assert (type != null);
 		assert (type.isAnnotationPresent(Plugin.class));
 
+		this.pack = pack;
 		id = new PluginDescriptorIDImpl(type);
 		annotatedElement = type;
 		declaringClass = type;
@@ -105,6 +110,7 @@ public class PluginDescriptorImpl extends AbstractPluginDescriptor {
 		}
 
 		name = type.getAnnotation(Plugin.class).name();
+		System.out.println("PluginDescriptorImpl,\"" + name + "\",\"" + pack.getName() + "\"");
 
 		// There are either no parameters, or all parameters are required at least once
 		// in all variants, ignoring the specific context.
@@ -123,10 +129,14 @@ public class PluginDescriptorImpl extends AbstractPluginDescriptor {
 		returnNames = Arrays.asList(type.getAnnotation(Plugin.class).returnLabels());
 	}
 
-	PluginDescriptorImpl(String className, String name, Class<?>[] parTypes) throws Exception {
-		this(Class.forName(className).getMethod(name, parTypes));
+	PluginDescriptorImpl(String className, String name, Class<?>[] parTypes, PackageDescriptor pack) throws Exception {
+		this(Class.forName(className).getMethod(name, parTypes), pack);
 	}
 
+	public PackageDescriptor getPackage() {
+		return pack;
+	}
+	
 	public int getMostSignificantResult() {
 		return getAnnotation(Plugin.class).mostSignificantResult();
 	}

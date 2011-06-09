@@ -4,6 +4,8 @@ import java.lang.annotation.Annotation;
 import java.util.List;
 import java.util.Set;
 
+import org.processmining.framework.packages.PackageDescriptor;
+
 public interface PluginDescriptor extends Comparable<PluginDescriptor> {
 
 	/**
@@ -55,6 +57,13 @@ public interface PluginDescriptor extends Comparable<PluginDescriptor> {
 	 */
 	<T extends Annotation> T getAnnotation(Class<T> annotationClass, int methodIndex);
 
+	/**
+	 * Return the package where the plug-in resides.
+	 * 
+	 * @return
+	 */
+	PackageDescriptor getPackage();
+	
 	/**
 	 * Return the name of the plugin. This name is not unique within ProM.
 	 * 

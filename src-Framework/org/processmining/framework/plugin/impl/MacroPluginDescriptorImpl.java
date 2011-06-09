@@ -24,6 +24,7 @@ import javax.xml.parsers.ParserConfigurationException;
 
 import org.deckfour.xes.xstream.XesXStreamPersistency;
 import org.processmining.framework.connections.Connection;
+import org.processmining.framework.packages.PackageDescriptor;
 import org.processmining.framework.plugin.PluginContext;
 import org.processmining.framework.plugin.PluginDescriptor;
 import org.processmining.framework.plugin.PluginDescriptorID;
@@ -56,6 +57,7 @@ public class MacroPluginDescriptorImpl extends AbstractPluginDescriptor {
 	private final String fileName;
 	private final String name;
 	private boolean connectionsSet;
+	private final PackageDescriptor pack;
 
 	Class<? extends PluginContext> contextType = PluginContext.class;
 	final List<String> parameterNames = new ArrayList<String>();
@@ -73,8 +75,9 @@ public class MacroPluginDescriptorImpl extends AbstractPluginDescriptor {
 	final Map<Object, Integer> object2Rank = new HashMap<Object, Integer>();
 	int maxRank;
 
-	public MacroPluginDescriptorImpl(File file, PluginManager manager) throws IOException, DOMException, SAXException,
+	public MacroPluginDescriptorImpl(File file, PluginManager manager, PackageDescriptor pack) throws IOException, DOMException, SAXException,
 			ParserConfigurationException, ClassNotFoundException, DependsOnUnknownException {
+		this.pack = pack;
 		fileName = file.getCanonicalPath();
 		String n = file.getName();
 		name = n.substring(0, n.length() - 4);
@@ -83,6 +86,10 @@ public class MacroPluginDescriptorImpl extends AbstractPluginDescriptor {
 		connectionsSet = connectionsOnFirstInvoke.isEmpty();
 	}
 
+	public PackageDescriptor getPackage() {
+		return pack;
+	}
+	
 	public int compareTo(PluginDescriptor plugin) {
 		if (plugin.equals(this)) {
 			return 0;

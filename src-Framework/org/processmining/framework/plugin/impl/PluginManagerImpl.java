@@ -33,6 +33,7 @@ import javax.xml.parsers.ParserConfigurationException;
 
 import org.processmining.framework.boot.Boot;
 import org.processmining.framework.boot.Boot.Level;
+import org.processmining.framework.packages.PackageDescriptor;
 import org.processmining.framework.plugin.PluginContext;
 import org.processmining.framework.plugin.PluginDescriptor;
 import org.processmining.framework.plugin.PluginDescriptorID;
@@ -127,34 +128,34 @@ public final class PluginManagerImpl implements PluginManager {
 	 * @see
 	 * org.processmining.framework.plugin.PluginManager#register(java.net.URL)
 	 */
-	public void register(URL url) {
+	public void register(URL url, PackageDescriptor pack) {
 		if (url.getProtocol().equals(FILE_PROTOCOL)) {
 			try {
 				File file = new File(url.toURI());
 
 				if (file.isDirectory()) {
-					scanDirectory(file);
+					scanDirectory(file, pack);
 					return;
 				}
 				if (file.getAbsolutePath().endsWith(PluginManager.MCR_EXTENSION)) {
 					try {
-						loadClassFromMacro(url.toURI());
+						loadClassFromMacro(url.toURI(), pack);
 					} catch (DependsOnUnknownException e) {
 						// Can't add this URL.
 					}
 				}
 				if (file.getAbsolutePath().endsWith(JAR_EXTENSION)) {
-					scanUrl(url);
+					scanUrl(url, pack);
 				}
 			} catch (URISyntaxException e) {
 				fireError(url, e, null);
 			}
 		} else {
-			scanUrl(url);
+			scanUrl(url, pack);
 		}
 	}
 
-	private void scanDirectory(File file) {
+	private void scanDirectory(File file, PackageDescriptor pack) {
 		try {
 			URL url = file.toURI().toURL();
 			URLClassLoader loader = new URLClassLoader(new URL[] { url });
@@ -178,15 +179,15 @@ public final class PluginManagerImpl implements PluginManager {
 					} else {
 						if (f.getAbsolutePath().endsWith(CLASS_EXTENSION)) {
 							loadClassFromFile(loader, url,
-									makeRelativePath(file.getAbsolutePath(), f.getAbsolutePath()));
+									makeRelativePath(file.getAbsolutePath(), f.getAbsolutePath()), pack);
 						} else if (f.getAbsolutePath().endsWith(MCR_EXTENSION)) {
 							try {
-								loadClassFromMacro(f.toURI());
+								loadClassFromMacro(f.toURI(), pack);
 							} catch (DependsOnUnknownException e) {
 								todo.add(dir);
 							}
 						} else if (f.getAbsolutePath().endsWith(JAR_EXTENSION)) {
-							scanUrl(f.toURI().toURL());
+							scanUrl(f.toURI().toURL(), pack);
 						}
 					}
 				}
@@ -208,13 +209,13 @@ public final class PluginManagerImpl implements PluginManager {
 		return relative;
 	}
 
-	private void scanUrl(URL url) {
+	private void scanUrl(URL url, PackageDescriptor pack) {
 		URLClassLoader loader = new URLClassLoader(new URL[] { url });
 		PluginCacheEntry cached = new PluginCacheEntry(url, Boot.VERBOSE);
 
 		if (cached.isInCache()) {
 			for (String className : cached.getCachedClassNames()) {
-				loadClass(loader, url, className);
+				loadClass(loader, url, className, pack);
 			}
 		} else {
 			try {
@@ -225,7 +226,7 @@ public final class PluginManagerImpl implements PluginManager {
 
 				while ((je = jis.getNextJarEntry()) != null) {
 					if (!je.isDirectory() && je.getName().endsWith(CLASS_EXTENSION)) {
-						String loadedClass = loadClassFromFile(loader, url, je.getName());
+						String loadedClass = loadClassFromFile(loader, url, je.getName(), pack);
 						loadedClasses.add(loadedClass);
 					}
 				}
@@ -239,19 +240,19 @@ public final class PluginManagerImpl implements PluginManager {
 		}
 	}
 
-	private String loadClassFromFile(URLClassLoader loader, URL url, String classFilename) {
+	private String loadClassFromFile(URLClassLoader loader, URL url, String classFilename, PackageDescriptor pack) {
 		if (classFilename.indexOf(INNER_CLASS_MARKER) >= 0) {
 			// we're not going to load inner classes
 			return null;
 		}
 		return loadClass(loader, url, classFilename.substring(0, classFilename.length() - CLASS_EXTENSION.length())
-				.replace(URL_SEPARATOR, PACKAGE_SEPARATOR).replace(File.separatorChar, PACKAGE_SEPARATOR));
+				.replace(URL_SEPARATOR, PACKAGE_SEPARATOR).replace(File.separatorChar, PACKAGE_SEPARATOR), pack);
 	}
 
-	private String loadClassFromMacro(URI macroFile) throws DependsOnUnknownException {
+	private String loadClassFromMacro(URI macroFile, PackageDescriptor pack) throws DependsOnUnknownException {
 		MacroPluginDescriptorImpl plugin = null;
 		try {
-			plugin = new MacroPluginDescriptorImpl(new File(macroFile), this);
+			plugin = new MacroPluginDescriptorImpl(new File(macroFile), this, pack);
 			addPlugin(plugin);
 		} catch (DOMException e) {
 			e.printStackTrace();
@@ -278,7 +279,7 @@ public final class PluginManagerImpl implements PluginManager {
 	 * @param className
 	 * @return
 	 */
-	private String loadClass(URLClassLoader loader, URL url, String className) {
+	private String loadClass(URLClassLoader loader, URL url, String className, PackageDescriptor pack) {
 		boolean isAnnotated = false;
 
 		if ((className == null) || className.trim().equals("")) {
@@ -302,14 +303,14 @@ public final class PluginManagerImpl implements PluginManager {
 
 			// Check if plugin annotation is present
 			if (pluginClass.isAnnotationPresent(Plugin.class) && isGoodPlugin(pluginClass)) {
-				PluginDescriptorImpl pl = new PluginDescriptorImpl(pluginClass, pluginContextType);
+				PluginDescriptorImpl pl = new PluginDescriptorImpl(pluginClass, pluginContextType, pack);
 				addPlugin(pl);
 			}
 
 			for (Method method : pluginClass.getMethods()) {
 				if (method.isAnnotationPresent(Plugin.class) && isGoodPlugin(method)) {
 					try {
-						PluginDescriptorImpl pl = new PluginDescriptorImpl(method);
+						PluginDescriptorImpl pl = new PluginDescriptorImpl(method, pack);
 						addPlugin(pl);
 						isAnnotated = true;
 					} catch (Exception e) {

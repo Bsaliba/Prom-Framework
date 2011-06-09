@@ -7,6 +7,7 @@ import java.util.EventListener;
 import java.util.Set;
 import java.util.SortedSet;
 
+import org.processmining.framework.packages.PackageDescriptor;
 import org.processmining.framework.util.Pair;
 
 /**
@@ -108,8 +109,10 @@ public interface PluginManager {
 	 * 
 	 * @param url
 	 *            The URL to register
+	 * @param pack
+	 *            The package that corresponds to the URL
 	 */
-	void register(URL url);
+	void register(URL url, PackageDescriptor pack);
 
 	/**
 	 * This method retuns a collection of <code>Pair</code>s of
