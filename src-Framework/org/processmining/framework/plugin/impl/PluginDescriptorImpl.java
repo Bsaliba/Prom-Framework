@@ -54,7 +54,7 @@ public class PluginDescriptorImpl extends AbstractPluginDescriptor {
 
 		annotatedElement = method;
 		name = method.getAnnotation(Plugin.class).name();
-		System.out.println("PluginDescriptorImpl,\"" + name + "\",\"" + (pack == null ? "" : pack.getName()) + "\"");
+//		System.out.println("PluginDescriptorImpl,\"" + name + "\",\"" + (pack == null ? "" : pack.getName()) + "\"");
 
 		parameterNames = Arrays.asList(getAnnotation(Plugin.class).parameterLabels());
 		if (parameterNames.size() == 0) {
@@ -110,7 +110,7 @@ public class PluginDescriptorImpl extends AbstractPluginDescriptor {
 		}
 
 		name = type.getAnnotation(Plugin.class).name();
-		System.out.println("PluginDescriptorImpl,\"" + name + "\",\"" + (pack == null ? "" : pack.getName()) + "\"");
+//		System.out.println("PluginDescriptorImpl,\"" + name + "\",\"" + (pack == null ? "" : pack.getName()) + "\"");
 
 		// There are either no parameters, or all parameters are required at least once
 		// in all variants, ignoring the specific context.
