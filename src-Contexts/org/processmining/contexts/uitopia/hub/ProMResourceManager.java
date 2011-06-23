@@ -171,12 +171,12 @@ public class ProMResourceManager extends UpdateSignaller implements ResourceMana
 				if (!file.getAbsolutePath().endsWith(postfix)) {
 					String name = file.getAbsolutePath() + postfix;
 					file = new File(name);
-					if (!file.createNewFile()) {
-						int ow = JOptionPane.showConfirmDialog(context.getUI(), "Are you sure you want to overwrite "
-								+ name, "Confirm overwrite", JOptionPane.YES_NO_OPTION);
-						if (ow == JOptionPane.NO_OPTION) {
-							continue askForFile;
-						}
+				}
+				if (!file.createNewFile()) {
+					int ow = JOptionPane.showConfirmDialog(context.getUI(), "Are you sure you want to overwrite "
+							+ file.getName(), "Confirm overwrite", JOptionPane.YES_NO_OPTION);
+					if (ow == JOptionPane.NO_OPTION) {
+						continue askForFile;
 					}
 				}
 
