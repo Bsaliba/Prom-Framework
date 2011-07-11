@@ -10,8 +10,7 @@
 package org.processmining.contexts.uitopia.hub.serialization;
 
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.WeakHashMap;
 
 import com.thoughtworks.xstream.converters.ConversionException;
 import com.thoughtworks.xstream.converters.Converter;
@@ -31,7 +30,8 @@ import com.thoughtworks.xstream.mapper.Mapper;
  */
 public class ProMUnMarshaller extends TreeUnmarshaller {
 
-	private Map values = new HashMap();
+	//TODO: Should probably be weak.
+	private WeakHashMap<Object, Object> values = new WeakHashMap<Object, Object>();
 	private FastStack parentStack = new FastStack(16);
 	private final Collection<Object> referencesToKeep;
 
@@ -41,7 +41,7 @@ public class ProMUnMarshaller extends TreeUnmarshaller {
 		this.referencesToKeep = referencesToKeep;
 	}
 
-	@SuppressWarnings({ "rawtypes", "unchecked" })
+	@SuppressWarnings({ "rawtypes" })
 	protected Object convert(Object parent, Class type, Converter converter) {
 		if (parentStack.size() > 0) { // handles circular references
 			Object parentReferenceKey = parentStack.peek();
