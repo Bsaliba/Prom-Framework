@@ -270,6 +270,71 @@ public class ScalableViewPanel extends JLayeredPane implements Cleanable, Change
 		panel.updated();
 	}
 
+	/**
+	 * Remove a previously added interaction panel from the ScalableViewPanel.
+	 * 
+	 * This can be used to remove an interaction panel from the
+	 * ScalableViewPanel. If the interaction panel does not exist, nothing will
+	 * be removed.
+	 * 
+	 * @param panel
+	 *            The panel that should be removed.
+	 */
+	public synchronized void removeViewInteractionPanel(ViewInteractionPanel panel) {
+
+		//Remove the panelOn and panelOff panels from the pane.
+		Pair<JPanel, JPanel> pair = panels.remove(panel);
+		if (pair != null) {
+			remove(pair.getFirst());
+			remove(pair.getSecond());
+		}
+
+		//Modify the position counters to account for the removed interaction panels.
+		Integer location = locations.remove(panel);
+		if (location != null) {
+
+			switch (location) {
+				case SwingConstants.NORTH :
+					north--;
+					break;
+				case SwingConstants.EAST :
+					east--;
+					break;
+				case SwingConstants.SOUTH :
+					south--;
+					break;
+				case SwingConstants.WEST :
+					west--;
+					break;
+				default :
+					System.err.println("Unknown interaction panel location. No position counters have been updated.");
+					break;
+			}
+		}
+
+		//Repaint to get rid of the old panel tab pictures.
+		repaint();
+	}
+
+	/**
+	 * List all registered interaction panels and their locations.
+	 * 
+	 * @return Map of interaction panels and their locations.
+	 */
+	public Map<ViewInteractionPanel, Integer> getViewInteractionPanels() {
+		return new HashMap<ViewInteractionPanel, Integer>(locations);
+	}
+
+	private boolean isChild(Component c, final Component parent) {
+		if (c == parent) {
+			return true;
+		} else if (c.getParent() == null) {
+			return false;
+		} else {
+			return (c.getParent() == parent) || isChild(c.getParent(), parent);
+		}
+	}
+
 	public synchronized void mouseMoved(MouseEvent e) {
 		Point p = e.getPoint();
 		if (e.getComponent() == getComponent()) {
@@ -280,7 +345,7 @@ public class ScalableViewPanel extends JLayeredPane implements Cleanable, Change
 		if (c == null) {
 			return;
 		}
-		if ((c == this || c == getComponent())) {
+		if (c == this || isChild(c, getComponent())) {
 			turnPanelOff();
 		} else {
 			// walk through the off panels
@@ -581,7 +646,7 @@ public class ScalableViewPanel extends JLayeredPane implements Cleanable, Change
 		}
 		for (ViewInteractionPanel panel : panels.keySet()) {
 			// HV: Do not call setScalableComponent now, as it changes the originalAttributeMap of the scalable.
-//			panel.setScalableComponent(scalable);
+			//			panel.setScalableComponent(scalable);
 			panel.updated();
 		}
 	}
