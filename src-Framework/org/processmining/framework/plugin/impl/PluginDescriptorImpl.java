@@ -424,6 +424,10 @@ public class PluginDescriptorImpl extends AbstractPluginDescriptor {
 		return getAnnotation(Plugin.class).userAccessible();
 	}
 
+	public boolean handlesCancel() {
+		return getAnnotation(Plugin.class).handlesCancel();
+	}
+
 	public <T extends Annotation> T getAnnotation(Class<T> annotationClass, int methodIndex) {
 		return getMethod(methodIndex).getAnnotation(annotationClass);
 	}

@@ -89,4 +89,11 @@ public @interface Plugin {
 	 * 
 	 */
 	int mostSignificantResult() default 1;
+	
+	/**
+	 * Whether this plugin handles cancel itself.  If this is true, the plug-in
+	 * will not be killed but is allowed to terminate itself by monitoring isCancelled.
+	 * @return
+	 */
+	boolean handlesCancel() default false;
 }

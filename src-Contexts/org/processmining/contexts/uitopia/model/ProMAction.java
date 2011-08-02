@@ -120,6 +120,10 @@ public class ProMAction implements Action, Comparable<ProMAction> {
 
 	}
 
+	public boolean handlesCancel() {
+		return plugin.handlesCancel();
+	}
+	
 	public List<Parameter> getInput() {
 		return inputs;
 	}

@@ -299,6 +299,12 @@ public interface PluginDescriptor extends Comparable<PluginDescriptor> {
 	 * @return
 	 */
 	boolean isUserAccessible();
+	
+	/**
+	 * Returns whether the plugin handles termination itself.
+	 * @return
+	 */
+	boolean handlesCancel();
 
 	/**
 	 * Returns the index in the result array of the most significant result for

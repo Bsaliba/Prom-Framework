@@ -383,6 +383,10 @@ public class MacroPluginDescriptorImpl extends AbstractPluginDescriptor {
 		return true;
 	}
 
+	public boolean handlesCancel() {
+		return false;
+	}
+	
 	/*
 	 * (non-Javadoc)
 	 * 
