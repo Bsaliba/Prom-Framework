@@ -7,6 +7,8 @@ import org.junit.Test;
 import org.processmining.contexts.cli.CLI;
 import org.processmining.contexts.scripting.ScriptExecutor.ScriptExecutionException;
 import org.processmining.contexts.test.PromTest;
+import org.processmining.framework.packages.CommandLineInterface;
+import org.processmining.framework.packages.PackageManager;
 
 public class PromFrameworkTest extends PromTest {
 
@@ -59,6 +61,13 @@ public class PromFrameworkTest extends PromTest {
 		// AssertFailedError was not thrown: so, the test for checking the throwing
 		// of failures failed
 		Assert.assertTrue("Unknown command in script recoginzed by JUnit", false);
+	}
+	
+	@Test
+	public void testPackageManager() throws Throwable {
+		String args[] = new String[] { "list" };
+		CommandLineInterface cli = new CommandLineInterface(PackageManager.getInstance());
+		cli.run(args);
 	}
 
 
