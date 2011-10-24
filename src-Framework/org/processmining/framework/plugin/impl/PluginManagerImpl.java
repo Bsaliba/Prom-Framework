@@ -324,7 +324,7 @@ public final class PluginManagerImpl implements PluginManager {
 		} catch (Throwable t) {
 			fireError(url, t, className);
 			if (Boot.VERBOSE != Level.NONE) {
-				System.err.println("ERROR while scanning: " + url + ":");
+				System.err.println("ERROR while scanning for plugins at: " + url + ":");
 				System.err.println("   in file :" + className);
 				System.err.println("   " + t.getMessage());
 				t.printStackTrace();

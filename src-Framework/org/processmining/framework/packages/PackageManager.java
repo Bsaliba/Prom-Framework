@@ -162,7 +162,7 @@ public class PackageManager {
 		}
 	}
 
-	private void resolveAllConflicts( Boot.Level verbose) {
+	private void resolveAllConflicts( Boot.Level verbose) throws UnknownPackageException {
 		boolean ok;
 
 		do {
@@ -270,14 +270,17 @@ public class PackageManager {
 		return Collections.unmodifiableSet(available);
 	}
 
-	public Collection<PackageDescriptor> getEnabledPackages() {
+	public Collection<PackageDescriptor> getEnabledPackages() throws UnknownPackageException {
 		List<PackageDescriptor> result = new ArrayList<PackageDescriptor>();
 
 		Set<PackageDescriptor> broken = new HashSet<PackageDescriptor>();
 
 		Set<PackageDescriptor> installed = new HashSet<PackageDescriptor>(this.installed);
-
+		
+		
 		while (!installed.isEmpty()) {
+			Set<String> requiredPackages = new HashSet<String>();
+
 			Iterator<PackageDescriptor> it = installed.iterator();
 			while (it.hasNext()) {
 				PackageDescriptor pack = it.next();
@@ -285,11 +288,26 @@ public class PackageManager {
 					broken.add(pack);
 					it.remove();
 				} else {
+					
 					if (getPackageMap(result).keySet().containsAll(pack.getDependencies())) {
 						result.add(pack);
 						it.remove();
+					} else {
+						// remember all packages that have been required
+						requiredPackages.addAll(pack.getDependencies());
 					}
 				}
+			}
+			
+			// after this iteration check whether we have any chance to resolve
+			// the remaining dependencies: if not, throw an exception
+			Set<String> listedPackages = new HashSet<String>(getPackageMap(this.installed).keySet());
+			requiredPackages.removeAll(listedPackages);
+			if (!requiredPackages.isEmpty()) {
+				for (String required : requiredPackages) {
+					System.out.println("Cannot find required package: "+required);
+				}
+				throw new UnknownPackageException(requiredPackages.toString());
 			}
 		}
 

@@ -235,7 +235,7 @@ public class AllInclassMethodTests {
 		} catch (Throwable t) {
 			// fireError(url, t, className);
 			if (Boot.VERBOSE != Level.NONE) {
-				System.err.println("ERROR while scanning: " + url + ":");
+				System.err.println("[Framework] ERROR while scanning for tests at: " + url + ":");
 				System.err.println("   in file :" + className);
 				System.err.println("   " + t.getMessage());
 				t.printStackTrace();

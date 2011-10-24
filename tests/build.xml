@@ -6,21 +6,12 @@
 	<property file="${test.basedir}/test.properties" />
 
 	<!-- location of plugin code, binaries, and test files (can be modified) -->
-	<property name="home" location=".." />
 	<property name="bin" location="${home}/bindist" />
 	<property name="src-Framework" location="${home}/src-Framework" />
 	<property name="src-Plugins" location="${home}/src-Plugins" />
 	<property name="src-Contexts" location="${home}/src-Contexts" />
 	<property name="src-Models" location="${home}/src-Models" />
-
-	<!-- location of test code, binaries, and test files (can be modified) -->
-	<property name="dir.test-src" location="${test.basedir}/src-test" />
-	<property name="dir.test-bin" location="${test.basedir}/bin-test" />
-	<property name="dir.testfiles" location="${test.basedir}/testfiles" />
 	
-	<!-- location of test results (can be modified) -->
-	<property name="dir.coveragereport" location="${test.basedir}/cover-html" />
-
 	<!-- For which classes shall we generate a coverage report?
 	     Define both, source files and compiled classes.                          -->
     <fileset id="src.coveragereport-Framework" dir="${src-Framework}">
@@ -58,7 +49,7 @@
       	<fileset dir="${home}/lib/">
         	<include name="**/*.jar"/>
       	</fileset>
-		<pathelement location="${dir.test-bin}"/>
+		<pathelement location="${dir.test-bin}" />
 	</path>
 	
 	<!-- include JUnit to execute unit tests -->
@@ -99,9 +90,13 @@
          	destdir="${dir.test-bin}"
          	debug="on" />
 	</target>
+	
+	<property name="myclasspath" refid="classpath.test"/>
          		
 	<!-- run tests -->
 	<target name="check" depends="svn-clean,build-test,prepare-cobertura">
+		
+		<echo message="${myclasspath}" />
 	
 		<!-- integration tests of invoking plugins in ProM -->
 	    <junit fork="true" dir="${home}" includeantruntime="yes" >
