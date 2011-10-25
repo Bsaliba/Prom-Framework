@@ -52,6 +52,9 @@ public class InclassMethodTest {
 	@FactoryTest
 	public void test() throws Throwable {
 		
+		System.out.println("--- TESTCASE: "+this.test+" -----------------------");
+		System.err.println("--- TESTCASE: "+this.test+" -----------------------");
+		
 		System.out.flush();
 		// depending on the test, we redirect System.out to a new output stream
 		// which we then compare against the expected result

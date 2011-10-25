@@ -13,6 +13,10 @@ public class StandardScriptTest {
 
 	@FactoryTest
 	public void test() throws Throwable {
+
+		System.out.println("--- TESTCASE: "+testScript+" -----------------------");
+		System.err.println("--- TESTCASE: "+testScript+" -----------------------");
+
 		String args[] = new String[] {"-f", testScript};
 		CLI.main(args);
 	}
