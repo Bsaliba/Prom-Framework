@@ -125,6 +125,14 @@ public class UIPluginContext extends AbstractPluginContext {
 		this.task = task;
 	}
 
+	/**
+	 * Return the task being executed in this PluginContext; useful for registering new resources with this task.
+	 * @return the task
+	 */
+	public ProMTask getTask() {
+		return task;
+	}
+
 	public InteractionResult showConfiguration(String title, JComponent configuration) {
 		if (task == null) {
 			return InteractionResult.CANCEL;
