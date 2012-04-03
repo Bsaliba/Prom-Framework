@@ -305,6 +305,7 @@ public class ProMResourceManager extends UpdateSignaller implements ResourceMana
 		}
 		fc.setAcceptAllFileFilterUsed(true);
 		fc.setMultiSelectionEnabled(true);
+		fc.setFileFilter(fc.getAcceptAllFileFilter());
 
 		int returnVal = fc.showOpenDialog(context.getUI());
 
