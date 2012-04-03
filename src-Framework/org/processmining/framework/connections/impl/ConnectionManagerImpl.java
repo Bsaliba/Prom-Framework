@@ -56,7 +56,10 @@ public class ConnectionManagerImpl implements ConnectionManager {
 			if (c == null || c.isRemoved()) {
 				connections.remove(c);
 				connectionListeners.fireConnectionDeleted(id);
-				throw new ConnectionCannotBeObtained("Objects were deleted", c.getClass());
+				if (c != null)
+					throw new ConnectionCannotBeObtained("Objects were deleted", c.getClass());
+				else
+					throw new ConnectionCannotBeObtained("Objects were deleted", Object.class);
 			}
 			return c;
 		}

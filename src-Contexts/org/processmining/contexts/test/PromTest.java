@@ -27,7 +27,7 @@ import org.processmining.framework.annotations.TestMethod;
  * 
  * @author Dirk Fahland
  */
-@RunWith(FactoryRunner.class)
+@RunWith(value=FactoryRunner.class)
 public class PromTest extends TestCase {
 	
 	/**
