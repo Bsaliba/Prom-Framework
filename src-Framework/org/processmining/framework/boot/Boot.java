@@ -96,10 +96,10 @@ public class Boot {
 
 		try {
 			DEFAULT_REPOSITORY = new URL(ini.getProperty("PACKAGE_URL",
-					"http://prom.win.tue.nl/ProM/packages/packages.xml"));
+					"http://www.promtools.org/prom6/packages/packages.xml"));
 		} catch (MalformedURLException e) {
 			try {
-				DEFAULT_REPOSITORY = new URL("http://prom.win.tue.nl/ProM/packages/packages.xml");
+				DEFAULT_REPOSITORY = new URL("http://www.promtools.org/prom6/packages/packages.xml");
 			} catch (MalformedURLException e1) {
 				assert (false);
 			}
