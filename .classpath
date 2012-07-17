@@ -24,7 +24,6 @@
 	<classpathentry kind="lib" path="lib/jung-graph-impl-2.0.jar"/>
 	<classpathentry kind="lib" path="lib/jung-io-2.0.jar"/>
 	<classpathentry kind="lib" path="lib/jung-visualization-2.0.jar"/>
-	<classpathentry kind="lib" path="lib/Licenses.txt"/>
 	<classpathentry kind="lib" path="lib/OpenXES-XStream.jar"/>
 	<classpathentry kind="lib" path="lib/OpenXES.jar"/>
 	<classpathentry kind="lib" path="lib/simmetrics.jar"/>
