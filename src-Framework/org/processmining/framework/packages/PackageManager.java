@@ -327,11 +327,13 @@ public class PackageManager {
 			iterationsLeft--;
 		}
 
-		/*
-		 * Every package left should be involved in some cyclic dependency.
-		 */
-		for (PackageDescriptor pack: installed) {
-			System.err.println("Could not resolve all dependencies for package: " + pack);
+		if (installed.isEmpty()) {
+			System.out.println(">>> All dependencies have been resolved");
+		} else {
+			System.err.println(">>> The dependencies for the following packages have not been resolved:");
+			for (PackageDescriptor pack: installed) {
+				System.err.println(">>>     " + pack + " " + pack.getDependencies());
+			}
 		}
 		
 		return result;
