@@ -277,8 +277,20 @@ public class PackageManager {
 
 		Set<PackageDescriptor> installed = new HashSet<PackageDescriptor>(this.installed);
 		
+		/*
+		 * During every iteration we should be able to add at least one package to the result set.
+		 * Hence, we should need at most as many iterations as we have packages to add.
+		 * If after this number if iterations some packages have not yet been added, there
+		 * should be a cyclic dependency somewhere between the remaining packages.
+		 * 
+		 * Initialize the number of iterations we have still left.
+		 */
+		int iterationsLeft = installed.size();
 		
-		while (!installed.isEmpty()) {
+		/*
+		 * Iterate as long as needed.
+		 */
+		while (!installed.isEmpty() && iterationsLeft > 0) {
 			Set<String> requiredPackages = new HashSet<String>();
 
 			Iterator<PackageDescriptor> it = installed.iterator();
@@ -309,8 +321,19 @@ public class PackageManager {
 				}
 				throw new UnknownPackageException(requiredPackages.toString());
 			}
+			/*
+			 * One less iteration left.
+			 */
+			iterationsLeft--;
 		}
 
+		/*
+		 * Every package left should be involved in some cyclic dependency.
+		 */
+		for (PackageDescriptor pack: installed) {
+			System.err.println("Could not resolve all dependencies for package: " + pack);
+		}
+		
 		return result;
 	}
 
