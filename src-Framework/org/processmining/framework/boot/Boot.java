@@ -11,6 +11,7 @@ import java.net.URLClassLoader;
 import java.util.Properties;
 import java.util.prefs.Preferences;
 
+import org.deckfour.xes.nikefs2.NikeFS2FileAccessMonitor;
 import org.processmining.framework.packages.PackageDescriptor;
 import org.processmining.framework.packages.PackageManager;
 import org.processmining.framework.plugin.PluginContext;
@@ -39,6 +40,7 @@ public class Boot {
 	public static boolean DO_SERIALIZATION;
 	public static Level VERBOSE;
 	public static URL DEFAULT_REPOSITORY;
+	public static int OPENXES_SHADOW_SIZE;
 
 	public final static String LAST_RELEASE_AUTOINSTALLED_KEY = "last_release_autoinstalled";
 	public static final String LAST_RELEASE_PACKAGE_KEY = "last_release_package_installed";
@@ -71,6 +73,9 @@ public class Boot {
 
 		DO_SERIALIZATION = Boolean.parseBoolean(ini.getProperty("DO_SERIALIZATION", "true"));
 
+		OPENXES_SHADOW_SIZE = Integer.parseInt(ini.getProperty("OPENXES_SHADOW_SIZE", "4"));
+		NikeFS2FileAccessMonitor.instance(OPENXES_SHADOW_SIZE);
+		
 		try {
 			VERBOSE = Level.valueOf(ini.getProperty("VERBOSE", Level.ALL.name()));
 		} catch (IllegalArgumentException e) {
