@@ -282,7 +282,7 @@ public final class PluginManagerImpl implements PluginManager {
 	private String loadClass(URLClassLoader loader, URL url, String className, PackageDescriptor pack) {
 		boolean isAnnotated = false;
 
-		if ((className == null) || className.trim().equals("")) {
+		if ((className == null) || className.trim().equals("") || className.startsWith("bin-test-instrument")) {
 			return null;
 		}
 
