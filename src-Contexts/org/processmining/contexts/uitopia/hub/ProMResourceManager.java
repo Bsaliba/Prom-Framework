@@ -166,6 +166,9 @@ public class ProMResourceManager extends UpdateSignaller implements ResourceMana
 			if ((returnVal == JFileChooser.APPROVE_OPTION) && (fc.getSelectedFile() != null)) {
 				File file = fc.getSelectedFile();
 				FileNameExtensionFilter selectedFilter = (FileNameExtensionFilter) fc.getFileFilter();
+				if (selectedFilter == null) {
+					selectedFilter = (FileNameExtensionFilter) exportplugins.keySet().iterator().next();
+				}
 
 				String postfix = "." + selectedFilter.getExtensions()[0];
 				if (!file.getAbsolutePath().endsWith(postfix)) {
