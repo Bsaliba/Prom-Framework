@@ -115,6 +115,33 @@ public interface PluginManager {
 	void register(URL url, PackageDescriptor pack);
 
 	/**
+	 * registers a URL to this plugin manager. If the URL uses the
+	 * <code>FILE_PROTOCOl</code> protocol and denotes a directory, then this
+	 * folder is recursively scanned for files with the
+	 * <code>CLASS_EXTENSION</code> extension.
+	 * 
+	 * Otherwise, the URL is assumed to point to a jar file, of which the
+	 * classes are scanned.
+	 * 
+	 * Each class file is scanned for classes and/or methods annotated with the
+	 * <code>Plugin</code> annotation. If a class is annotated with this
+	 * annotation, then its methods are scanned for the
+	 * <code>PluginVariant</code> annotation.
+	 * 
+	 * For each plugin found, a <code>PluginDescriptor</code> object is
+	 * instantiated. These plugin descriptors can later be used to invoke
+	 * plugins.
+	 * 
+	 * @param url
+	 *            The URL to register
+	 * @param pack
+	 *            The package that corresponds to the URL
+	 * @param loader
+	 *            The class loader used to load the jar files.
+	 */
+	void register(URL url, PackageDescriptor pack, ClassLoader loader);
+
+	/**
 	 * This method retuns a collection of <code>Pair</code>s of
 	 * <code>Integer</code> and <code>PluginParameterBinding</code> objects,
 	 * such that:

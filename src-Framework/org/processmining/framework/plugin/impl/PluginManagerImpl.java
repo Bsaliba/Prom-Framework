@@ -129,12 +129,17 @@ public final class PluginManagerImpl implements PluginManager {
 	 * org.processmining.framework.plugin.PluginManager#register(java.net.URL)
 	 */
 	public void register(URL url, PackageDescriptor pack) {
+		URLClassLoader loader = new URLClassLoader(new URL[] { url });
+		register(url, pack, loader);
+	}
+	
+	public void register(URL url, PackageDescriptor pack, ClassLoader loader) {
 		if (url.getProtocol().equals(FILE_PROTOCOL)) {
 			try {
 				File file = new File(url.toURI());
 
 				if (file.isDirectory()) {
-					scanDirectory(file, pack);
+					scanDirectory(file, pack, loader);
 					return;
 				}
 				if (file.getAbsolutePath().endsWith(PluginManager.MCR_EXTENSION)) {
@@ -145,20 +150,19 @@ public final class PluginManagerImpl implements PluginManager {
 					}
 				}
 				if (file.getAbsolutePath().endsWith(JAR_EXTENSION)) {
-					scanUrl(url, pack);
+					scanUrl(url, pack, loader);
 				}
 			} catch (URISyntaxException e) {
 				fireError(url, e, null);
 			}
 		} else {
-			scanUrl(url, pack);
+			scanUrl(url, pack, loader);
 		}
 	}
 
-	private void scanDirectory(File file, PackageDescriptor pack) {
+	private void scanDirectory(File file, PackageDescriptor pack, ClassLoader loader) {
 		try {
 			URL url = file.toURI().toURL();
-			URLClassLoader loader = new URLClassLoader(new URL[] { url });
 
 			Queue<File> todo = new LinkedList<File>();
 			FileFilter filter = new FileFilter() {
@@ -187,7 +191,7 @@ public final class PluginManagerImpl implements PluginManager {
 								todo.add(dir);
 							}
 						} else if (f.getAbsolutePath().endsWith(JAR_EXTENSION)) {
-							scanUrl(f.toURI().toURL(), pack);
+							scanUrl(f.toURI().toURL(), pack, loader);
 						}
 					}
 				}
@@ -209,8 +213,7 @@ public final class PluginManagerImpl implements PluginManager {
 		return relative;
 	}
 
-	private void scanUrl(URL url, PackageDescriptor pack) {
-		URLClassLoader loader = new URLClassLoader(new URL[] { url });
+	private void scanUrl(URL url, PackageDescriptor pack, ClassLoader loader) {
 		PluginCacheEntry cached = new PluginCacheEntry(url, Boot.VERBOSE);
 
 		if (cached.isInCache()) {
@@ -240,7 +243,7 @@ public final class PluginManagerImpl implements PluginManager {
 		}
 	}
 
-	private String loadClassFromFile(URLClassLoader loader, URL url, String classFilename, PackageDescriptor pack) {
+	private String loadClassFromFile(ClassLoader loader, URL url, String classFilename, PackageDescriptor pack) {
 		if (classFilename.indexOf(INNER_CLASS_MARKER) >= 0) {
 			// we're not going to load inner classes
 			return null;
@@ -279,7 +282,7 @@ public final class PluginManagerImpl implements PluginManager {
 	 * @param className
 	 * @return
 	 */
-	private String loadClass(URLClassLoader loader, URL url, String className, PackageDescriptor pack) {
+	private String loadClass(ClassLoader loader, URL url, String className, PackageDescriptor pack) {
 		boolean isAnnotated = false;
 
 		if ((className == null) || className.trim().equals("") || className.startsWith("bin-test-instrument")) {
