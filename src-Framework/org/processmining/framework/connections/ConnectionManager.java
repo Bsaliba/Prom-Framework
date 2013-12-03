@@ -116,4 +116,16 @@ public interface ConnectionManager {
 	 */
 	<T extends Connection> T addConnection(T connection);
 
+	/**
+	 * Returns whether connections are enabled. If not, then connecitons will not be added.
+	 * @return whether connections are enabled
+	 */
+	public boolean isEnabled();
+
+	/**
+	 * Sets whether connections are enabled.
+	 * @param isEnabled whether connections should be enabled
+	 */
+	public void setEnabled(boolean isEnabled);
+
 }

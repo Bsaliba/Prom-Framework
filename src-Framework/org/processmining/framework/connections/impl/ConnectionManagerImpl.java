@@ -26,6 +26,7 @@ public class ConnectionManagerImpl implements ConnectionManager {
 	private final Map<ConnectionID, Connection> connections = new HashMap<ConnectionID, Connection>();
 	private final ConnectionObjectListener.ListenerList connectionListeners = new ConnectionObjectListener.ListenerList();
 	private final PluginManager pluginManager;
+	private boolean isEnabled = true;
 
 	public ConnectionManagerImpl(PluginManager pluginManager) {
 		this.pluginManager = pluginManager;
@@ -41,11 +42,21 @@ public class ConnectionManagerImpl implements ConnectionManager {
 		return connectionListeners;
 	}
 
+	public boolean isEnabled() {
+		return isEnabled;
+	}
+
+	public void setEnabled(boolean isEnabled) {
+		this.isEnabled = isEnabled;
+	}
+
 	public <T extends Connection> T addConnection(T connection) {
-		synchronized (connections) {
-			connections.put(connection.getID(), connection);
-			connection.setManager(this);
-			connectionListeners.fireConnectionCreated(connection.getID());
+		if (isEnabled) {
+			synchronized (connections) {
+				connections.put(connection.getID(), connection);
+				connection.setManager(this);
+				connectionListeners.fireConnectionCreated(connection.getID());
+			}
 		}
 		return connection;
 	}
