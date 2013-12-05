@@ -26,9 +26,9 @@ import org.processmining.framework.plugin.Progress;
 import org.processmining.framework.plugin.RecursiveCallException;
 import org.processmining.framework.plugin.annotations.Plugin;
 import org.processmining.framework.plugin.events.Logger;
+import org.processmining.framework.plugin.events.Logger.MessageLevel;
 import org.processmining.framework.plugin.events.PluginLifeCycleEventListener;
 import org.processmining.framework.plugin.events.ProgressEventListener;
-import org.processmining.framework.plugin.events.Logger.MessageLevel;
 import org.processmining.framework.providedobjects.ProvidedObjectManager;
 import org.processmining.framework.util.Cast;
 import org.processmining.framework.util.Pair;
@@ -472,4 +472,8 @@ public abstract class AbstractPluginContext implements PluginContext {
 		}
 	}
 
+	public void clear() {
+		getProvidedObjectManager().clear();
+		getConnectionManager().clear();
+	}
 }

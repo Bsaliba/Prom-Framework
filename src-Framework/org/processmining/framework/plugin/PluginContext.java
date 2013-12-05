@@ -5,9 +5,9 @@ import java.util.concurrent.Executor;
 
 import org.processmining.framework.connections.Connection;
 import org.processmining.framework.plugin.events.Logger;
+import org.processmining.framework.plugin.events.Logger.MessageLevel;
 import org.processmining.framework.plugin.events.PluginLifeCycleEventListener;
 import org.processmining.framework.plugin.events.ProgressEventListener;
-import org.processmining.framework.plugin.events.Logger.MessageLevel;
 import org.processmining.framework.plugin.impl.FieldNotSetException;
 import org.processmining.framework.plugin.impl.FieldSetException;
 import org.processmining.framework.util.Pair;
@@ -204,4 +204,5 @@ public interface PluginContext extends GlobalContext, ObjectConstructor {
 	 */
 	<T extends Connection> T addConnection(T c);
 
+	void clear();
 }

@@ -50,6 +50,10 @@ public class ConnectionManagerImpl implements ConnectionManager {
 		this.isEnabled = isEnabled;
 	}
 
+	public void clear() {
+		connections.clear();
+	}
+	
 	public <T extends Connection> T addConnection(T connection) {
 		if (isEnabled) {
 			synchronized (connections) {

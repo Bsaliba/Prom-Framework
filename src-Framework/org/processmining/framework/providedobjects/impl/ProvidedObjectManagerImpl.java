@@ -146,4 +146,9 @@ public class ProvidedObjectManagerImpl implements ProvidedObjectManager {
 	public boolean isEnabled() {
 		return enabled;
 	}
+	
+	public void clear() {
+		localProvidedObjects.clear();
+		ids.clear();
+	}
 }
