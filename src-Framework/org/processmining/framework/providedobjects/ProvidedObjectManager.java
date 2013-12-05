@@ -95,4 +95,8 @@ public interface ProvidedObjectManager {
 
 	void relabelProvidedObject(ProvidedObjectID id, String label) throws ProvidedObjectDeletedException;
 
+	public void setEnabled(boolean enabled);
+
+	public boolean isEnabled();
+
 }

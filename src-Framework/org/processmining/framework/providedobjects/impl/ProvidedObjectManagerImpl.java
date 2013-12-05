@@ -21,6 +21,8 @@ public class ProvidedObjectManagerImpl implements ProvidedObjectManager {
 	private final HashMap<ProvidedObjectID, ProvidedObjectImpl> localProvidedObjects;
 	private final List<ProvidedObjectID> ids;
 
+	private boolean enabled = true;
+
 	public ProvidedObjectManagerImpl() {
 		localProvidedObjects = new HashMap<ProvidedObjectID, ProvidedObjectImpl>();
 		ids = new ArrayList<ProvidedObjectID>();
@@ -53,17 +55,19 @@ public class ProvidedObjectManagerImpl implements ProvidedObjectManager {
 		// construct a new ProvidedObject
 		ProvidedObjectImpl po = new ProvidedObjectImpl(label, new ProvidedObjectIDImpl(), object, type, this);
 
-		// add it to the list of maintained PO's
-		localProvidedObjects.put(po.getID(), po);
-		ids.add(po.getID());
-		providedObjectLifeCycleListeners.fireProvidedObjectCreated(po.getID(), context);
-		if (!(object instanceof ProMFuture<?>)) {
-			providedObjectLifeCycleListeners.fireProvidedObjectFutureReady(po.getID());
-		} else {
-			try {
-				po.setLabel(((ProMFuture<?>) object).toString());
-			} catch (ProvidedObjectDeletedException e) {
-				assert (false);
+		if (enabled) {
+			// add it to the list of maintained PO's
+			localProvidedObjects.put(po.getID(), po);
+			ids.add(po.getID());
+			providedObjectLifeCycleListeners.fireProvidedObjectCreated(po.getID(), context);
+			if (!(object instanceof ProMFuture<?>)) {
+				providedObjectLifeCycleListeners.fireProvidedObjectFutureReady(po.getID());
+			} else {
+				try {
+					po.setLabel(((ProMFuture<?>) object).toString());
+				} catch (ProvidedObjectDeletedException e) {
+					assert (false);
+				}
 			}
 		}
 		return po.getID();
@@ -133,5 +137,13 @@ public class ProvidedObjectManagerImpl implements ProvidedObjectManager {
 
 	public void providedObjectObjectChanged(ProvidedObjectID objectID) {
 		// Ignore
+	}
+
+	public void setEnabled(boolean enabled) {
+		this.enabled = enabled;
+	}
+
+	public boolean isEnabled() {
+		return enabled;
 	}
 }
