@@ -150,5 +150,6 @@ public class ProvidedObjectManagerImpl implements ProvidedObjectManager {
 	public void clear() {
 		localProvidedObjects.clear();
 		ids.clear();
+		providedObjectLifeCycleListeners.removeAll();
 	}
 }
