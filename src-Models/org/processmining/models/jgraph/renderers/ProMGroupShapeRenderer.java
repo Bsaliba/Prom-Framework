@@ -12,10 +12,13 @@ package org.processmining.models.jgraph.renderers;
  * JGraph sales for another copy.
  */
 
+import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.Rectangle;
+import java.awt.Stroke;
 import java.awt.geom.Point2D;
 
 import org.jgraph.JGraph;
@@ -72,6 +75,11 @@ public class ProMGroupShapeRenderer extends ProMShapeRenderer {
 	public void paint(Graphics g) {
 		super.paint(g);
 		if (isGroup) {
+			Graphics2D g2 = (g instanceof Graphics2D ? (Graphics2D) g : null);
+			Stroke stroke = (g2 != null ? g2.getStroke() : null);
+			if (stroke != null) {
+				g2.setStroke(new BasicStroke());
+			}
 			g.setColor(handleColor);
 			g.fill3DRect(handle.x, handle.y, handle.width, handle.height, true);
 			g.setColor(graphForeground);
@@ -81,6 +89,9 @@ public class ProMGroupShapeRenderer extends ProMShapeRenderer {
 			if (view.isLeaf()) {
 				g.drawLine(handle.x + handle.width / 2, handle.y + 1, handle.x + handle.width / 2, handle.y
 						+ handle.height - 2);
+			}
+			if (stroke != null) {
+				g2.setStroke(stroke);
 			}
 		}
 	}
