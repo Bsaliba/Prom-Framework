@@ -25,7 +25,7 @@ public class CLIPluginContext extends AbstractPluginContext {
 		progress = new CLIProgressBar(this);
 		// This context is a child of another context,
 		// hence should behave in a synchronous way.
-		if (context.getParentContext() == null) {
+		if (context/*.getParentContext()*/ == null) {
 			// this context is on the first level below the user-initiated
 			// plugins
 			executor = Executors.newCachedThreadPool();
