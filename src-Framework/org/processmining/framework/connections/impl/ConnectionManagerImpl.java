@@ -94,7 +94,7 @@ public class ConnectionManagerImpl implements ConnectionManager {
 	private <T extends Connection> Collection<T> getConnections(boolean stopAtFirst, Class<T> connectionType,
 			PluginContext context, Object... objects) throws ConnectionCannotBeObtained {
 		List<T> available = new ArrayList<T>(1);
-		System.gc();
+		//System.gc();
 		synchronized (connections) {
 			Iterator<Map.Entry<ConnectionID, Connection>> it = connections.entrySet().iterator();
 			while (it.hasNext()) {

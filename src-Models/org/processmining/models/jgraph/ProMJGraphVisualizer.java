@@ -145,12 +145,13 @@ public class ProMJGraphVisualizer {
 
 	protected JGraphLayout getLayout(int orientation) {
 		JGraphHierarchicalLayout layout = new JGraphHierarchicalLayout();
-		layout.setDeterministic(false);
-		layout.setCompactLayout(false);
+		layout.setDeterministic(true);
+		layout.setCompactLayout(true);
 		layout.setFineTuning(true);
 		layout.setParallelEdgeSpacing(15);
 		layout.setFixRoots(false);
-
+		
+	
 		layout.setOrientation(orientation);
 
 		return layout;
