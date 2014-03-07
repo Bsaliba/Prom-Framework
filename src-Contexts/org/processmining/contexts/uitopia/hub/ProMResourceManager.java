@@ -63,6 +63,8 @@ public class ProMResourceManager extends UpdateSignaller implements ResourceMana
 
 	private static final String FAVORITEIMPORT = "favorite import for type ";
 
+	private static final String FAVORITEEXPORT = "favorite export for type ";
+
 	private static ProMResourceManager instance = null;
 
 	private final Map<Class<?>, ProMResourceType> resourceClasses = new HashMap<Class<?>, ProMResourceType>();
@@ -106,10 +108,13 @@ public class ProMResourceManager extends UpdateSignaller implements ResourceMana
 
 		String name = preferences.get(LASTIMPORTFILE, null);
 		lastImportedFile = name == null ? null : new File(name);
+		while (!lastImportedFile.exists()) {
+			lastImportedFile = lastImportedFile.getParentFile();
+		}
 		name = preferences.get(LASTEXPORTFILE, null);
 		lastExportedFile = name == null ? null : new File(name);
-		if (lastExportedFile != null && lastExportedFile.getParent() != null) {
-			lastExportedFile.getParent();
+		while (!lastExportedFile.exists()) {
+			lastExportedFile = lastImportedFile.getParentFile();
 		}
 
 		if (Boot.DO_SERIALIZATION) {
@@ -136,6 +141,9 @@ public class ProMResourceManager extends UpdateSignaller implements ResourceMana
 	public boolean exportResource(Resource resource) throws IOException {
 		assert (resource instanceof ProMResource<?>);
 
+		String lastChosenExportPlugin = preferences.get(FAVORITEEXPORT + resource.getType().getTypeName(), "");
+		FileFilter lastChosenFilter = null;
+
 		Map<FileFilter, PluginParameterBinding> exportplugins = new TreeMap<FileFilter, PluginParameterBinding>(
 				new Comparator<FileFilter>() {
 
@@ -152,6 +160,9 @@ public class ProMResourceManager extends UpdateSignaller implements ResourceMana
 				String extension = binding.getPlugin().getAnnotation(UIExportPlugin.class).extension();
 				FileNameExtensionFilter filter = new FileNameExtensionFilter(description, extension);
 				exportplugins.put(filter, binding);
+				if (description.equals(lastChosenExportPlugin)) {
+					lastChosenFilter = filter;
+				}
 			}
 		}
 
@@ -161,6 +172,9 @@ public class ProMResourceManager extends UpdateSignaller implements ResourceMana
 			fc.addChoosableFileFilter(filter);
 		}
 		fc.setAcceptAllFileFilterUsed(false);
+		if (lastChosenFilter != null) {
+			fc.setFileFilter(lastChosenFilter);
+		}
 
 		askForFile: while (true) {
 			int returnVal = fc.showSaveDialog(context.getUI());
@@ -187,13 +201,16 @@ public class ProMResourceManager extends UpdateSignaller implements ResourceMana
 
 				// HV Remember last file exported (and imported if not initialized yet).
 				lastExportedFile = file.getParentFile();
-				preferences.put(LASTEXPORTFILE, file.getAbsolutePath());
+				preferences.put(LASTEXPORTFILE, lastExportedFile.getAbsolutePath());
 				if (lastImportedFile == null) {
 					lastImportedFile = lastExportedFile;
-					preferences.put(LASTIMPORTFILE, file.getAbsolutePath());
+					preferences.put(LASTIMPORTFILE, lastImportedFile.getAbsolutePath());
 				}
 
 				PluginParameterBinding binding = exportplugins.get(selectedFilter);
+
+				preferences.put(FAVORITEEXPORT + resource.getType().getTypeName(),
+						binding.getPlugin().getAnnotation(UIExportPlugin.class).description());
 
 				UIPluginContext importContext = context.getMainPluginContext().createChildContext(
 						"Saving file with " + binding.getPlugin().getName());
@@ -340,7 +357,7 @@ public class ProMResourceManager extends UpdateSignaller implements ResourceMana
 		preferences.put(LASTIMPORTFILE, lastImportedFile.getAbsolutePath());
 		if (lastExportedFile == null) {
 			lastExportedFile = lastImportedFile;
-			preferences.put(LASTEXPORTFILE, lastImportedFile.getAbsolutePath());
+			preferences.put(LASTEXPORTFILE, lastExportedFile.getAbsolutePath());
 		}
 
 		if (binding == null) {
