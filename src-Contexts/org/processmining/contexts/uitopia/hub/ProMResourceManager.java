@@ -184,10 +184,10 @@ public class ProMResourceManager extends UpdateSignaller implements ResourceMana
 				}
 
 				// HV Remember last file exported (and imported if not initialized yet).
-				lastExportedFile = file;
+				lastExportedFile = file.getParentFile();
 				preferences.put(LASTEXPORTFILE, file.getAbsolutePath());
 				if (lastImportedFile == null) {
-					lastImportedFile = file;
+					lastImportedFile = lastExportedFile;
 					preferences.put(LASTIMPORTFILE, file.getAbsolutePath());
 				}
 
@@ -334,7 +334,7 @@ public class ProMResourceManager extends UpdateSignaller implements ResourceMana
 		}
 
 		// HV Remember the location of the last file imported (and exported if not initialized yet).
-		lastImportedFile = files[0];
+		lastImportedFile = files[0].getParentFile();
 		preferences.put(LASTIMPORTFILE, lastImportedFile.getAbsolutePath());
 		if (lastExportedFile == null) {
 			lastExportedFile = lastImportedFile;
