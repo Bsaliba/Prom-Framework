@@ -61,6 +61,8 @@ public class ProMResourceManager extends UpdateSignaller implements ResourceMana
 
 	private static final String LASTEXPORTFILE = "last export file location";
 
+	private static final String FAVORITEIMPORT = "favorite import for type ";
+
 	private static ProMResourceManager instance = null;
 
 	private final Map<Class<?>, ProMResourceType> resourceClasses = new HashMap<Class<?>, ProMResourceType>();
@@ -365,9 +367,14 @@ public class ProMResourceManager extends UpdateSignaller implements ResourceMana
 			binding = bindings.values().iterator().next();
 			if (bindings.size() > 1) {
 
+				String key = FAVORITEIMPORT + extractFileType(files[0].getAbsolutePath());
 				String[] possibilities = bindings.keySet().toArray(new String[0]);
+				String preferredImport = preferences.get(key, possibilities[0]);
+
 				String selected = (String) JOptionPane.showInputDialog(context.getUI(), "Available Import Plugins:",
-						"Select an import plugin...", JOptionPane.PLAIN_MESSAGE, null, possibilities, possibilities[0]);
+						"Select an import plugin...", JOptionPane.PLAIN_MESSAGE, null, possibilities, preferredImport);
+
+				preferences.put(key, selected);
 
 				binding = bindings.get(selected);
 			}
@@ -414,6 +421,12 @@ public class ProMResourceManager extends UpdateSignaller implements ResourceMana
 		}
 		return true;
 
+	}
+
+	private String extractFileType(String filename) {
+		int indexName = filename.lastIndexOf(File.separatorChar);
+		int indexDot = filename.indexOf('.', indexName);
+		return filename.substring(indexDot);
 	}
 
 	private void buildImportPlugins() {
