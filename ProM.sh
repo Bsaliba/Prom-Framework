@@ -3,7 +3,7 @@
 ###
 ## ProM specific
 ###
-PROGRAM=ProM63
+PROGRAM=ProM
 CP=./${PROGRAM}.jar
 LIBDIR=./lib
 MAIN=org.processmining.contexts.uitopia.UI
@@ -11,8 +11,8 @@ MAIN=org.processmining.contexts.uitopia.UI
 ####
 ## Environment options
 ###
-JAVA=/usr/java/default/bin/java
-MEM=1g
+JAVA=java
+MEM=4g
 
 ###
 ## Main program

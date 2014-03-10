@@ -3,7 +3,7 @@
 ###
 ## ProM specific
 ###
-PROGRAM=ProM63
+PROGRAM=ProM
 CP=./${PROGRAM}.jar
 LIBDIR=./lib
 MAIN=org.processmining.contexts.uitopia.packagemanager.PMFrame
@@ -11,7 +11,7 @@ MAIN=org.processmining.contexts.uitopia.packagemanager.PMFrame
 ####
 ## Environment options
 ###
-JAVA=/usr/java/default/bin/java
+JAVA=java
 MEM=1g
 
 ###
