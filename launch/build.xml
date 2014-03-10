@@ -306,6 +306,8 @@
 				<tarfileset dir="." prefix="@{name}" mode="755" username="prom" group="prom">
 					<include name="ProM.bat" />
 					<include name="PackageManager.bat" />
+					<include name="ProM.sh" />
+					<include name="PackageManager.sh" />
 					<include name="ProM.ini" />
 				</tarfileset>
 				<tarfileset dir="${doc}" prefix="@{name}/doc" mode="755" username="prom" group="prom">
