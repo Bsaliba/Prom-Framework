@@ -16,6 +16,7 @@ import java.awt.image.BufferedImage;
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
 import javax.swing.JComponent;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 
 import org.deckfour.uitopia.api.model.Resource;
@@ -39,7 +40,7 @@ public class ProMView implements View {
 	private BufferedImage original;
 	private BufferedImage scaledImage;
 	private final Pair<Integer, PluginParameterBinding> binding;
-	private Boolean working = true;
+	private boolean working = true;
 
 	public ProMView(ProMViewManager manager, ProMViewType type, ProMResource<?> resource, String name,
 			Pair<Integer, PluginParameterBinding> binding) {
@@ -188,12 +189,13 @@ public class ProMView implements View {
 
 			public void run() {
 				manager.getContext().getController().getMainView().showOverlay(dialog);
-				synchronized (working) {
+				synchronized (ProMView.this) {
 					working = true;
 				}
 
 				PluginExecutionResult result = binding.getSecond().invoke(context, resource.getInstance());
 
+				String message = "";
 				JComponent content = null;
 				try {
 					context.log("Starting visualization of " + resource);
@@ -205,6 +207,7 @@ public class ProMView implements View {
 				} catch (Exception e) {
 					//throw new IllegalArgumentException("Failed to create visualization of " + resource, e);
 					manager.getContext().getController().getMainView().showWorkspaceView();
+					message = e.getMessage();
 				} finally {
 					context.getParentContext().deleteChild(context);
 
@@ -216,13 +219,15 @@ public class ProMView implements View {
 						} catch (Exception e) {
 							e.printStackTrace();
 							//ignore
+							message = e.getMessage();
 						}
 					}
-					dialog.changeProgress(dialog.getMaximum());
-					synchronized (working) {
-						working = false;
+					if (component.getComponents().length == 0) {
+						component.add(new JLabel("<HTML>Unable to produce visualization. Reason:<BR>"+message+"</HTML>"), BorderLayout.CENTER);
 					}
+					dialog.changeProgress(dialog.getMaximum());
 					synchronized (ProMView.this) {
+						working = false;
 						ProMView.this.notifyAll();
 					}
 					manager.getContext().getController().getMainView().hideOverlay();
