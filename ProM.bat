@@ -12,6 +12,6 @@
 
 @for /R . %%I IN ("\lib\*.jar") DO @call :add .\lib\%%~nI.jar
 
-@java -Xmx4G -classpath "%X%" -Djava.library.path=.//lib -Xmx1G org.processmining.contexts.uitopia.UI
+@java -Xmx4G -classpath "%X%" -XX:+UseCompressedOops -Djava.library.path=.//lib org.processmining.contexts.uitopia.UI
 
 set X=
