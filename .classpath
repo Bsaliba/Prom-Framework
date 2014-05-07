@@ -17,7 +17,6 @@
 	<classpathentry kind="lib" path="lib/jargs.jar"/>
 	<classpathentry kind="lib" path="lib/jcommon-1.0.16.jar"/>
 	<classpathentry kind="lib" path="lib/jfreechart-1.0.13.jar"/>
-	<classpathentry kind="lib" path="lib/jgraph.jar"/>
 	<classpathentry kind="lib" path="lib/jlfgr-1_0.jar"/>
 	<classpathentry kind="lib" path="lib/jung-algorithms-2.0.jar"/>
 	<classpathentry kind="lib" path="lib/jung-api-2.0.jar"/>
@@ -30,8 +29,6 @@
 	<classpathentry kind="lib" path="lib/slickerbox1.0rc1.jar"/>
 	<classpathentry kind="lib" path="lib/Spex.jar"/>
 	<classpathentry kind="lib" path="lib/TableLayout-20050920.jar"/>
-	<classpathentry kind="lib" path="lib/Uitopia.jar"/>
-	<classpathentry kind="lib" path="lib/UITopiaResources.jar"/>
 	<classpathentry kind="lib" path="lib/weka.jar"/>
 	<classpathentry kind="lib" path="lib/xpp3-1.1.4c.jar"/>
 	<classpathentry kind="lib" path="lib/xstream-1.3.1.jar"/>
@@ -54,5 +51,7 @@
 	<classpathentry kind="lib" path="lib/openide-lookup-1.9-patched-1.0.jar"/>
 	<classpathentry kind="lib" path="lib/junit-4.8.1.jar"/>
 	<classpathentry kind="lib" path="lib/guava-16.0.1.jar"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/UItopia"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/JGraph4ProM"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
