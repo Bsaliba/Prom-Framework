@@ -91,7 +91,14 @@ public class ProMJGraphVisualizer {
 		//		graph.signalViews();
 
 		ProMGraphModel model = new ProMGraphModel(graph);
-		ProMJGraph jgraph = new ProMJGraph(model, map, layoutConnection);
+		ProMJGraph jgraph;
+		/*
+		 * Make sure that only a single ProMJGraph is created at every time.
+		 * The underlying JGrpah code cannot handle creating multiple creations at the same time.
+		 */
+		synchronized (instance) {
+			jgraph = new ProMJGraph(model, map, layoutConnection);
+		}
 
 		JGraphLayout layout = getLayout(map.get(graph, AttributeMap.PREF_ORIENTATION, SwingConstants.SOUTH));
 
