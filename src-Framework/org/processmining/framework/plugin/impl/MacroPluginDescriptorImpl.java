@@ -22,7 +22,6 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
-import org.deckfour.xes.xstream.XesXStreamPersistency;
 import org.processmining.framework.connections.Connection;
 import org.processmining.framework.packages.PackageDescriptor;
 import org.processmining.framework.plugin.PluginContext;
@@ -33,6 +32,7 @@ import org.processmining.framework.plugin.PluginManager;
 import org.processmining.framework.util.ArrayUtils;
 import org.processmining.framework.util.Cast;
 import org.processmining.framework.util.Pair;
+import org.processmining.framework.xstream.XStreamPersistency;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
@@ -464,7 +464,7 @@ class McrFileLoader {
 		XStream stream = new XStream();
 		stream.autodetectAnnotations(true);
 
-		XesXStreamPersistency.register(stream);
+		XStreamPersistency.register(stream);
 
 		NodeList nodes = doc.getElementsByTagName("SerializedTypes");
 		for (int i = 0; i < nodes.getLength(); i++) {

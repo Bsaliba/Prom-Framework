@@ -17,8 +17,6 @@ import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
 
 import org.deckfour.uitopia.api.model.ResourceType;
-import org.deckfour.xes.util.progress.XMonitoredInputStream;
-import org.deckfour.xes.util.progress.XProgressListener;
 import org.processmining.contexts.uitopia.UIContext;
 import org.processmining.contexts.uitopia.hub.overlay.ProgressOverlayDialog;
 import org.processmining.contexts.uitopia.hub.serialization.IDReferencePair.MType;
@@ -32,6 +30,8 @@ import org.processmining.framework.connections.Connection;
 import org.processmining.framework.providedobjects.ContextAwareObject;
 import org.processmining.framework.providedobjects.ProvidedObjectID;
 import org.processmining.framework.providedobjects.ProvidedObjectManager;
+import org.processmining.framework.util.progress.XMonitoredInputStream;
+import org.processmining.framework.util.progress.XProgressListener;
 
 import com.thoughtworks.xstream.io.StreamException;
 

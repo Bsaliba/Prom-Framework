@@ -6,22 +6,13 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.deckfour.uitopia.api.model.Author;
-import org.deckfour.xes.model.XLog;
 
 public class ProMResourceTypeInformation {
-
-	private final static String TUE = "Eindhoven University of Technology";
-	private final static String PMO = "http://www.processmining.org";
 
 	private final static Map<Class<?>, ResourceTypeInfo> typeInfo = new HashMap<Class<?>, ResourceTypeInfo>();
 	private static ProMResourceTypeInformation instance;
 
 	private ProMResourceTypeInformation() {
-		// XLog.class
-		typeInfo.put(XLog.class, new ResourceTypeInfo("Event Log", TUE, "h.m.w.verbeek@tue.nl", "Eric Verbeek", PMO,
-				"resourcetype_log_30x35.png"));
-
-		// More classes
 	}
 
 	public final static ProMResourceTypeInformation getInstance() {
@@ -33,6 +24,11 @@ public class ProMResourceTypeInformation {
 
 	public ResourceTypeInfo getInfoFor(Class<?> type) {
 		return typeInfo.get(type);
+	}
+	
+	public void setInfoFor(Class<?> type, String typename, String affiliation, String email, String author, String website,
+			String icon) {
+		typeInfo.put(type, new ResourceTypeInfo(typename, affiliation, email, author, website, icon));
 	}
 }
 

@@ -4,9 +4,9 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
 
-import org.deckfour.xes.xstream.XesXStreamPersistency;
 import org.processmining.contexts.uitopia.hub.serialization.ProMReferenceMarshaller.ReferenceListener;
 import org.processmining.framework.util.OsUtil;
+import org.processmining.framework.xstream.XStreamPersistency;
 
 import com.thoughtworks.xstream.XStream;
 
@@ -44,7 +44,7 @@ public class SerializationConstants {
 		XStream xstream = new XStream();
 		xstream.setMarshallingStrategy(new ReusingReferenceByIdMarshallingStrategy(listener, referencesToKeep));
 		xstream.autodetectAnnotations(true);
-		XesXStreamPersistency.register(xstream);
+		XStreamPersistency.register(xstream);
 		return xstream;
 	}
 

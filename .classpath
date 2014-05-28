@@ -23,8 +23,6 @@
 	<classpathentry kind="lib" path="lib/jung-graph-impl-2.0.jar"/>
 	<classpathentry kind="lib" path="lib/jung-io-2.0.jar"/>
 	<classpathentry kind="lib" path="lib/jung-visualization-2.0.jar"/>
-	<classpathentry kind="lib" path="lib/OpenXES-XStream.jar"/>
-	<classpathentry kind="lib" path="lib/OpenXES.jar" sourcepath="/OpenXES/src"/>
 	<classpathentry kind="lib" path="lib/simmetrics.jar"/>
 	<classpathentry kind="lib" path="lib/slickerbox1.0rc1.jar"/>
 	<classpathentry kind="lib" path="lib/Spex.jar"/>
@@ -51,7 +49,8 @@
 	<classpathentry kind="lib" path="lib/openide-lookup-1.9-patched-1.0.jar"/>
 	<classpathentry kind="lib" path="lib/junit-4.8.1.jar"/>
 	<classpathentry kind="lib" path="lib/guava-16.0.1.jar"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/UItopia"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/JGraph4ProM"/>
+	<classpathentry kind="lib" path="lib/Uitopia.jar"/>
+	<classpathentry kind="lib" path="lib/UITopiaResources.jar"/>
+	<classpathentry kind="lib" path="lib/jgraph.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
