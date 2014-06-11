@@ -11,7 +11,6 @@
 	<classpathentry kind="lib" path="lib/collections-generic-4.01.jar"/>
 	<classpathentry kind="lib" path="lib/colt.jar"/>
 	<classpathentry kind="lib" path="lib/commons-compress-1.0.jar"/>
-	<classpathentry kind="lib" path="lib/commons-math-1.2.jar"/>
 	<classpathentry kind="lib" path="lib/FilterableSortableTablePanel.jar"/>
 	<classpathentry kind="lib" path="lib/flanagan.jar"/>
 	<classpathentry kind="lib" path="lib/jargs.jar"/>
@@ -52,5 +51,6 @@
 	<classpathentry kind="lib" path="lib/Uitopia.jar"/>
 	<classpathentry kind="lib" path="lib/UITopiaResources.jar"/>
 	<classpathentry kind="lib" path="lib/jgraph.jar"/>
+	<classpathentry kind="lib" path="lib/commons-math-3.1.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
