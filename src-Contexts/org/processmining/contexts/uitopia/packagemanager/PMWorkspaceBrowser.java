@@ -130,5 +130,6 @@ public class PMWorkspaceBrowser extends JPanel {
 		});
 
 		this.add(tabs, BorderLayout.CENTER);
+		this.add(new PMMemoryView(), BorderLayout.SOUTH);
 	}
 }

@@ -195,7 +195,6 @@ public class PMPackageListBrowser extends JPanel {
 		setLayout(new BorderLayout());
 		this.add(browser, BorderLayout.CENTER);
 		this.add(viewport, BorderLayout.EAST);
-
 	}
 
 	private void sortList(boolean keepSelection) {
@@ -251,6 +250,8 @@ public class PMPackageListBrowser extends JPanel {
 		if (!selectedPacks.isEmpty()) {
 			pmPackageView = new PMPackageView(selectedPacks, controller);
 			viewport.add(pmPackageView, BorderLayout.CENTER);
+		} else {
+			viewport.add(new JLabel("No packages selected"), BorderLayout.CENTER);
 		}
 		viewport.revalidate();
 	}
