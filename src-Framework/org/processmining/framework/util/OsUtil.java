@@ -5,6 +5,10 @@ import java.io.IOException;
 
 import org.processmining.framework.boot.Boot;
 
+import sun.management.ManagementFactoryHelper;
+
+import com.sun.management.OperatingSystemMXBean;
+
 public class OsUtil {
 
 	public static final String OS_WIN32 = "Windows 32 bit";
@@ -116,4 +120,8 @@ public class OsUtil {
 		return dir;
 	}
 
+	public static long getPhysicalMemory() {
+		OperatingSystemMXBean operatingSystemMXBean = (OperatingSystemMXBean) ManagementFactoryHelper.getOperatingSystemMXBean();
+		return operatingSystemMXBean.getTotalPhysicalMemorySize();		
+	}
 }
