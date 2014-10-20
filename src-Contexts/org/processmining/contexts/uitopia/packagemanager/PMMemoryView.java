@@ -274,7 +274,7 @@ public class PMMemoryView extends RoundedPanel implements ActionListener {
 	private boolean updateIniFile() {
 		PrintWriter writer;
 		try {
-			writer = new PrintWriter("ProM641.l4j.ini", "UTF-8");
+			writer = new PrintWriter("ProM.l4j.ini", "UTF-8");
 			writer.println("-Xmx" + selectedMem + " -XX:MaxPermSize=256m");
 			writer.close();
 			return true;
@@ -288,10 +288,10 @@ public class PMMemoryView extends RoundedPanel implements ActionListener {
 	private boolean updateBatFile() {
 		PrintWriter writer;
 		try {
-			writer = new PrintWriter("ProM641.bat", "UTF-8");
+			writer = new PrintWriter("ProM.bat", "UTF-8");
 			writer.println("java -da -Xmx"
 					+ selectedMem
-					+ " -XX:MaxPermSize=256m -classpath ProM641.jar -Djava.util.Arrays.useLegacyMergeSort=true org.processmining.contexts.uitopia.UI");
+					+ " -XX:MaxPermSize=256m -classpath ProM.jar -Djava.util.Arrays.useLegacyMergeSort=true org.processmining.contexts.uitopia.UI");
 			writer.close();
 			return true;
 		} catch (FileNotFoundException e) {
@@ -304,18 +304,18 @@ public class PMMemoryView extends RoundedPanel implements ActionListener {
 	private boolean updateShFile() {
 		PrintWriter writer;
 		try {
-			writer = new PrintWriter("ProM641.sh", "UTF-8");
+			writer = new PrintWriter("ProM.sh", "UTF-8");
 			writer.println("#!/bin/sh");
-			writer.println("CP=./ProM641.jar");
+			writer.println("CP=./ProM.jar");
 			writer.println("MEM=" + selectedMem);
 			writer.println("add() {");
-			writer.println("\tCP=$(CP}:$1");
+			writer.println("\tCP=${CP}:$1");
 			writer.println("}");
 			writer.println("for lib in ./lib/*.jar");
 			writer.println("do");
 			writer.println("\tadd $lib");
 			writer.println("done");
-			writer.println("java -classpath ${CP} -Djava.library.path=./lib -da -Xmx${MEM} -XX:MaxPermSize=256m -XX:+UseCompressedOops -Djava.util.Arrays.useLegacyMergeSort=true org.processmining.context.uitopia.UI");
+			writer.println("java -classpath ${CP} -Djava.library.path=./lib -da -Xmx${MEM} -XX:MaxPermSize=256m -XX:+UseCompressedOops -Djava.util.Arrays.useLegacyMergeSort=true org.processmining.contexts.uitopia.UI");
 			writer.close();
 			return true;
 		} catch (FileNotFoundException e) {
