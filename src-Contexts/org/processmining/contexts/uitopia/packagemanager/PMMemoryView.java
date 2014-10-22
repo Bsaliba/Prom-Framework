@@ -291,7 +291,7 @@ public class PMMemoryView extends RoundedPanel implements ActionListener {
 			writer = new PrintWriter("ProM.bat", "UTF-8");
 			writer.println("java -da -Xmx"
 					+ selectedMem
-					+ " -XX:MaxPermSize=256m -classpath ProM.jar -Djava.util.Arrays.useLegacyMergeSort=true org.processmining.contexts.uitopia.UI");
+					+ " -XX:MaxPermSize=256m -classpath .\\dist\\ProM-Framework.jar;.\\dist\\ProM-Contexts.jar;.\\dist\\ProM-Models.jar;.\\dist\\ProM-Plugins.jar -Djava.util.Arrays.useLegacyMergeSort=true org.processmining.contexts.uitopia.UI");
 			writer.close();
 			return true;
 		} catch (FileNotFoundException e) {
