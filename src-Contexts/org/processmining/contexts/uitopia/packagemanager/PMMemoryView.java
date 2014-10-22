@@ -289,9 +289,26 @@ public class PMMemoryView extends RoundedPanel implements ActionListener {
 		PrintWriter writer;
 		try {
 			writer = new PrintWriter("ProM.bat", "UTF-8");
-			writer.println("java -da -Xmx"
+			writer.println("@GOTO start");
+			writer.println("");
+			writer.println(":add");
+			writer.println(" @set X=%X%;%1");
+			writer.println(" @GOTO :eof");
+			writer.println("");
+			writer.println(":start");
+			writer.println("@set X=.\\dist\\ProM-Framework.jar");
+			writer.println("@set X=%X%;.\\dist\\ProM-Contexts.jar");
+			writer.println("@set X=%X%;.\\dist\\ProM-Models.jar");
+			writer.println("@set X=%X%;.\\dist\\ProM-Plugins.jar");
+			writer.println("");
+			writer.println("@for /R . %%I IN (\"\\lib\\*.jar\") DO @call :add .\\lib\\%%~nI.jar");
+			writer.println("");
+			writer.println("@java -Xmx"
 					+ selectedMem
-					+ " -XX:MaxPermSize=256m -classpath .\\dist\\ProM-Framework.jar;.\\dist\\ProM-Contexts.jar;.\\dist\\ProM-Models.jar;.\\dist\\ProM-Plugins.jar -Djava.util.Arrays.useLegacyMergeSort=true org.processmining.contexts.uitopia.UI");
+					+ " -XX:MaxPermSize=256m -classpath \"%X%\" -XX:+UseCompressedOops -Djava.library.path=.//lib -Djava.util.Arrays.useLegacyMergeSort=true org.processmining.contexts.uitopia.UI");
+			writer.println("");
+			writer.println("set X=");
+			writer.println("");
 			writer.close();
 			return true;
 		} catch (FileNotFoundException e) {
