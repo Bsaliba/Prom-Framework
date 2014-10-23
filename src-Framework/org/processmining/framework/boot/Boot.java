@@ -36,7 +36,6 @@ public class Boot {
 	public static String MACRO_FOLDER;
 	public static String PACKAGE_FOLDER;
 	public static String WORKSPACE_FOLDER;
-	public static boolean DO_SERIALIZATION;
 	public static Level VERBOSE;
 	public static URL DEFAULT_REPOSITORY;
 	public static int OPENXES_SHADOW_SIZE;
@@ -69,8 +68,6 @@ public class Boot {
 		PROM_VERSION = ini.getProperty("PROM_VERSION");
 
 		RELEASE_PACKAGE = ini.getProperty("RELEASE_PACKAGE");
-
-		DO_SERIALIZATION = Boolean.parseBoolean(ini.getProperty("DO_SERIALIZATION", "true"));
 
 //		OPENXES_SHADOW_SIZE = Integer.parseInt(ini.getProperty("OPENXES_SHADOW_SIZE", "4"));
 //		NikeFS2FileAccessMonitor.instance(OPENXES_SHADOW_SIZE);

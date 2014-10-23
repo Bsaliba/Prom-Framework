@@ -12,7 +12,6 @@ import org.processmining.contexts.uitopia.hub.ProMActionManager;
 import org.processmining.contexts.uitopia.hub.ProMResourceManager;
 import org.processmining.contexts.uitopia.hub.ProMTaskManager;
 import org.processmining.contexts.uitopia.hub.ProMViewManager;
-import org.processmining.contexts.uitopia.hub.serialization.DeSerializationThread;
 import org.processmining.contexts.uitopia.model.ProMAction;
 import org.processmining.contexts.uitopia.model.ProMPOResource;
 import org.processmining.contexts.uitopia.model.ProMResource;
@@ -93,11 +92,7 @@ public class UIContext extends AbstractGlobalContext implements
 	}
 
 	public void startup() {
-		try {
-			new DeSerializationThread(this, "Restoring Workspace ...").execute();
-		} catch (Exception e) {
-			System.err.println("deserialization Error: " + e.getMessage());
-		}
+		// Nothing to do (since (de)serialization was abandoned).
 	}
 
 	public UITopiaFrame getUI() {
