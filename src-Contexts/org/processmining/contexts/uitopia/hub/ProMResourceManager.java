@@ -377,11 +377,12 @@ public class ProMResourceManager extends UpdateSignaller implements ResourceMana
 				String selected = (String) JOptionPane.showInputDialog(context.getUI(), "Available Import Plugins:",
 						"Select an import plugin...", JOptionPane.PLAIN_MESSAGE, null, possibilities, preferredImport);
 
-				if (selected != null) {
-					preferences.put(key, selected);
-
-					binding = bindings.get(selected);
+				if (selected == null) {
+					return false;
 				}
+				
+				preferences.put(key, selected);
+				binding = bindings.get(selected);
 			}
 		}
 		if (binding == null) {
