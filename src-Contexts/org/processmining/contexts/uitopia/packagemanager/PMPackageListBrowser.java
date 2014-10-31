@@ -67,6 +67,20 @@ public class PMPackageListBrowser extends JPanel {
 		updateData();
 	}
 
+	public boolean isEmpty() {
+		return packages.isEmpty();
+	}
+	
+	public void selectPackage(String name) {
+		for (int i = 0; i < listModel.getSize(); i++) {
+			if (((PMPackage) listModel.getElementAt(i)).getPackageName().equals(name)) {
+				packageList.setSelectedIndex(i);
+				packageList.ensureIndexIsVisible(i);
+				return;
+			}
+		}
+	}
+	
 	public void setSelectionContent(PMPackage reference, boolean showParents) {
 		if (showParents) {
 			packages = controller.getParentPackages(reference);

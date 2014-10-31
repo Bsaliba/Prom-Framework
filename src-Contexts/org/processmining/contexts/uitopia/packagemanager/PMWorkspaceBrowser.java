@@ -6,10 +6,12 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 import javax.swing.JComponent;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 
 import org.deckfour.uitopia.ui.util.ImageLoader;
+import org.processmining.framework.boot.Boot;
 
 import com.fluxicon.slickerbox.components.IconVerticalTabbedPane;
 
@@ -49,7 +51,7 @@ public class PMWorkspaceBrowser extends JPanel {
 		//					}
 		//				});
 	}
-	
+
 	public PMPackageListBrowser getSelectedBrowser() {
 		return (PMPackageListBrowser) tabs.getSelected();
 	}
@@ -128,6 +130,29 @@ public class PMWorkspaceBrowser extends JPanel {
 				browserSelection.updateData();
 			}
 		});
+
+		/*
+		 * Pre-select the tab that is most likely of use to the user
+		 */
+		PMPackageListBrowser currentBrowser = browserToUninstall;
+	JOptionPane.showMessageDialog(controller.getMainView(), "Checking packages.");
+		if (currentBrowser.isEmpty()) {
+			currentBrowser = browserToUpdate;
+			if (currentBrowser.isEmpty()) {
+				currentBrowser = browserToInstall;
+				if (!currentBrowser.isEmpty()) {
+					/*
+					 * No packages at all. User may have no internet conenction.
+					 */
+					JOptionPane.showMessageDialog(controller.getMainView(), "No packages were found. Please check your internet connection.");
+				}
+			}
+		}
+		/*
+		 * And pre-select the most important package.
+		 */
+		currentBrowser.selectPackage(Boot.RELEASE_PACKAGE);
+		tabs.selectTab(currentBrowser);
 
 		this.add(tabs, BorderLayout.CENTER);
 		this.add(new PMMemoryView(), BorderLayout.SOUTH);
