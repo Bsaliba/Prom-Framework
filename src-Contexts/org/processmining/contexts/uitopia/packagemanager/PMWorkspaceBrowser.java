@@ -135,7 +135,6 @@ public class PMWorkspaceBrowser extends JPanel {
 		 * Pre-select the tab that is most likely of use to the user
 		 */
 		PMPackageListBrowser currentBrowser = browserToUninstall;
-	JOptionPane.showMessageDialog(controller.getMainView(), "Checking packages.");
 		if (currentBrowser.isEmpty()) {
 			currentBrowser = browserToUpdate;
 			if (currentBrowser.isEmpty()) {
