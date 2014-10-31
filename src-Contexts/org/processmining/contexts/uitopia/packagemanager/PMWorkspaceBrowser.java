@@ -139,7 +139,7 @@ public class PMWorkspaceBrowser extends JPanel {
 			currentBrowser = browserToUpdate;
 			if (currentBrowser.isEmpty()) {
 				currentBrowser = browserToInstall;
-				if (!currentBrowser.isEmpty()) {
+				if (currentBrowser.isEmpty()) {
 					/*
 					 * No packages at all. User may have no internet conenction.
 					 */
