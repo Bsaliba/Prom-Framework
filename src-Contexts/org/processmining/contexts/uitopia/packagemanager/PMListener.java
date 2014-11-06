@@ -34,7 +34,7 @@ public class PMListener implements PackageManagerListener {
 		} else if (t instanceof SAXException) {
 			exception("SAX Exception: " + t, true);
 		} else if (t instanceof ParserConfigurationException) {
-			exception("Parser Confirguarion Exception: " + t, true);
+			exception("Parser Configuration Exception: " + t, true);
 		} else if (t instanceof UnknownPackageException) {
 			exception("Unknown Package Exception: " + t, true);
 		} else if (t instanceof MalformedURLException) {
