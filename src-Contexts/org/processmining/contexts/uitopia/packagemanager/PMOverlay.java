@@ -132,7 +132,13 @@ public class PMOverlay extends TwoButtonOverlayDialog implements PackageManager.
 		getOKButton().setEnabled(true);
 		getCancelButton().setEnabled(false);
 		if (error) {
-			close(true);
+			// HV: Do not auto-close on an error, as the error message will get lost.
+			// Wait for the user to close the overlay.
+			//close(true);
+			
+			// Indicate that an error has occurred.
+			addText("An error has occurred. Please select OK to continue.");
+			log.setForeground(new Color(90, 0, 0));
 		} else {
 			final String message = "Closing in " + TIMEOUT + " seconds.";
 			log.append(message);

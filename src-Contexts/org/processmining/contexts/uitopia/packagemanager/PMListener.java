@@ -1,12 +1,21 @@
 package org.processmining.contexts.uitopia.packagemanager;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.zip.ZipException;
+
+import javax.xml.parsers.ParserConfigurationException;
 
 import org.deckfour.uitopia.ui.main.Overlayable;
 import org.processmining.framework.packages.PackageDescriptor;
 import org.processmining.framework.packages.PackageManager;
+import org.processmining.framework.packages.UnknownPackageException;
 import org.processmining.framework.packages.events.PackageManagerListener;
+import org.processmining.framework.packages.impl.CancelledException;
+import org.xml.sax.SAXException;
 
 public class PMListener implements PackageManagerListener {
 
@@ -20,13 +29,37 @@ public class PMListener implements PackageManagerListener {
 	private PMOverlay pmOverlay;
 
 	public synchronized void exception(Throwable t) {
-		exception(t.getMessage());
+		if (t instanceof IOException) {
+			exception("I/O Exception: " + t, true);
+		} else if (t instanceof SAXException) {
+			exception("SAX Exception: " + t, true);
+		} else if (t instanceof ParserConfigurationException) {
+			exception("Parser Confirguarion Exception: " + t, true);
+		} else if (t instanceof UnknownPackageException) {
+			exception("Unknown Package Exception: " + t, true);
+		} else if (t instanceof MalformedURLException) {
+			exception("Malformed URL Exception: " + t, true);
+		} else if (t instanceof FileNotFoundException) {
+			exception("File Not Found Exception: " + t, true);
+		} else if (t instanceof CancelledException) {
+			exception("Cancelled Exception: " + t, true);
+		} else if (t instanceof SecurityException) {
+			exception("Security Exception: " + t, true);
+		} else if (t instanceof ZipException) {
+			exception("ZIP Exception: " + t, true);
+		} else {
+			exception(t.getMessage());
+		}
 	}
 
 	public synchronized void exception(String exception) {
-		pmOverlay.addText("Error: " + exception);
+		exception(exception, false);
 	}
 
+	private void exception(String exception, boolean hasPrefix) {
+		pmOverlay.addText((hasPrefix ? "" : "Error: ") + exception);	
+	}
+	
 	public synchronized void startDownload(String packageName, URL url, PackageDescriptor pack) {
 		pmOverlay.setPackage(pack);
 		pmOverlay.addText("Downloading: " + packageName);
