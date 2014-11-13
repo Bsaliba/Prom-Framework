@@ -58,7 +58,10 @@ public class JGraphShapeView extends VertexView implements Cleanable {
 	@Override
 	public ProMShapeRenderer getRenderer() {
 		if (renderer == null) {
-			renderer = new ProMGroupShapeRenderer();
+			renderer = node.getAttributeMap().get(AttributeMap.RENDERER, null);
+			if (renderer == null) {
+				renderer = new ProMGroupShapeRenderer();
+			}
 		}
 		return renderer;
 	}

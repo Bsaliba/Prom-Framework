@@ -6,6 +6,7 @@ import java.util.List;
 
 import org.jgraph.graph.EdgeView;
 import org.processmining.framework.util.Cleanable;
+import org.processmining.models.graphbased.AttributeMap;
 import org.processmining.models.graphbased.ViewSpecificAttributeMap;
 import org.processmining.models.graphbased.directed.DirectedGraphEdge;
 import org.processmining.models.jgraph.elements.ProMGraphEdge;
@@ -44,7 +45,10 @@ public class JGraphEdgeView extends EdgeView implements Cleanable {
 	@Override
 	public ProMEdgeRenderer getRenderer() {
 		if (renderer == null) {
-			renderer = new ProMEdgeRenderer();
+			renderer = edge.getAttributeMap().get(AttributeMap.RENDERER, null);
+			if (renderer == null) {
+				renderer = new ProMEdgeRenderer();
+			}
 		}
 		return renderer;
 	}

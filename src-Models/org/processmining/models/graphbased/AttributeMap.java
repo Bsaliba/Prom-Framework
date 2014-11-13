@@ -74,6 +74,11 @@ public class AttributeMap {
 	 */
 	public static final String EXTRALABELS = "Extra Labels";
 
+	/**
+	 * Renderer to be used.
+	 */
+	public static final String RENDERER = "Renderer";
+
 	private final Map<String, Object> mapping = new LinkedHashMap<String, Object>();
 
 	public AttributeMap() {
