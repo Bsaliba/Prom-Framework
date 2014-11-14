@@ -1,7 +1,5 @@
 package org.processmining.framework.connections;
 
-import java.util.Arrays;
-
 import org.processmining.framework.connections.annotations.ConnectionDoesntExistMessage;
 
 /**
@@ -40,9 +38,11 @@ public class ConnectionCannotBeObtained extends Exception {
 	 *            the objects on which a connection was requested
 	 */
 	public ConnectionCannotBeObtained(String reason, Class<?> connectionType, Object... objects) {
-		super("No connection of type " + connectionType.getSimpleName() + " can be obtained for objects: "
-				+ Arrays.toString(objects) + "\n The reason given is: " + reason + "\n "
-				+ getDoesntExistMessage(connectionType));
+		super("No connection of type " + connectionType.getSimpleName() + 
+//				" can be obtained for objects: " + Arrays.toString(objects) + 
+				"\n The reason given is: " + reason + "\n "
+				+ getDoesntExistMessage(connectionType))
+				;
 		this.connectionType = connectionType;
 	}
 
