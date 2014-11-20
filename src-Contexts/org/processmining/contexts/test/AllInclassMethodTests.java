@@ -191,10 +191,10 @@ public class AllInclassMethodTests {
 
 	
 	private String loadClassFromFile(URLClassLoader loader, URL url, String classFilename) {
-		if (classFilename.indexOf(INNER_CLASS_MARKER) >= 0) {
-			// we're not going to load inner classes
-			return null;
-		}
+//		if (classFilename.indexOf(INNER_CLASS_MARKER) >= 0) {
+//			// we're not going to load inner classes
+//			return null;
+//		}
 		return loadClass(loader, url, classFilename.substring(0, classFilename.length() - PluginManager.CLASS_EXTENSION.length())
 				.replace(URL_SEPARATOR, PACKAGE_SEPARATOR).replace(File.separatorChar, PACKAGE_SEPARATOR));
 	}

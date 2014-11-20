@@ -406,92 +406,98 @@ public final class PluginManagerImpl implements PluginManager {
 		return newTypes;
 	}
 
-	private boolean isGoodPlugin(Class<?> type) {
-		if (!isRightlyAnnotated(type)) {
-			return false;
-		}
-		String[] names = type.getAnnotation(Plugin.class).parameterLabels();
-		Class<?>[] returnTypes = type.getAnnotation(Plugin.class).returnTypes();
-
-		// Check if there is at least one method annotated with PluginVariant
-		List<Method> methods = new ArrayList<Method>();
-		for (Method m : type.getMethods()) {
-			if (m.isAnnotationPresent(PluginVariant.class)) {
-				methods.add(m);
+	private boolean isGoodPlugin(Class<?> type)  {
+		try {
+			if (!isRightlyAnnotated(type)) {
+				return false;
 			}
-		}
-
-		// Check if for all methods, the requiredTypes are set Correctly
-		Iterator<Method> it = methods.iterator();
-		loop: while (it.hasNext()) {
-			Method m = it.next();
-			int[] required = m.getAnnotation(PluginVariant.class).requiredParameterLabels();
-			Set<Integer> set = new HashSet<Integer>();
-			for (int i : required) {
-				set.add(i);
-				if ((i < 0) || (i >= names.length)) {
+			String[] names = type.getAnnotation(Plugin.class).parameterLabels();
+			Class<?>[] returnTypes = type.getAnnotation(Plugin.class).returnTypes();
+	
+			// Check if there is at least one method annotated with PluginVariant
+			List<Method> methods = new ArrayList<Method>();
+			for (Method m : type.getMethods()) {
+				if (m.isAnnotationPresent(PluginVariant.class)) {
+					methods.add(m);
+				}
+			}
+	
+			// Check if for all methods, the requiredTypes are set Correctly
+			Iterator<Method> it = methods.iterator();
+			loop: while (it.hasNext()) {
+				Method m = it.next();
+				int[] required = m.getAnnotation(PluginVariant.class).requiredParameterLabels();
+				Set<Integer> set = new HashSet<Integer>();
+				for (int i : required) {
+					set.add(i);
+					if ((i < 0) || (i >= names.length)) {
+						if (Boot.VERBOSE != Level.NONE) {
+							System.err
+									.println("Method "
+											+ m.toString()
+											+ " could not be added as a plugin. At least one required parameter is not a valid index."
+											+ "There is no parameterlabel at index " + i);
+						}
+						it.remove();
+						continue loop;
+					}
+				}
+				if (set.size() != required.length) {
+					if (Boot.VERBOSE != Level.NONE) {
+						System.err.println("Method " + m.toString()
+								+ " could not be added as a plugin. Some required indices are duplicated.");
+					}
+					it.remove();
+				}
+			}
+	
+			// Check for corresponding contexts at first indes
+			it = methods.iterator();
+			loop: while (it.hasNext()) {
+				Method m = it.next();
+				if (!isCorrectPluginContextType(m)) {
 					if (Boot.VERBOSE != Level.NONE) {
 						System.err
 								.println("Method "
 										+ m.toString()
-										+ " could not be added as a plugin. At least one required parameter is not a valid index."
-										+ "There is no parameterlabel at index " + i);
+										+ " could not be added as a plugin. The context should be asked as first parameter and should be a the same, or a superclass of "
+										+ pluginContextType.getName() + ".");
 					}
 					it.remove();
 					continue loop;
 				}
 			}
-			if (set.size() != required.length) {
-				if (Boot.VERBOSE != Level.NONE) {
-					System.err.println("Method " + m.toString()
-							+ " could not be added as a plugin. Some required indices are duplicated.");
+	
+			it = methods.iterator();
+			loop: while (it.hasNext()) {
+				Method m = it.next();
+				if ((returnTypes.length > 1) && !Object[].class.isAssignableFrom(m.getReturnType())
+						&& !Object.class.equals(m.getReturnType())) {
+					if (Boot.VERBOSE != Level.NONE) {
+						System.err
+								.println("Method "
+										+ m.toString()
+										+ " could not be added as a plugin. The plugin should return an array of objects as specified in the context.");
+					}
+					it.remove();
+					continue loop;
 				}
-				it.remove();
 			}
-		}
-
-		// Check for corresponding contexts at first indes
-		it = methods.iterator();
-		loop: while (it.hasNext()) {
-			Method m = it.next();
-			if (!isCorrectPluginContextType(m)) {
+	
+			if (methods.isEmpty()) {
 				if (Boot.VERBOSE != Level.NONE) {
-					System.err
-							.println("Method "
-									+ m.toString()
-									+ " could not be added as a plugin. The context should be asked as first parameter and should be a the same, or a superclass of "
-									+ pluginContextType.getName() + ".");
+					System.err.println("Plugin " + type.toString()
+							+ " could not be added as a plugin. At least one variant has to be specified.");
 				}
-				it.remove();
-				continue loop;
+				return false;
 			}
-		}
-
-		it = methods.iterator();
-		loop: while (it.hasNext()) {
-			Method m = it.next();
-			if ((returnTypes.length > 1) && !Object[].class.isAssignableFrom(m.getReturnType())
-					&& !Object.class.equals(m.getReturnType())) {
-				if (Boot.VERBOSE != Level.NONE) {
-					System.err
-							.println("Method "
-									+ m.toString()
-									+ " could not be added as a plugin. The plugin should return an array of objects as specified in the context.");
-				}
-				it.remove();
-				continue loop;
-			}
-		}
-
-		if (methods.isEmpty()) {
-			if (Boot.VERBOSE != Level.NONE) {
-				System.err.println("Plugin " + type.toString()
-						+ " could not be added as a plugin. At least one variant has to be specified.");
-			}
+	
+			return true;
+			
+		} catch (NoClassDefFoundError e) {
+			// required class not on classpath, cannot load as plugin
 			return false;
 		}
-
-		return true;
 	}
 
 	private boolean isCorrectPluginContextType(Method method) {
@@ -519,70 +525,74 @@ public final class PluginManagerImpl implements PluginManager {
 		return true;
 	}
 
-	private boolean isGoodPlugin(Method method) {
-
-		if (!isRightlyAnnotated(method)) {
-			return false;
-		}
-
-		if ((method.getAnnotation(Plugin.class).parameterLabels().length != 0)
-				&& (method.getAnnotation(Plugin.class).parameterLabels().length != method.getParameterTypes().length - 1)) {
-			if (Boot.VERBOSE != Level.NONE) {
-				System.err.println("Plugin " + method.toString() + " could not be added as a plugin, the number of"
-						+ " parameter labels does not match the number of parameters.");
+	private boolean isGoodPlugin(Method method) throws NoClassDefFoundError {
+		try {
+			if (!isRightlyAnnotated(method)) {
+				return false;
 			}
-			return false;
-		}
-
-		//		if (void.class.equals(method.getReturnType())) {
-		//			System.err.println("Method " + method.toGenericString()
-		//					+ " could not be added as a plugin, as the resultType is void.");
-		//			return false;
-		//		}
-
-		Class<?>[] returnTypes = method.getAnnotation(Plugin.class).returnTypes();
-		if ((returnTypes.length > 1) && !Object[].class.isAssignableFrom(method.getReturnType())
-				&& !Object.class.equals(method.getReturnType())) {
-			if (Boot.VERBOSE != Level.NONE) {
-				System.err.println("Method " + method.toString()
-						+ " could not be added as a plugin. The plugin should return an "
-						+ "array of objects as specified in the context.");
-			}
-			return false;
-		}
-
-		Class<?>[] pars = method.getParameterTypes();
-		if (!isCorrectPluginContextType(method)) {
-			if (!method.isAnnotationPresent(Bootable.class)) {
+	
+			if ((method.getAnnotation(Plugin.class).parameterLabels().length != 0)
+					&& (method.getAnnotation(Plugin.class).parameterLabels().length != method.getParameterTypes().length - 1)) {
 				if (Boot.VERBOSE != Level.NONE) {
-					System.err.println("Method " + method.toGenericString()
-							+ " could not be added as a plugin, the first parameter has to be a "
-							+ "PluginContext and assignable from " + pluginContextType.getName() + ".");
-				}
-			}
-			return false;
-		}
-		for (int i = 1; i < pars.length; i++) {
-			Class<?> type = pars[i];
-			if (PluginContext.class.isAssignableFrom(type)) {
-				if (Boot.VERBOSE != Level.NONE) {
-					System.err.println("Method " + method.toGenericString()
-							+ " could not be added as a plugin, only one context can be requested.");
+					System.err.println("Plugin " + method.toString() + " could not be added as a plugin, the number of"
+							+ " parameter labels does not match the number of parameters.");
 				}
 				return false;
 			}
-		}
-		for (int i = 0; i < pars.length; i++) {
-			if (pars[i].getTypeParameters().length > 0) {
+	
+			//		if (void.class.equals(method.getReturnType())) {
+			//			System.err.println("Method " + method.toGenericString()
+			//					+ " could not be added as a plugin, as the resultType is void.");
+			//			return false;
+			//		}
+	
+			Class<?>[] returnTypes = method.getAnnotation(Plugin.class).returnTypes();
+			if ((returnTypes.length > 1) && !Object[].class.isAssignableFrom(method.getReturnType())
+					&& !Object.class.equals(method.getReturnType())) {
 				if (Boot.VERBOSE != Level.NONE) {
-					System.err.println("Method " + method.toGenericString()
-							+ " could not be added as a plugin, as one of the parameters "
-							+ "is derived from a Type using Generics");
+					System.err.println("Method " + method.toString()
+							+ " could not be added as a plugin. The plugin should return an "
+							+ "array of objects as specified in the context.");
 				}
 				return false;
 			}
+	
+			Class<?>[] pars = method.getParameterTypes();
+			if (!isCorrectPluginContextType(method)) {
+				if (!method.isAnnotationPresent(Bootable.class)) {
+					if (Boot.VERBOSE != Level.NONE) {
+						System.err.println("Method " + method.toGenericString()
+								+ " could not be added as a plugin, the first parameter has to be a "
+								+ "PluginContext and assignable from " + pluginContextType.getName() + ".");
+					}
+				}
+				return false;
+			}
+			for (int i = 1; i < pars.length; i++) {
+				Class<?> type = pars[i];
+				if (PluginContext.class.isAssignableFrom(type)) {
+					if (Boot.VERBOSE != Level.NONE) {
+						System.err.println("Method " + method.toGenericString()
+								+ " could not be added as a plugin, only one context can be requested.");
+					}
+					return false;
+				}
+			}
+			for (int i = 0; i < pars.length; i++) {
+				if (pars[i].getTypeParameters().length > 0) {
+					if (Boot.VERBOSE != Level.NONE) {
+						System.err.println("Method " + method.toGenericString()
+								+ " could not be added as a plugin, as one of the parameters "
+								+ "is derived from a Type using Generics");
+					}
+					return false;
+				}
+			}
+			return true;
+		} catch (NoClassDefFoundError e) {
+			// required class not on classpath, cannot load as plugin
+			return false;
 		}
-		return true;
 	}
 
 	public Set<Pair<Integer, PluginParameterBinding>> find(Class<? extends Annotation> annotation, Class<?> resultType,
