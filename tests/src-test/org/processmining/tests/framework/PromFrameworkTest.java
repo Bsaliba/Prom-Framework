@@ -69,7 +69,22 @@ public class PromFrameworkTest extends PromTest {
 		CommandLineInterface cli = new CommandLineInterface(PackageManager.getInstance());
 		cli.run(args);
 	}
-
+	
+	@Test
+	public void testPromFramework_invokeOtherPlugins1() throws Throwable {
+		String testFileRoot = System.getProperty("test.testFileRoot", defaultTestDir);
+		String args[] = new String[] { "-f", testFileRoot + "/test_PromFramework_invokeOtherPlugins1.txt" };
+		CLI.main(args);
+	}
+	
+	@Test
+	public void testPromFramework_invokeOtherPlugins2() throws Throwable {
+		String testFileRoot = System.getProperty("test.testFileRoot", defaultTestDir);
+		String args[] = new String[] { "-f", testFileRoot + "/test_PromFramework_invokeOtherPlugins2.txt" };
+		for (int i=0; i<15;i++) {
+			CLI.main(args);
+		}
+	}
 
 	public static void main(String[] args) {
 		junit.textui.TestRunner.run(PromFrameworkTest.class);
