@@ -39,7 +39,7 @@
 		<attribute name="dependson" />
 		<sequential>
 			<!-- Compile the java code from ${src}-@{module} into ${build} -->
-			<javac srcdir="${src}-@{module}" destdir="${build}" nowarn="false" verbose="no" debug="true" debuglevel="lines,vars,source" deprecation="yes" source="${bytecode_format}" target="${bytecode_format}">
+			<javac srcdir="${src}-@{module}" destdir="${build}" nowarn="false" verbose="no" debug="true" debuglevel="lines,vars,source" deprecation="yes">
 				<classpath>
 					<pathelement path="${build}" />
 					<pathelement path="${java.class.path}" />
