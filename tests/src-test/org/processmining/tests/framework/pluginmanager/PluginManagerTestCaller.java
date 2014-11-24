@@ -4,13 +4,14 @@ import java.util.List;
 
 import junit.framework.Assert;
 
+import org.junit.Ignore;
 import org.processmining.framework.plugin.PluginContext;
 import org.processmining.framework.plugin.PluginDescriptor;
 import org.processmining.framework.plugin.PluginExecutionResult;
 import org.processmining.framework.plugin.PluginParameterBinding;
 import org.processmining.framework.plugin.annotations.Plugin;
 
-
+@Ignore // no JUnit test
 public class PluginManagerTestCaller {
 	
 	@Plugin(name = "test_invoke_other_plugins1", parameterLabels = {}, //

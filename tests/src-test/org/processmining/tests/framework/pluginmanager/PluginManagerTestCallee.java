@@ -1,5 +1,6 @@
 package org.processmining.tests.framework.pluginmanager;
 
+import org.junit.Ignore;
 import org.processmining.framework.plugin.PluginContext;
 import org.processmining.framework.plugin.annotations.Plugin;
 import org.processmining.framework.plugin.annotations.PluginVariant;
@@ -17,6 +18,7 @@ import org.processmining.framework.plugin.annotations.PluginVariant;
 	returnTypes = {Integer.class, String.class, Double.class, Character.class},
 	userAccessible = true,
 	help = "some help text")
+@Ignore // no JUnit test
 public class PluginManagerTestCallee {
 	
 	@PluginVariant(requiredParameterLabels = { 0 })
