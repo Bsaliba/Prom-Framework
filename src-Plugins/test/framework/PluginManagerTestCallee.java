@@ -1,4 +1,4 @@
-package org.processmining.tests.framework.pluginmanager;
+package test.framework;
 
 import org.processmining.framework.plugin.PluginContext;
 import org.processmining.framework.plugin.annotations.Plugin;
@@ -34,6 +34,4 @@ public class PluginManagerTestCallee {
 		return result;
 	}
 
-	public static void main(String[] args) {
-	}
 }

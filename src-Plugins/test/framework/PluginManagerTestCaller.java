@@ -1,4 +1,4 @@
-package org.processmining.tests.framework.pluginmanager;
+package test.framework;
 
 import java.util.List;
 
@@ -60,6 +60,4 @@ public class PluginManagerTestCaller {
 		return "success";
 	}
 
-	public static void main(String[] args) {
-	}
 }
