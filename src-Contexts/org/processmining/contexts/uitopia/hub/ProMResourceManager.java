@@ -109,7 +109,7 @@ public class ProMResourceManager extends UpdateSignaller implements ResourceMana
 		name = preferences.get(LASTEXPORTFILE, null);
 		lastExportedFile = name == null ? null : new File(name);
 		while (lastExportedFile != null && !lastExportedFile.exists()) {
-			lastExportedFile = lastImportedFile.getParentFile();
+			lastExportedFile = lastExportedFile.getParentFile();
 		}
 	}
 
