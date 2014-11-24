@@ -1,4 +1,4 @@
-package test.framework;
+package org.processmining.tests.framework.pluginmanager;
 
 import java.util.List;
 

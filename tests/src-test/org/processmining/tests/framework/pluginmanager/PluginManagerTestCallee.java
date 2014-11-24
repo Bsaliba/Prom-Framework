@@ -1,4 +1,4 @@
-package test.framework;
+package org.processmining.tests.framework.pluginmanager;
 
 import org.processmining.framework.plugin.PluginContext;
 import org.processmining.framework.plugin.annotations.Plugin;
