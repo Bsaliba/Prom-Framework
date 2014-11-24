@@ -34,4 +34,6 @@ public class PluginManagerTestCallee {
 		return result;
 	}
 
+	public static void main(String[] args) {
+	}
 }
