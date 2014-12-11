@@ -329,6 +329,10 @@ public class ProMResourceManager extends UpdateSignaller implements ResourceMana
 
 		}
 	}
+	
+	public synchronized boolean importResources(File... files) {
+		return importResource(null, files);
+	}
 
 	public synchronized boolean importResource(PluginParameterBinding binding, File... files) {
 		synchronized (importPluginAdded) {
