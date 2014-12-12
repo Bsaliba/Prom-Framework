@@ -16,6 +16,7 @@ import org.processmining.framework.plugin.PluginContext;
 import org.processmining.framework.plugin.PluginDescriptor;
 import org.processmining.framework.plugin.PluginDescriptorID;
 import org.processmining.framework.plugin.annotations.Plugin;
+import org.processmining.framework.plugin.annotations.PluginCategory;
 import org.processmining.framework.plugin.annotations.PluginVariant;
 
 public class PluginDescriptorImpl extends AbstractPluginDescriptor {
@@ -33,6 +34,10 @@ public class PluginDescriptorImpl extends AbstractPluginDescriptor {
 	//	public Class<? extends PluginContext> contextType = null;
 	private final Class<?> declaringClass;
 	private final PackageDescriptor pack;
+
+	private String help;
+	private String[] keywords;
+	private PluginCategory[] categories;
 
 	PluginDescriptorImpl(Method method, PackageDescriptor pack) throws Exception {
 		assert (method != null);
@@ -54,7 +59,10 @@ public class PluginDescriptorImpl extends AbstractPluginDescriptor {
 
 		annotatedElement = method;
 		name = method.getAnnotation(Plugin.class).name();
-//		System.out.println("PluginDescriptorImpl,\"" + name + "\",\"" + (pack == null ? "" : pack.getName()) + "\"");
+		help = method.getAnnotation(Plugin.class).help();
+		keywords = method.getAnnotation(Plugin.class).keywords();
+		categories = method.getAnnotation(Plugin.class).categories();
+		//		System.out.println("PluginDescriptorImpl,\"" + name + "\",\"" + (pack == null ? "" : pack.getName()) + "\"");
 
 		parameterNames = Arrays.asList(getAnnotation(Plugin.class).parameterLabels());
 		if (parameterNames.size() == 0) {
@@ -69,7 +77,8 @@ public class PluginDescriptorImpl extends AbstractPluginDescriptor {
 		returnNames = Arrays.asList(getAnnotation(Plugin.class).returnLabels());
 	}
 
-	PluginDescriptorImpl(Class<?> type, Class<? extends PluginContext> acceptedContext, PackageDescriptor pack) throws Exception {
+	PluginDescriptorImpl(Class<?> type, Class<? extends PluginContext> acceptedContext, PackageDescriptor pack)
+			throws Exception {
 		assert (type != null);
 		assert (type.isAnnotationPresent(Plugin.class));
 
@@ -110,7 +119,10 @@ public class PluginDescriptorImpl extends AbstractPluginDescriptor {
 		}
 
 		name = type.getAnnotation(Plugin.class).name();
-//		System.out.println("PluginDescriptorImpl,\"" + name + "\",\"" + (pack == null ? "" : pack.getName()) + "\"");
+		help = type.getAnnotation(Plugin.class).help();
+		keywords = type.getAnnotation(Plugin.class).keywords();
+		categories = type.getAnnotation(Plugin.class).categories();
+		//		System.out.println("PluginDescriptorImpl,\"" + name + "\",\"" + (pack == null ? "" : pack.getName()) + "\"");
 
 		// There are either no parameters, or all parameters are required at least once
 		// in all variants, ignoring the specific context.
@@ -136,7 +148,7 @@ public class PluginDescriptorImpl extends AbstractPluginDescriptor {
 	public PackageDescriptor getPackage() {
 		return pack;
 	}
-	
+
 	public int getMostSignificantResult() {
 		return getAnnotation(Plugin.class).mostSignificantResult();
 	}
@@ -434,6 +446,36 @@ public class PluginDescriptorImpl extends AbstractPluginDescriptor {
 
 	public boolean hasAnnotation(Class<? extends Annotation> annotationClass, int methodIndex) {
 		return getMethod(methodIndex).getAnnotation(annotationClass) != null;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.processmining.framework.plugin.PluginDescriptor#getName()
+	 */
+	public String getHelp() {
+		return help;
+	}
+
+	public String getMethodHelp(int methodIndex) {
+		if (methods.get(methodIndex).isAnnotationPresent(PluginVariant.class)
+				&& !methods.get(methodIndex).getAnnotation(PluginVariant.class).help().equals("")) {
+			return methods.get(methodIndex).getAnnotation(PluginVariant.class).help();
+		} else {
+			return name;
+		}
+	}
+
+	public String[] getKeywords() {
+		return this.keywords;
+	}
+
+	public String[] getCategories() {
+		String[] categoryLabels = new String[this.categories.length];
+		for(int i = 0; i < this.categories.length; i++){
+			categoryLabels[i] = this.categories[i].getName();//.getName();
+		}
+		return categoryLabels;
 	}
 
 }

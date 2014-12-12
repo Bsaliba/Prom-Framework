@@ -56,6 +56,7 @@ public class MacroPluginDescriptorImpl extends AbstractPluginDescriptor {
 	private final PluginDescriptorID id;
 	private final String fileName;
 	private final String name;
+	private final String help;
 	private boolean connectionsSet;
 	private final PackageDescriptor pack;
 
@@ -75,12 +76,13 @@ public class MacroPluginDescriptorImpl extends AbstractPluginDescriptor {
 	final Map<Object, Integer> object2Rank = new HashMap<Object, Integer>();
 	int maxRank;
 
-	public MacroPluginDescriptorImpl(File file, PluginManager manager, PackageDescriptor pack) throws IOException, DOMException, SAXException,
-			ParserConfigurationException, ClassNotFoundException, DependsOnUnknownException {
+	public MacroPluginDescriptorImpl(File file, PluginManager manager, PackageDescriptor pack) throws IOException,
+			DOMException, SAXException, ParserConfigurationException, ClassNotFoundException, DependsOnUnknownException {
 		this.pack = pack;
 		fileName = file.getCanonicalPath();
 		String n = file.getName();
 		name = n.substring(0, n.length() - 4);
+		help = "";
 		id = new PluginDescriptorIDImpl(this);
 		McrFileLoader.loadFromFile(file, this, manager);
 		connectionsSet = connectionsOnFirstInvoke.isEmpty();
@@ -89,7 +91,7 @@ public class MacroPluginDescriptorImpl extends AbstractPluginDescriptor {
 	public PackageDescriptor getPackage() {
 		return pack;
 	}
-	
+
 	public int compareTo(PluginDescriptor plugin) {
 		if (plugin.equals(this)) {
 			return 0;
@@ -273,8 +275,8 @@ public class MacroPluginDescriptorImpl extends AbstractPluginDescriptor {
 				 * The source is an input parameter at index getIndex() of the
 				 * provided arguments
 				 */
-				result[index] = assignParameter(result[index], types.get(index), args[((InputParameter) source)
-						.getIndex() + 1]);
+				result[index] = assignParameter(result[index], types.get(index),
+						args[((InputParameter) source).getIndex() + 1]);
 			} else if (source instanceof PluginParameter) {
 				/*
 				 * The source should be retrieved from a previously executed
@@ -282,8 +284,8 @@ public class MacroPluginDescriptorImpl extends AbstractPluginDescriptor {
 				 */
 				PluginExecutionResult pluginResult = results.get(source);
 				assert (pluginResult != null);
-				result[index] = assignParameter(result[index], types.get(index), pluginResult.getResult(edge.getFirst()
-						.getSecond()));
+				result[index] = assignParameter(result[index], types.get(index),
+						pluginResult.getResult(edge.getFirst().getSecond()));
 			} else {
 				/*
 				 * 
@@ -386,7 +388,7 @@ public class MacroPluginDescriptorImpl extends AbstractPluginDescriptor {
 	public boolean handlesCancel() {
 		return false;
 	}
-	
+
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -409,6 +411,23 @@ public class MacroPluginDescriptorImpl extends AbstractPluginDescriptor {
 		// TODO: Most significant result is not specified in macro. 
 		// this should be added.
 		return 0;
+	}
+
+	public String getHelp() {
+		return help;
+	}
+
+	public String getMethodHelp(int methodIndex) {
+		assert (methodIndex == 0);
+		return help;
+	}
+
+	public String[] getKeywords() {
+		return new String[0];
+	}
+
+	public String[] getCategories() {
+		return new String[0];
 	}
 
 }

@@ -35,17 +35,33 @@ public class ProMAction implements Action, Comparable<ProMAction> {
 	private final PluginManager pluginManager;
 	private final String pack;
 
+	private String help;
+	private String[] keywords;
+	private String[] catergories;
+
 	public ProMAction(ProMResourceManager resourceManager, PluginManager pluginManager, final PluginDescriptor plugin,
 			final int methodIndex) {
 		this.pluginManager = pluginManager;
 		this.plugin = plugin;
 		this.methodIndex = methodIndex;
+
 		name = plugin.getAnnotation(UITopiaVariant.class, methodIndex).uiLabel();
 		if (name.equals(UITopiaVariant.USEPLUGIN)) {
 			name = plugin.getName();
 		} else if (name.equals(UITopiaVariant.USEVARIANT)) {
 			name = plugin.getMethodLabel(methodIndex);
 		}
+
+		help = plugin.getAnnotation(UITopiaVariant.class, methodIndex).uiHelp();
+		if (help.equals(UITopiaVariant.USEPLUGIN)) {
+			help = plugin.getHelp();
+		} else if (help.equals(UITopiaVariant.USEVARIANT)) {
+			help = plugin.getMethodHelp(methodIndex);
+		}
+		
+		catergories = plugin.getCategories();
+		keywords = plugin.getKeywords();
+
 		pack = plugin.getAnnotation(UITopiaVariant.class, methodIndex).pack();
 
 		author = new Author() {
@@ -123,7 +139,7 @@ public class ProMAction implements Action, Comparable<ProMAction> {
 	public boolean handlesCancel() {
 		return plugin.handlesCancel();
 	}
-	
+
 	public List<Parameter> getInput() {
 		return inputs;
 	}
@@ -225,5 +241,17 @@ public class ProMAction implements Action, Comparable<ProMAction> {
 
 	public Author getAuthor() {
 		return author;
+	}
+
+	public String getHelp() {
+		return help;
+	}
+
+	public String[] getCategories() {
+		return catergories;
+	}
+
+	public String[] getKeywords() {
+		return keywords;
 	}
 }

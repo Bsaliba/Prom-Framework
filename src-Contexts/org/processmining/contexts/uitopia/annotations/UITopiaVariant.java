@@ -6,7 +6,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 @Retention(RetentionPolicy.RUNTIME)
-@Target( { ElementType.METHOD })
+@Target({ ElementType.METHOD })
 public @interface UITopiaVariant {
 
 	public final static String USEPLUGIN = "Use Plugin Name";
@@ -16,6 +16,8 @@ public @interface UITopiaVariant {
 
 	String uiLabel() default USEPLUGIN;
 
+	String uiHelp() default USEPLUGIN;
+
 	String affiliation();
 
 	String email();
@@ -23,6 +25,6 @@ public @interface UITopiaVariant {
 	String author();
 
 	String website() default "http://www.processmining.org";
-	
+
 	String pack() default "";
 }

@@ -6,7 +6,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 @Retention(RetentionPolicy.RUNTIME)
-@Target( { ElementType.METHOD, ElementType.TYPE })
+@Target({ ElementType.METHOD, ElementType.TYPE })
 public @interface Plugin {
 
 	/**
@@ -58,7 +58,7 @@ public @interface Plugin {
 	String[] parameterLabels();
 
 	/**
-	 * TODO: Returns the help for this plugin?
+	 * Returns the help / description for this plugin.
 	 * 
 	 * @return Empty string as default
 	 */
@@ -89,11 +89,23 @@ public @interface Plugin {
 	 * 
 	 */
 	int mostSignificantResult() default 1;
-	
+
 	/**
-	 * Whether this plugin handles cancel itself.  If this is true, the plug-in
-	 * will not be killed but is allowed to terminate itself by monitoring isCancelled.
+	 * Whether this plugin handles cancel itself. If this is true, the plug-in
+	 * will not be killed but is allowed to terminate itself by monitoring
+	 * isCancelled.
+	 * 
 	 * @return
 	 */
 	boolean handlesCancel() default false;
+
+	/**
+	 * Categories define the 'type' of functionality the plugin provides.
+	 */
+	PluginCategory[] categories() default {};
+
+	/**
+	 * Keywords / tags for the plugin (extra description)
+	 */
+	String[] keywords() default {};
 }

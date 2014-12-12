@@ -26,4 +26,12 @@ public @interface PluginVariant {
 	 * multiple variants accept the same parameters of the same types.
 	 */
 	String variantLabel() default "";
+
+	/**
+	 * Returns the help / description for this plugin variant.
+	 * 
+	 * @return Empty string as default
+	 */
+	String help() default "";
+
 }

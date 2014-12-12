@@ -63,7 +63,7 @@ public interface PluginDescriptor extends Comparable<PluginDescriptor> {
 	 * @return
 	 */
 	PackageDescriptor getPackage();
-	
+
 	/**
 	 * Return the name of the plugin. This name is not unique within ProM.
 	 * 
@@ -299,9 +299,10 @@ public interface PluginDescriptor extends Comparable<PluginDescriptor> {
 	 * @return
 	 */
 	boolean isUserAccessible();
-	
+
 	/**
 	 * Returns whether the plugin handles termination itself.
+	 * 
 	 * @return
 	 */
 	boolean handlesCancel();
@@ -314,5 +315,36 @@ public interface PluginDescriptor extends Comparable<PluginDescriptor> {
 	 *         no results are returned by this plugin, anything can be returned.
 	 */
 	int getMostSignificantResult();
+
+	/**
+	 * Return the help / description of the plugin.
+	 * 
+	 * @return
+	 */
+	String getHelp();
+
+	/**
+	 * Return the help / description of the given method, if specified.
+	 * 
+	 * @param methodIndex
+	 * @return
+	 */
+	String getMethodHelp(int methodIndex);
+	
+	
+	/**
+	 * Return the set of keywords.
+	 * 
+	 * @return a set of keywords
+	 */
+	String[] getKeywords();
+	
+	/**
+	 * Return the set of categories.
+	 * 
+	 * @return a set of categories
+	 */
+	String[] getCategories();
+
 
 }
