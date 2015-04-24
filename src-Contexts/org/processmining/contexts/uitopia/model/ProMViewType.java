@@ -34,7 +34,7 @@ public class ProMViewType extends AbstractAuthored implements ViewType {
 	}
 
 	public String getTypeName() {
-		if (name.startsWith("V") && name.contains(" ")) {
+		if (name.startsWith("@") && name.contains(" ")) {
 			return name.substring(name.indexOf(" ") + 1);
 		}
 		return name;
