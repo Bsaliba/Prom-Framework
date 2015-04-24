@@ -31,6 +31,9 @@ public class PMPackageListCellRenderer extends JComponent implements ListCellRen
 	private static final Color COLOR_ACTIVE_TOP_R = new Color(160, 80, 80);
 	private static final Color COLOR_ACTIVE_BOTTOM_R = new Color(120, 40, 40);
 	private static final Color COLOR_ACTIVE_TEXT = new Color(0, 0, 0);
+	private static final Color COLOR_DEAD_TOP = new Color(80, 80, 80);
+	private static final Color COLOR_DEAD_BOTTOM = new Color(40, 40, 40);
+	private static final Color COLOR_DEAD_TEXT = new Color(160, 160, 160);
 	private static final Color COLOR_TRANSPARENT = new Color(0, 0, 0, 0);
 
 	private static final Image favoriteIcon = ImageLoader.load("favorite_30x30.png");
@@ -78,9 +81,19 @@ public class PMPackageListCellRenderer extends JComponent implements ListCellRen
 				case TOINSTALL :
 					g2d.setPaint(new GradientPaint(0, 0, COLOR_ACTIVE_TOP_R, 0, height, COLOR_ACTIVE_BOTTOM_R));
 					break;
+				case DEAD :
+					g2d.setPaint(new GradientPaint(0, 0, COLOR_DEAD_TOP, 0, height, COLOR_DEAD_BOTTOM));
+					break;
 			}
 		} else {
-			g2d.setPaint(new GradientPaint(0, 0, COLOR_PASSIVE_TOP, 0, height, COLOR_PASSIVE_BOTTOM));
+			switch (pack.getStatus()) {
+				case DEAD :
+					g2d.setPaint(new GradientPaint(0, 0, COLOR_DEAD_TOP, 0, height, COLOR_DEAD_BOTTOM));
+					break;
+				default :
+					g2d.setPaint(new GradientPaint(0, 0, COLOR_PASSIVE_TOP, 0, height, COLOR_PASSIVE_BOTTOM));
+					break;
+			}
 		}
 		g2d.fillRect(0, 0, width, height);
 		// paint icon
@@ -90,9 +103,23 @@ public class PMPackageListCellRenderer extends JComponent implements ListCellRen
 		//		g2d.drawImage(icon, iconX, iconY, null);
 		// paint text
 		if (selected) {
-			g2d.setPaint(new GradientPaint(width - 20, 0, COLOR_ACTIVE_TEXT, width, 0, COLOR_TRANSPARENT));
+			switch (pack.getStatus()) {
+				case DEAD :
+					g2d.setPaint(new GradientPaint(width - 20, 0, COLOR_DEAD_TEXT, width, 0, COLOR_TRANSPARENT));
+					break;
+				default :
+					g2d.setPaint(new GradientPaint(width - 20, 0, COLOR_ACTIVE_TEXT, width, 0, COLOR_TRANSPARENT));
+					break;
+			}
 		} else {
-			g2d.setPaint(new GradientPaint(width - 20, 0, COLOR_PASSIVE_TEXT, width, 0, COLOR_TRANSPARENT));
+			switch (pack.getStatus()) {
+				case DEAD :
+					g2d.setPaint(new GradientPaint(width - 20, 0, COLOR_DEAD_TEXT, width, 0, COLOR_TRANSPARENT));
+					break;
+				default :
+					g2d.setPaint(new GradientPaint(width - 20, 0, COLOR_PASSIVE_TEXT, width, 0, COLOR_TRANSPARENT));
+					break;
+			}
 		}
 		g2d.setFont(g2d.getFont().deriveFont(13f));
 		int textX = 20; // + icon.getWidth(null);

@@ -162,6 +162,11 @@ public class PMPackageView extends RoundedPanel {
 			actionsPanel.add(removeButton);
 			width += 110;
 		}
+		if (!showInstall && !showUpdate && !showRemove) {
+			actionsPanel.add(Box.createHorizontalGlue());
+			actionsPanel.add(styleLabel("No actions available", new Color(160, 160, 160), 12));
+			width += 110;			
+		}
 		actionsPanel.setMinimumSize(new Dimension(width, 50));
 		actionsPanel.setMaximumSize(new Dimension(width, 50));
 		actionsPanel.setPreferredSize(new Dimension(width, 50));

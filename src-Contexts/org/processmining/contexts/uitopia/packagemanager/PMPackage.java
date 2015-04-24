@@ -12,7 +12,7 @@ import org.processmining.framework.packages.PackageDescriptor;
 public class PMPackage {
 
 	public static enum PMStatus {
-		TOUNINSTALL, TOUPDATE, TOINSTALL
+		TOUNINSTALL, TOUPDATE, TOINSTALL, DEAD
 	};
 
 	private final PackageDescriptor descriptor;
