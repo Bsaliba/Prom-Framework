@@ -5,7 +5,9 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.processmining.framework.boot.Boot;
@@ -18,8 +20,18 @@ public class PMController {
 
 	private final PMMainView mainView;
 	private final PackageManager manager;
+	
+	/*
+	 * Maps every package descriptor to whether it is still available.
+	 * This map acts as a cache to prevent us from have to access the URL over and over again.
+	 * 
+	 * This map is also used by PackageConfigPersiter when writing the packages to the local repo again.
+	 * As a result, packages that are known to be unavailable will not be written back to the local repo.
+	 */
+	static public Map<PackageDescriptor, Boolean> availability;
 
 	public PMController( Boot.Level verbose) {
+		availability = new HashMap<PackageDescriptor, Boolean>();
 		manager = PackageManager.getInstance();
 		manager.initialize(verbose);
 		try {
@@ -30,7 +42,7 @@ public class PMController {
 			e.printStackTrace();
 		}
 
-		mainView = new PMMainView(this);
+		mainView = new PMMainView(this);		
 	}
 
 	/**
@@ -79,12 +91,28 @@ public class PMController {
 	 * @return Whether the URL of the package descriptor can be opened successfully.
 	 */
 	public boolean isAvailable(PackageDescriptor descriptor) {
+		/*
+		 * First check the cache.
+		 */
+		if (availability.containsKey(descriptor)) {
+			/*
+			 * In cache, return cached result.
+			 */
+			return availability.get(descriptor);
+		}
+		/*
+		 * Not in cache, check whether URL still exists.
+		 */
 		InputStream is = null;
 		try {
 			URL url = new URL(descriptor.getURL());
 			is = url.openStream();
 		} catch (Exception e) {
-			System.err.println("Package not available: "+ descriptor);
+			/*
+			 * Something's wrong with this URL. Mark it as unavailable.
+			 */
+			System.err.println("Package found in local repository, but not in global repository: "+ descriptor);
+			availability.put(descriptor,  false);
 			return false;
 		} finally {
 			try {
@@ -93,6 +121,10 @@ public class PMController {
 			}
 		}
 //		System.out.println("Package available: "+ descriptor);
+		/*
+		 * All fine, still available. Mark it as such.
+		 */
+		availability.put(descriptor,  true);
 		return true;
 	}
 

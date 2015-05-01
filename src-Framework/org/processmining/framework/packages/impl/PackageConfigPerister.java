@@ -18,11 +18,12 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
+import org.processmining.contexts.uitopia.packagemanager.PMController;
 import org.processmining.framework.packages.PackageDescriptor;
-import org.processmining.framework.packages.PackageSet;
-import org.processmining.framework.packages.Repository;
 import org.processmining.framework.packages.PackageDescriptor.OS;
 import org.processmining.framework.packages.PackageManager.Canceller;
+import org.processmining.framework.packages.PackageSet;
+import org.processmining.framework.packages.Repository;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
@@ -238,7 +239,12 @@ public class PackageConfigPerister {
 					+ " />" + nl);
 		}
 		for (PackageDescriptor pack : available) {
-			writePackage(pack, writer);
+			/*
+			 * Do not write to local repo if known to be unavailable.
+			 */
+			if (!PMController.availability.containsKey(pack) || PMController.availability.get(pack)) {
+				writePackage(pack, writer);
+			}
 		}
 		writer.write("  <" + ConfigHandler.INSTALLED + ">" + nl);
 		for (PackageDescriptor pack : installed) {
