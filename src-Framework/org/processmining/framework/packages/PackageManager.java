@@ -77,7 +77,52 @@ public class PackageManager {
 	 * This map is also used by PackageConfigPersiter when writing the packages to the local repo again.
 	 * As a result, packages that are known to be unavailable will not be written back to the local repo.
 	 */
-	public Map<PackageDescriptor, Boolean> availability;
+	private Map<PackageDescriptor, Boolean> availability;
+
+	/**
+	 * Checks whether a package is still available.
+	 * This prevents the user from installing or updating a package that cannot be installed anymore.
+	 * 
+	 * @param descriptor The descriptor of the package.
+	 * @return Whether the URL of the package descriptor can be opened successfully.
+	 */
+	public boolean isAvailable(PackageDescriptor descriptor) {
+		/*
+		 * First check the cache.
+		 */
+		if (availability.containsKey(descriptor)) {
+			/*
+			 * In cache, return cached result.
+			 */
+			return availability.get(descriptor);
+		}
+		/*
+		 * Not in cache, check whether URL still exists.
+		 */
+		InputStream is = null;
+		try {
+			URL url = new URL(descriptor.getURL());
+			is = url.openStream();
+		} catch (Exception e) {
+			/*
+			 * Something's wrong with this URL. Mark it as unavailable.
+			 */
+			System.err.println("Package found in local repository, but not in global repository: "+ descriptor);
+			availability.put(descriptor,  false);
+			return false;
+		} finally {
+			try {
+				is.close();
+			} catch (Exception e) {
+			}
+		}
+//		System.out.println("Package available: "+ descriptor);
+		/*
+		 * All fine, still available. Mark it as such.
+		 */
+		availability.put(descriptor,  true);
+		return true;
+	}
 
 	private PackageManager() {
 		availability = new HashMap<PackageDescriptor, Boolean>();

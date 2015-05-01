@@ -1,7 +1,5 @@
 package org.processmining.contexts.uitopia.packagemanager;
 
-import java.io.InputStream;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -71,50 +69,6 @@ public class PMController {
 		return list;
 	}
 	
-	/**
-	 * Checks whether a package is still available.
-	 * This prevents the user from installing or updating a package that cannot be installed anymore.
-	 * 
-	 * @param descriptor The descriptor of the package.
-	 * @return Whether the URL of the package descriptor can be opened successfully.
-	 */
-	public boolean isAvailable(PackageDescriptor descriptor) {
-		/*
-		 * First check the cache.
-		 */
-		if (manager.availability.containsKey(descriptor)) {
-			/*
-			 * In cache, return cached result.
-			 */
-			return manager.availability.get(descriptor);
-		}
-		/*
-		 * Not in cache, check whether URL still exists.
-		 */
-		InputStream is = null;
-		try {
-			URL url = new URL(descriptor.getURL());
-			is = url.openStream();
-		} catch (Exception e) {
-			/*
-			 * Something's wrong with this URL. Mark it as unavailable.
-			 */
-			System.err.println("Package found in local repository, but not in global repository: "+ descriptor);
-			manager.availability.put(descriptor,  false);
-			return false;
-		} finally {
-			try {
-				is.close();
-			} catch (Exception e) {
-			}
-		}
-//		System.out.println("Package available: "+ descriptor);
-		/*
-		 * All fine, still available. Mark it as such.
-		 */
-		manager.availability.put(descriptor,  true);
-		return true;
-	}
 
 	public java.util.List<? extends PMPackage> getToUpdatePackages() {
 		Set<PackageDescriptor> descriptors = manager.getAvailablePackages();
@@ -122,7 +76,7 @@ public class PMController {
 		for (PackageDescriptor available : descriptors) {
 			PMPackage pack = new PMPackage(available);
 			PackageDescriptor installed = manager.findInstalledVersion(available);
-			if ((installed != null && isAvailable(available)) && //
+			if ((installed != null && manager.isAvailable(available)) && //
 					installed.getVersion().lessThan(available.getVersion())) {
 				list.add(pack);
 				setStatus(pack, available);
@@ -137,7 +91,7 @@ public class PMController {
 		for (PackageDescriptor descriptor : descriptors) {
 			PMPackage pack = new PMPackage(descriptor);
 			PackageDescriptor installed = manager.findInstalledVersion(descriptor);
-			if (installed == null && isAvailable(descriptor)) {
+			if (installed == null && manager.isAvailable(descriptor)) {
 				list.add(pack);
 				setStatus(pack, descriptor);
 			}
@@ -174,13 +128,13 @@ public class PMController {
 	public void setStatus(PMPackage pack, PackageDescriptor descriptor) {
 		PackageDescriptor installed = manager.findInstalledVersion(descriptor);
 		if (installed != null) {
-			if (isAvailable(descriptor) && !installed.equals(descriptor)) {
+			if (manager.isAvailable(descriptor) && !installed.equals(descriptor)) {
 				pack.setStatus(PMPackage.PMStatus.TOUPDATE);
 			} else {
 				pack.setStatus(PMPackage.PMStatus.TOUNINSTALL);
 			}
 		} else {
-			if (isAvailable(descriptor)) {
+			if (manager.isAvailable(descriptor)) {
 				pack.setStatus(PMPackage.PMStatus.TOINSTALL);
 			} else {
 				pack.setStatus(PMPackage.PMStatus.DEAD);
