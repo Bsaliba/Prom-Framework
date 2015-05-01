@@ -18,9 +18,9 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
-import org.processmining.contexts.uitopia.packagemanager.PMController;
 import org.processmining.framework.packages.PackageDescriptor;
 import org.processmining.framework.packages.PackageDescriptor.OS;
+import org.processmining.framework.packages.PackageManager;
 import org.processmining.framework.packages.PackageManager.Canceller;
 import org.processmining.framework.packages.PackageSet;
 import org.processmining.framework.packages.Repository;
@@ -242,7 +242,7 @@ public class PackageConfigPerister {
 			/*
 			 * Do not write to local repo if known to be unavailable.
 			 */
-			if (!PMController.availability.containsKey(pack) || PMController.availability.get(pack)) {
+			if (!PackageManager.getInstance().availability.containsKey(pack) || !PackageManager.getInstance().availability.get(pack)) {
 				writePackage(pack, writer);
 			}
 		}

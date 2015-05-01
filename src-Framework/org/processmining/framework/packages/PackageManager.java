@@ -70,7 +70,17 @@ public class PackageManager {
 	private final PackageSet installed = new PackageSet();
 	private final PackageSet available = new PackageSet();
 
+	/*
+	 * Maps every package descriptor to whether it is still available.
+	 * This map acts as a cache to prevent us from have to access the URL over and over again.
+	 * 
+	 * This map is also used by PackageConfigPersiter when writing the packages to the local repo again.
+	 * As a result, packages that are known to be unavailable will not be written back to the local repo.
+	 */
+	public Map<PackageDescriptor, Boolean> availability;
+
 	private PackageManager() {
+		availability = new HashMap<PackageDescriptor, Boolean>();
 	}
 
 	private final PackageManagerListener.ListenerList listeners = new PackageManagerListener.ListenerList();
