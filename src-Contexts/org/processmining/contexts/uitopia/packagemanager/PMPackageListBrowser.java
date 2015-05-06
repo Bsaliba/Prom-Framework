@@ -5,9 +5,6 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.FileNotFoundException;
-import java.io.PrintWriter;
-import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -20,7 +17,6 @@ import javax.swing.ButtonGroup;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JList;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
@@ -298,120 +294,12 @@ public class PMPackageListBrowser extends JPanel {
 		if (!selectedPacks.isEmpty()) {
 			pmPackageView = new PMPackageView(selectedPacks, controller);
 			viewport.add(pmPackageView, BorderLayout.CENTER);
-			updateMemPanel();
 		} else {
 			viewport.add(new JLabel("No packages selected"), BorderLayout.CENTER);
 		}
 		viewport.revalidate();
 	}
 
-	private void updateMemPanel() {
-		if (oldSelectedMem != selectedMem) {
-			System.out.println("New mem " + selectedMem);
-			updateFiles();
-			oldSelectedMem = selectedMem;
-		}
-		memPanel = new RoundedPanel(50, 0, 0);
-		memPanel.setBackground(new Color(80, 80, 80));
-		memPanel.setLayout(new BoxLayout(memPanel, BoxLayout.X_AXIS));
-		memPanel.add(selectedMem == 1 ? button1gbSelected : button1gbNotSelected);
-		if (mem >= 4000) {
-			memPanel.add(selectedMem == 2 ? button2gbSelected : button2gbNotSelected);
-		}
-		if (mem >= 8000) {
-			memPanel.add(selectedMem == 4 ? button4gbSelected : button4gbNotSelected);
-		}
-		if (mem >= 16000) {
-			memPanel.add(selectedMem == 8 ? button8gbSelected : button8gbNotSelected);
-		}
-		if (mem >= 32000) {
-			memPanel.add(selectedMem == 16 ? button16gbSelected : button16gbNotSelected);
-		}
-		viewport.add(memPanel, BorderLayout.SOUTH);
-	}
-
-	private void updateFiles() {
-		if (OsUtil.isRunningWindows()) {
-			if (!updateIniFile() || !updateBatFile()) {
-				JOptionPane.showMessageDialog(null, "Unable to update memory settings (-Xmx"  + selectedMem + "G) in .ini and.or .bat file. Please try manually.");
-			}
-		} else if (OsUtil.isRunningLinux() || OsUtil.isRunningUnix()) {
-			if (!updateShFile()) {
-				JOptionPane.showMessageDialog(null, "Unable to update memory settings (MEM="  + selectedMem + "g) in .sh file. Please try manually.");
-			}
-		}
-	}
-	private boolean updateIniFile() {
-		PrintWriter writer;
-		try {
-			writer = new PrintWriter("ProM.l4j.ini", "UTF-8");
-			writer.println("-Xmx" + selectedMem + "G -XX:MaxPermSize=256m");
-			writer.close();
-			return true;
-		} catch (FileNotFoundException e) {
-			return false;
-		} catch (UnsupportedEncodingException e) {
-			return false;
-		}
-	}
-	
-	private boolean updateBatFile() {
-		PrintWriter writer;
-		try {
-			writer = new PrintWriter("ProM.bat", "UTF-8");
-			writer.println("@setlocal enableextensions");
-			writer.println("@cd /d \"%~dp0\"");
-			writer.println("java -da -Xmx" + selectedMem + "G -XX:MaxPermSize=256m -classpath ProM.jar -Djava.util.Arrays.useLegacyMergeSort=true org.processmining.contexts.uitopia.UI");
-			writer.close();
-			return true;
-		} catch (FileNotFoundException e) {
-			return false;
-		} catch (UnsupportedEncodingException e) {
-			return false;
-		}
-	}
-	
-	private boolean updateShFile() {
-		PrintWriter writer;
-		try {
-			writer = new PrintWriter("ProM.sh", "UTF-8");
-			writer.println("#!/bin/sh");
-			writer.println("");
-			writer.println("###");
-			writer.println("## ProM specific");
-			writer.println("###");
-			writer.println("PROGRAM=ProM");
-			writer.println("CP=./${PROGRAM}.jar");
-			writer.println("LIBDIR=./lib");
-			writer.println("MAIN=org.processmining.contexts.uitopia.UI");
-			writer.println("");
-			writer.println("###");
-			writer.println("## Environment options");
-			writer.println("###");
-			writer.println("JAVA=java");
-			writer.println("MEM=" + selectedMem + "g");
-			writer.println("");
-			writer.println("###");
-			writer.println("## Main program");
-			writer.println("###");
-			writer.println("add() {");
-			writer.println("\tCP=$(CP}:$1");
-			writer.println("}");
-			writer.println("");
-			writer.println("for lib in $LIBDIR/*.jar");
-			writer.println("do");
-			writer.println("\tadd $lib");
-			writer.println("done");
-			writer.println("");
-			writer.println("$JAVA -classpath ${CP} -Djava.library.path=$LIBDIR -da -Xmx${MEM} -Djava.util.Arrays.useLegacyMergeSort=true ${MAIN}");
-			writer.close();
-			return true;
-		} catch (FileNotFoundException e) {
-			return false;
-		} catch (UnsupportedEncodingException e) {
-			return false;
-		}		
-	}
 
 	public PMPackageView getPackageView() {
 		return pmPackageView;
