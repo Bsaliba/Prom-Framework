@@ -18,6 +18,7 @@ import javax.swing.JPanel;
 
 import org.deckfour.uitopia.ui.components.ImageLozengeButton;
 import org.deckfour.uitopia.ui.util.ImageLoader;
+import org.processmining.framework.boot.Boot;
 import org.processmining.framework.util.OsUtil;
 
 import com.fluxicon.slickerbox.components.RoundedPanel;
@@ -153,7 +154,8 @@ public class PMMemoryView extends RoundedPanel implements ActionListener {
 			 * Try to read the current memory option from file, and set the
 			 * default accordingly.
 			 */
-			FileReader reader = new FileReader("ProM641.l4j.ini");
+			String version = Boot.PROM_VERSION.replaceAll(".","");
+			FileReader reader = new FileReader("ProM" + version + ".l4j.ini");
 			char[] a = new char[10];
 			reader.read(a);
 			reader.close();
@@ -237,6 +239,7 @@ public class PMMemoryView extends RoundedPanel implements ActionListener {
 		if (oldSelectedMem == selectedMem) {
 			return;
 		}
+		String version = Boot.PROM_VERSION.replaceAll(".","");
 		if (OsUtil.isRunningWindows()) {
 			/*
 			 * Windows. Need to update ini file and bat file.
@@ -250,7 +253,8 @@ public class PMMemoryView extends RoundedPanel implements ActionListener {
 								null,
 								"Unable to set memory limit (-Xmx"
 										+ selectedMem
-										+ ") in ProM.l4j.ini and/or ProM641.bat file.\nPlease run the Package Manager as administrator, or set the memory limit manually.");
+										+ ") in ProM" + version + ".l4j.ini and/or ProM" 
+										+ version + ".bat file.\nPlease run the Package Manager as administrator, or set the memory limit manually.");
 				selectedMem = oldSelectedMem;
 				return;
 			}
@@ -260,7 +264,7 @@ public class PMMemoryView extends RoundedPanel implements ActionListener {
 			 */
 			if (!updateIniFile() || !updateShFile()) {
 				JOptionPane.showMessageDialog(null, "Unable to set memory limit (-Xmx" + selectedMem
-						+ ") in ProM.l4j.ini and/or ProM641.sh file.\nPlease set the memory limit manually.");
+						+ ") in ProM" + version + ".l4j.ini and/or ProM" + version + ".sh file.\nPlease set the memory limit manually.");
 				selectedMem = oldSelectedMem;
 				return;
 			}
@@ -274,7 +278,8 @@ public class PMMemoryView extends RoundedPanel implements ActionListener {
 	private boolean updateIniFile() {
 		PrintWriter writer;
 		try {
-			writer = new PrintWriter("ProM.l4j.ini", "UTF-8");
+			String version = Boot.PROM_VERSION.replaceAll(".","");
+			writer = new PrintWriter("ProM" + version + ".l4j.ini", "UTF-8");
 			writer.println("-Xmx" + selectedMem + " -XX:MaxPermSize=256m");
 			writer.close();
 			return true;
@@ -284,31 +289,15 @@ public class PMMemoryView extends RoundedPanel implements ActionListener {
 			return false;
 		}
 	}
-
+	
 	private boolean updateBatFile() {
 		PrintWriter writer;
 		try {
-			writer = new PrintWriter("ProM.bat", "UTF-8");
-			writer.println("@GOTO start");
-			writer.println("");
-			writer.println(":add");
-			writer.println(" @set X=%X%;%1");
-			writer.println(" @GOTO :eof");
-			writer.println("");
-			writer.println(":start");
-			writer.println("@set X=.\\dist\\ProM-Framework.jar");
-			writer.println("@set X=%X%;.\\dist\\ProM-Contexts.jar");
-			writer.println("@set X=%X%;.\\dist\\ProM-Models.jar");
-			writer.println("@set X=%X%;.\\dist\\ProM-Plugins.jar");
-			writer.println("");
-			writer.println("@for /R . %%I IN (\"\\lib\\*.jar\") DO @call :add .\\lib\\%%~nI.jar");
-			writer.println("");
-			writer.println("@java -Xmx"
-					+ selectedMem
-					+ " -XX:MaxPermSize=256m -classpath \"%X%\" -XX:+UseCompressedOops -Djava.library.path=.//lib -Djava.util.Arrays.useLegacyMergeSort=true org.processmining.contexts.uitopia.UI");
-			writer.println("");
-			writer.println("set X=");
-			writer.println("");
+			String version = Boot.PROM_VERSION.replaceAll(".","");
+			writer = new PrintWriter("ProM" + version + ".bat", "UTF-8");
+			writer.println("@setlocal enableextensions");
+			writer.println("@cd /d \"%~dp0\"");
+			writer.println("java -da -Xmx" + selectedMem + " -XX:MaxPermSize=256m -classpath ProM" + version + ".jar -Djava.util.Arrays.useLegacyMergeSort=true org.processmining.contexts.uitopia.UI");
 			writer.close();
 			return true;
 		} catch (FileNotFoundException e) {
@@ -317,29 +306,49 @@ public class PMMemoryView extends RoundedPanel implements ActionListener {
 			return false;
 		}
 	}
-
+	
 	private boolean updateShFile() {
 		PrintWriter writer;
 		try {
-			writer = new PrintWriter("ProM.sh", "UTF-8");
+			String version = Boot.PROM_VERSION.replaceAll(".","");
+			writer = new PrintWriter("ProM" + version + ".sh", "UTF-8");
 			writer.println("#!/bin/sh");
-			writer.println("CP=./ProM.jar");
-			writer.println("MEM=" + selectedMem);
+			writer.println("");
+			writer.println("###");
+			writer.println("## ProM specific");
+			writer.println("###");
+			writer.println("PROGRAM=ProM" + version);
+			writer.println("CP=./${PROGRAM}.jar");
+			writer.println("LIBDIR=./lib");
+			writer.println("MAIN=org.processmining.contexts.uitopia.UI");
+			writer.println("");
+			writer.println("###");
+			writer.println("## Environment options");
+			writer.println("###");
+			writer.println("JAVA=java");
+			writer.println("MEM=" + selectedMem + "");
+			writer.println("");
+			writer.println("###");
+			writer.println("## Main program");
+			writer.println("###");
 			writer.println("add() {");
-			writer.println("\tCP=${CP}:$1");
+			writer.println("\tCP=$(CP}:$1");
 			writer.println("}");
-			writer.println("for lib in ./lib/*.jar");
+			writer.println("");
+			writer.println("for lib in $LIBDIR/*.jar");
 			writer.println("do");
 			writer.println("\tadd $lib");
 			writer.println("done");
-			writer.println("java -classpath ${CP} -Djava.library.path=./lib -da -Xmx${MEM} -XX:MaxPermSize=256m -XX:+UseCompressedOops -Djava.util.Arrays.useLegacyMergeSort=true org.processmining.contexts.uitopia.UI");
+			writer.println("");
+			writer.println("$JAVA -classpath ${CP} -Djava.library.path=$LIBDIR -da -Xmx${MEM} -Djava.util.Arrays.useLegacyMergeSort=true ${MAIN}");
 			writer.close();
 			return true;
 		} catch (FileNotFoundException e) {
 			return false;
 		} catch (UnsupportedEncodingException e) {
 			return false;
-		}
+		}		
 	}
+
 
 }
