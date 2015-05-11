@@ -66,6 +66,9 @@ public class Boot {
 		}
 
 		PROM_VERSION = ini.getProperty("PROM_VERSION");
+		if (!PROM_VERSION.contains(".")) {
+			PROM_VERSION = "";
+		}
 
 		RELEASE_PACKAGE = ini.getProperty("RELEASE_PACKAGE");
 
@@ -97,10 +100,10 @@ public class Boot {
 
 		try {
 			DEFAULT_REPOSITORY = new URL(ini.getProperty("PACKAGE_URL",
-					"http://www.promtools.org/prom6/packages/packages.xml"));
+					"http://www.promtools.org/prom6/packages" + PROM_VERSION.replaceAll("\\.", "") + "/packages.xml"));
 		} catch (MalformedURLException e) {
 			try {
-				DEFAULT_REPOSITORY = new URL("http://www.promtools.org/prom6/packages/packages.xml");
+				DEFAULT_REPOSITORY = new URL("http://www.promtools.org/prom6/packages" + PROM_VERSION.replaceAll("\\.", "") + "/packages.xml");
 			} catch (MalformedURLException e1) {
 				assert (false);
 			}
@@ -108,7 +111,7 @@ public class Boot {
 
 		String prom_user_folder = ini.getProperty("PROM_USER_FOLDER", "").replace("/", File.separator);
 		if (prom_user_folder.equals("")) {
-			PROM_USER_FOLDER = System.getProperty("user.home", "") + File.separator + ".ProM";
+			PROM_USER_FOLDER = System.getProperty("user.home", "") + File.separator + ".ProM" + PROM_VERSION.replaceAll("\\.", "");
 		} else {
 			PROM_USER_FOLDER = prom_user_folder;
 		}

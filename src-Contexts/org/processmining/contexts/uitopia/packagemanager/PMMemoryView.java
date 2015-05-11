@@ -154,7 +154,7 @@ public class PMMemoryView extends RoundedPanel implements ActionListener {
 			 * Try to read the current memory option from file, and set the
 			 * default accordingly.
 			 */
-			String version = Boot.PROM_VERSION.replaceAll(".","");
+			String version = Boot.PROM_VERSION.replaceAll("\\.","");
 			FileReader reader = new FileReader("ProM" + version + ".l4j.ini");
 			char[] a = new char[10];
 			reader.read(a);
@@ -239,7 +239,7 @@ public class PMMemoryView extends RoundedPanel implements ActionListener {
 		if (oldSelectedMem == selectedMem) {
 			return;
 		}
-		String version = Boot.PROM_VERSION.replaceAll(".","");
+		String version = Boot.PROM_VERSION.replaceAll("\\.","");
 		if (OsUtil.isRunningWindows()) {
 			/*
 			 * Windows. Need to update ini file and bat file.
@@ -278,7 +278,7 @@ public class PMMemoryView extends RoundedPanel implements ActionListener {
 	private boolean updateIniFile() {
 		PrintWriter writer;
 		try {
-			String version = Boot.PROM_VERSION.replaceAll(".","");
+			String version = Boot.PROM_VERSION.replaceAll("\\.","");
 			writer = new PrintWriter("ProM" + version + ".l4j.ini", "UTF-8");
 			writer.println("-Xmx" + selectedMem + " -XX:MaxPermSize=256m");
 			writer.close();
@@ -293,7 +293,7 @@ public class PMMemoryView extends RoundedPanel implements ActionListener {
 	private boolean updateBatFile() {
 		PrintWriter writer;
 		try {
-			String version = Boot.PROM_VERSION.replaceAll(".","");
+			String version = Boot.PROM_VERSION.replaceAll("\\.","");
 			writer = new PrintWriter("ProM" + version + ".bat", "UTF-8");
 			writer.println("@setlocal enableextensions");
 			writer.println("@cd /d \"%~dp0\"");
@@ -310,7 +310,7 @@ public class PMMemoryView extends RoundedPanel implements ActionListener {
 	private boolean updateShFile() {
 		PrintWriter writer;
 		try {
-			String version = Boot.PROM_VERSION.replaceAll(".","");
+			String version = Boot.PROM_VERSION.replaceAll("\\.","");
 			writer = new PrintWriter("ProM" + version + ".sh", "UTF-8");
 			writer.println("#!/bin/sh");
 			writer.println("");
