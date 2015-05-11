@@ -242,7 +242,7 @@ public class PackageConfigPerister {
 			/*
 			 * Do not write to local repo if known to be unavailable.
 			 */
-			if (!PackageManager.getInstance().isAvailable(pack)) {
+			if (PackageManager.getInstance().isAvailable(pack)) {
 				writePackage(pack, writer);
 			}
 		}
