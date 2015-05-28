@@ -39,6 +39,9 @@ public class Boot {
 	public static Level VERBOSE;
 	public static URL DEFAULT_REPOSITORY;
 	public static int OPENXES_SHADOW_SIZE;
+	
+	public static boolean HIDE_OLD_PACKAGES;
+	public static boolean CHECK_PACKAGES;
 
 	public final static String LAST_RELEASE_AUTOINSTALLED_KEY = "last_release_autoinstalled";
 	public static final String LAST_RELEASE_PACKAGE_KEY = "last_release_package_installed";
@@ -122,6 +125,9 @@ public class Boot {
 		WORKSPACE_FOLDER = PROM_USER_FOLDER + File.separator
 				+ ini.getProperty("WORKSPACE_FOLDER", "workspace").replace("/", File.separator);
 
+		HIDE_OLD_PACKAGES = new Boolean(ini.getProperty("HIDE_OLD_PACKAGES", "false"));
+		CHECK_PACKAGES = new Boolean(ini.getProperty("CHECK_PACKAGES", "false"));
+		
 		if (VERBOSE == Level.ALL) {
 			System.out.println("Ini file processed");
 		}

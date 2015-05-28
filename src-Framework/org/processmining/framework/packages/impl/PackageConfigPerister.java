@@ -18,6 +18,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
+import org.processmining.framework.boot.Boot;
 import org.processmining.framework.packages.PackageDescriptor;
 import org.processmining.framework.packages.PackageDescriptor.OS;
 import org.processmining.framework.packages.PackageManager;
@@ -218,7 +219,28 @@ public class PackageConfigPerister {
 					if (insideInstalled) {
 						installed.add(pack);
 					} else {
-						available.add(pack);
+						if (Boot.HIDE_OLD_PACKAGES) {
+							// Suggested by Massimiliano de Leoni
+							PackageDescriptor foundPack = null;
+							for (PackageDescriptor availablePack : available) {
+								if (availablePack.getName().equals(pack.getName())) {
+									foundPack = availablePack;
+									break;
+								}
+							}
+							if (foundPack != null) {
+								if (foundPack.getVersion().lessThan(pack.getVersion())) {
+									available.remove(foundPack);
+									available.add(pack);
+								} else {
+									// Skip, pack is dominated by foundPack.
+								}
+							} else {
+								available.add(pack);
+							}
+						} else {
+							available.add(pack);
+						}
 					}
 				}
 				curPackageName = null;

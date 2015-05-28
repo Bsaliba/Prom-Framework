@@ -87,6 +87,9 @@ public class PackageManager {
 	 * @return Whether the URL of the package descriptor can be opened successfully.
 	 */
 	public boolean isAvailable(PackageDescriptor descriptor) {
+		if (!Boot.CHECK_PACKAGES) {
+			return true;
+		}
 		/*
 		 * First check the cache.
 		 */
