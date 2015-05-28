@@ -4,11 +4,13 @@ import java.util.Date;
 import java.util.List;
 
 import org.deckfour.uitopia.api.event.TaskListener;
+import org.deckfour.uitopia.api.hub.CategoryManager;
 import org.deckfour.uitopia.api.hub.FrameworkHub;
 import org.deckfour.uitopia.api.model.Author;
 import org.deckfour.uitopia.ui.UITopiaController;
 import org.deckfour.uitopia.ui.UITopiaFrame;
 import org.processmining.contexts.uitopia.hub.ProMActionManager;
+import org.processmining.contexts.uitopia.hub.ProMCategoryManager;
 import org.processmining.contexts.uitopia.hub.ProMResourceManager;
 import org.processmining.contexts.uitopia.hub.ProMTaskManager;
 import org.processmining.contexts.uitopia.hub.ProMViewManager;
@@ -28,6 +30,7 @@ public class UIContext extends AbstractGlobalContext implements
 	private ProMActionManager actionManager;
 	private ProMTaskManager taskManager;
 	private ProMViewManager viewManager;
+	private CategoryManager categoryManager;
 	private UITopiaController controller;
 
 	public UIContext() {
@@ -41,10 +44,15 @@ public class UIContext extends AbstractGlobalContext implements
 		taskManager = ProMTaskManager.initialize(this);
 		actionManager = ProMActionManager.initialize(this);
 		viewManager = ProMViewManager.initialize(this);
+		categoryManager = ProMCategoryManager.initialize(this);
 	}
 
 	public void setFrame(UITopiaFrame frame) {
 		this.frame = frame;
+	}
+
+	public CategoryManager getCategoryManager() {
+		return categoryManager;
 	}
 
 	@Override

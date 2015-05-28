@@ -11,6 +11,7 @@ import org.deckfour.uitopia.api.model.Action;
 import org.deckfour.uitopia.api.model.ActionStatus;
 import org.deckfour.uitopia.api.model.ActionType;
 import org.deckfour.uitopia.api.model.Author;
+import org.deckfour.uitopia.api.model.Category;
 import org.deckfour.uitopia.api.model.Parameter;
 import org.deckfour.uitopia.api.model.Resource;
 import org.deckfour.uitopia.api.model.ResourceType;
@@ -58,7 +59,7 @@ public class ProMAction implements Action, Comparable<ProMAction> {
 		} else if (help.equals(UITopiaVariant.USEVARIANT)) {
 			help = plugin.getMethodHelp(methodIndex);
 		}
-		
+
 		catergories = plugin.getCategories();
 		keywords = plugin.getKeywords();
 
@@ -253,5 +254,14 @@ public class ProMAction implements Action, Comparable<ProMAction> {
 
 	public String[] getKeywords() {
 		return keywords;
+	}
+
+	public boolean isOfCategory(Category category) {
+		for (String c : catergories) {
+			if (category.getName().equals(c)) {
+				return true;
+			}
+		}
+		return false;
 	}
 }
