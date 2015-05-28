@@ -7,8 +7,12 @@ import java.awt.event.ActionListener;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
@@ -275,80 +279,36 @@ public class PMMemoryView extends RoundedPanel implements ActionListener {
 		oldSelectedMem = selectedMem;
 	}
 
-	private boolean updateIniFile() {
-		PrintWriter writer;
+	private boolean updateFile(String ext) {
 		try {
 			String version = Boot.PROM_VERSION.replaceAll("\\.","");
-			writer = new PrintWriter("ProM" + version + ".l4j.ini", "UTF-8");
-			writer.println("-Xmx" + selectedMem + " -XX:MaxPermSize=256m");
-			writer.close();
+			Path path = Paths.get("ProM" + version + ext);
+			Charset charset = StandardCharsets.UTF_8;
+			String content = new String(Files.readAllBytes(path), charset);
+			String oldMem = "-Xmx" + oldSelectedMem;
+			String newMem = "-Xmx" + selectedMem;
+			content = content.replaceAll(oldMem, newMem);
+			Files.write(path,  content.getBytes(charset));
 			return true;
 		} catch (FileNotFoundException e) {
 			return false;
 		} catch (UnsupportedEncodingException e) {
 			return false;
+		} catch (IOException e) {
+			return false;
 		}
+	}
+	
+	private boolean updateIniFile() {
+		return updateFile(".l4j.ini");
 	}
 	
 	private boolean updateBatFile() {
-		PrintWriter writer;
-		try {
-			String version = Boot.PROM_VERSION.replaceAll("\\.","");
-			writer = new PrintWriter("ProM" + version + ".bat", "UTF-8");
-			writer.println("@setlocal enableextensions");
-			writer.println("@cd /d \"%~dp0\"");
-			writer.println("java -da -Xmx" + selectedMem + " -XX:MaxPermSize=256m -classpath ProM" + version + ".jar -Djava.util.Arrays.useLegacyMergeSort=true org.processmining.contexts.uitopia.UI");
-			writer.close();
-			return true;
-		} catch (FileNotFoundException e) {
-			return false;
-		} catch (UnsupportedEncodingException e) {
-			return false;
-		}
+		return updateFile(".bat");
 	}
 	
 	private boolean updateShFile() {
-		PrintWriter writer;
-		try {
-			String version = Boot.PROM_VERSION.replaceAll("\\.","");
-			writer = new PrintWriter("ProM" + version + ".sh", "UTF-8");
-			writer.println("#!/bin/sh");
-			writer.println("");
-			writer.println("###");
-			writer.println("## ProM specific");
-			writer.println("###");
-			writer.println("PROGRAM=ProM" + version);
-			writer.println("CP=./${PROGRAM}.jar");
-			writer.println("LIBDIR=./lib");
-			writer.println("MAIN=org.processmining.contexts.uitopia.UI");
-			writer.println("");
-			writer.println("###");
-			writer.println("## Environment options");
-			writer.println("###");
-			writer.println("JAVA=java");
-			writer.println("MEM=" + selectedMem + "");
-			writer.println("");
-			writer.println("###");
-			writer.println("## Main program");
-			writer.println("###");
-			writer.println("add() {");
-			writer.println("\tCP=$(CP}:$1");
-			writer.println("}");
-			writer.println("");
-			writer.println("for lib in $LIBDIR/*.jar");
-			writer.println("do");
-			writer.println("\tadd $lib");
-			writer.println("done");
-			writer.println("");
-			writer.println("$JAVA -classpath ${CP} -Djava.library.path=$LIBDIR -da -Xmx${MEM} -Djava.util.Arrays.useLegacyMergeSort=true ${MAIN}");
-			writer.close();
-			return true;
-		} catch (FileNotFoundException e) {
-			return false;
-		} catch (UnsupportedEncodingException e) {
-			return false;
-		}		
+		return updateFile(".sh");
 	}
-
 
 }
