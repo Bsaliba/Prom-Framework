@@ -28,7 +28,7 @@ public class ProgressBarImpl implements Progress {
 
 	public void inc() {
 		context.getProgressEventListeners().fireProgressChanged(++value);
-		Thread.yield();
+		// Thread.yield();
 	}
 
 	public void setMinimum(int value) {
@@ -44,7 +44,7 @@ public class ProgressBarImpl implements Progress {
 	public void setValue(int value) {
 		this.value = value;
 		context.getProgressEventListeners().fireProgressChanged(value);
-		Thread.yield();
+		// Thread.yield();
 	}
 
 	public int getValue() {
