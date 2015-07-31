@@ -135,7 +135,7 @@ public class ProMResourceManager extends UpdateSignaller implements ResourceMana
 			return "XES files";
 		} else if (typeName.equals("Petrinet")) {
 			return "PNML files";
-		} else if (typeName.equals("AccptingPetriNet")) {
+		} else if (typeName.equals("AcceptingPetriNet")) {
 			return "Accepting Petri Net";
 		} else if (typeName.equals("PetriNetWithData")) {
 			// Particularly useful, as this may prevent novice users from using the usual PNML export, which does not export data.
