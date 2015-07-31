@@ -123,11 +123,35 @@ public class ProMResourceManager extends UpdateSignaller implements ResourceMana
 		}
 		return instance;
 	}
+	
+	/*
+	 * HV: Return a default exporter for known types.
+	 * Fortunately, this handling of favorite is all String based, so we do not need to know the actual types (only their names).
+	 */
+	private String getDefaultExport(String typeName) {
+		// The typeName matches whatever the ProM workspace shows in the second line of an object (basically, this is the class name). 
+		// The returned label should match with whatever is in the @UIExportPlugin declaration.
+		if (typeName.equals("XLog")) {
+			return "XES files";
+		} else if (typeName.equals("Petrinet")) {
+			return "PNML files";
+		} else if (typeName.equals("AccptingPetriNet")) {
+			return "Accepting Petri Net";
+		} else if (typeName.equals("PetriNetWithData")) {
+			// Particularly useful, as this may prevent novice users from using the usual PNML export, which does not export data.
+			return "Data-aware PNML files";
+		}
+		return "";
+	}
 
 	public boolean exportResource(Resource resource) throws IOException {
 		assert (resource instanceof ProMResource<?>);
 
 		String lastChosenExportPlugin = preferences.get(FAVORITEEXPORT + resource.getType().getTypeName(), "");
+		if (lastChosenExportPlugin.isEmpty()) {
+			// HV: No favorite set yet by user. Use reasonable default values for known types.
+			lastChosenExportPlugin = getDefaultExport(resource.getType().getTypeName());
+		}
 		FileFilter lastChosenFilter = null;
 
 		Map<FileFilter, PluginParameterBinding> exportplugins = new TreeMap<FileFilter, PluginParameterBinding>(
