@@ -8,6 +8,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Map;
@@ -144,6 +145,22 @@ public class ProMResourceManager extends UpdateSignaller implements ResourceMana
 		return "";
 	}
 
+	public Collection<FileFilter> getExportFilters(Resource resource) {
+		Collection<FileFilter> exportfilters = new HashSet<FileFilter>();
+		Set<PluginParameterBinding> potentialExportPlugins = context.getPluginManager().getPluginsAcceptingInAnyOrder(
+				UIPluginContext.class, false, File.class, resource.getType().getTypeClass());
+
+		for (PluginParameterBinding binding : potentialExportPlugins) {
+			if (binding.getPlugin().getAnnotation(UIExportPlugin.class) != null) {
+				String description = binding.getPlugin().getAnnotation(UIExportPlugin.class).description();
+				String extension = binding.getPlugin().getAnnotation(UIExportPlugin.class).extension();
+				FileNameExtensionFilter filter = new FileNameExtensionFilter(description, extension);
+				exportfilters.add(filter);
+			}
+		}
+		return exportfilters;
+	}
+	
 	public boolean exportResource(Resource resource) throws IOException {
 		assert (resource instanceof ProMResource<?>);
 

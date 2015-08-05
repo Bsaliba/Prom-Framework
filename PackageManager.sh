@@ -12,7 +12,6 @@ MAIN=org.processmining.contexts.uitopia.packagemanager.PMFrame
 ## Environment options
 ###
 JAVA=java
-MEM=1g
 
 ###
 ## Main program
@@ -28,4 +27,4 @@ do
 	add $lib
 done
 
-$JAVA -classpath ${CP} -Djava.library.path=${LIBDIR} -ea -Xmx${MEM} -XX:+UseCompressedOops ${MAIN}
+$JAVA -classpath ${CP} -Djava.library.path=${LIBDIR} -Xmx1G ${MAIN}
