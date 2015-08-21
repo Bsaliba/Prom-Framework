@@ -136,5 +136,23 @@ public class ProMTaskManager implements TaskManager<ProMTask, ProMPOResource>, P
 	public boolean isActionableResource(Resource r) {
 		return r instanceof ProMPOResource;
 	}
+	
+	public boolean isActionableResource(java.util.List<Resource> resources) {
+		for(Resource r : resources){
+			if(!(r instanceof ProMPOResource)){
+				return false;
+			}
+		}
+		return true;
+	}
+
+	public boolean isAnActionableResource(java.util.List<Resource> resources) {
+		for(Resource r : resources){
+			if(r instanceof ProMPOResource){
+				return true;
+			}
+		}
+		return false;
+	}
 
 }

@@ -106,6 +106,7 @@ public abstract class AbstractPluginDescriptor implements PluginDescriptor {
 
 		ProMFuture<?>[] futures = new ProMFuture[Math.max(1, getReturnTypes().size())];
 
+		
 		Class<?> returnType;
 		String name;
 		final PluginExecutionResultImpl lock;
@@ -141,7 +142,11 @@ public abstract class AbstractPluginDescriptor implements PluginDescriptor {
 					// this plugin
 					try {
 
+						System.out.println("Start plug-in " + getName());
+						long time = -System.currentTimeMillis();
 						Object[] result = execute(context, methodIndex, allArgs);
+						time += System.currentTimeMillis();
+						System.out.println("End plug-in " + getName() + ", took " + time + " milliseconds");
 
 						if ((result == null) && !getReturnType().equals(void.class)) {
 							throw new InSufficientResultException(getName(), lock.getExpectedSize(), 0);

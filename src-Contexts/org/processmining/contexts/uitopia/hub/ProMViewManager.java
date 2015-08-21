@@ -57,6 +57,14 @@ public class ProMViewManager extends UpdateSignaller implements ViewManager {
 		List<ViewType> result = viewClasses.get(resource.getType().getTypeClass());
 		return (result == null ? Collections.<ViewType>emptyList() : result);
 	}
+	
+	public List<ViewType> getViewTypes(List<Resource> resources) {
+		List<ViewType> views = new ArrayList<ViewType>();
+		for(Resource r : resources){
+			views.addAll(getViewTypes(r));
+		}
+		return views;
+	}
 
 	public List<View> getViews() {
 		return views;
@@ -80,5 +88,7 @@ public class ProMViewManager extends UpdateSignaller implements ViewManager {
 	public UIContext getContext() {
 		return context;
 	}
+
+
 
 }
