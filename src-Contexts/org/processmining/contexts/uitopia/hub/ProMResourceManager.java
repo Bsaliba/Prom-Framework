@@ -3,7 +3,6 @@ package org.processmining.contexts.uitopia.hub;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -15,6 +14,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.concurrent.CancellationException;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.prefs.Preferences;
 
 import javax.swing.JFileChooser;
@@ -65,8 +65,8 @@ public class ProMResourceManager extends UpdateSignaller implements ResourceMana
 
 	private static ProMResourceManager instance = null;
 
-	private final Map<Class<?>, ProMResourceType> resourceClasses = new HashMap<Class<?>, ProMResourceType>();
-	private final Map<ProMID, ProMResource<?>> resources = new HashMap<ProMID, ProMResource<?>>();
+	private final Map<Class<?>, ProMResourceType> resourceClasses = new ConcurrentHashMap<Class<?>, ProMResourceType>();
+	private final Map<ProMID, ProMResource<?>> resources = new ConcurrentHashMap<ProMID, ProMResource<?>>();
 
 	private final UIContext context;
 
@@ -124,10 +124,11 @@ public class ProMResourceManager extends UpdateSignaller implements ResourceMana
 		}
 		return instance;
 	}
-	
+
 	/*
-	 * HV: Return a default exporter for known types.
-	 * Fortunately, this handling of favorite is all String based, so we do not need to know the actual types (only their names).
+	 * HV: Return a default exporter for known types. Fortunately, this handling
+	 * of favorite is all String based, so we do not need to know the actual
+	 * types (only their names).
 	 */
 	private String getDefaultExport(String typeName) {
 		// The typeName matches whatever the ProM workspace shows in the second line of an object (basically, this is the class name). 
@@ -160,7 +161,7 @@ public class ProMResourceManager extends UpdateSignaller implements ResourceMana
 		}
 		return exportfilters;
 	}
-	
+
 	public boolean exportResource(Resource resource) throws IOException {
 		assert (resource instanceof ProMResource<?>);
 
@@ -267,13 +268,11 @@ public class ProMResourceManager extends UpdateSignaller implements ResourceMana
 	}
 
 	public java.util.List<ProMResource<?>> getAllResources() {
-		return new ArrayList<ProMResource<?>>(Arrays.asList(resources.values().toArray(new ProMResource<?>[0])));
+		return new ArrayList<ProMResource<?>>(resources.values());
 	}
 
 	public java.util.List<ProMResource<?>> getAllResources(ResourceFilter filter) {
-		java.util.List<ProMResource<?>> filtered = new ArrayList<ProMResource<?>>(Arrays.asList(resources.values()
-				.toArray(new ProMResource<?>[0])));
-		return filterList(filtered, filter);
+		return filterList(getAllResources(), filter);
 	}
 
 	public java.util.List<ResourceType> getAllSupportedResourceTypes() {
@@ -370,7 +369,7 @@ public class ProMResourceManager extends UpdateSignaller implements ResourceMana
 
 		}
 	}
-	
+
 	public synchronized boolean importResources(File... files) {
 		return importResource(null, files);
 	}
@@ -425,7 +424,7 @@ public class ProMResourceManager extends UpdateSignaller implements ResourceMana
 				if (selected == null) {
 					return false;
 				}
-				
+
 				preferences.put(key, selected);
 				binding = bindings.get(selected);
 			}
