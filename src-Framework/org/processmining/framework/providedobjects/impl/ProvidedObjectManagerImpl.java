@@ -21,11 +21,16 @@ public class ProvidedObjectManagerImpl implements ProvidedObjectManager {
 	private final HashMap<ProvidedObjectID, ProvidedObjectImpl> localProvidedObjects;
 	private final List<ProvidedObjectID> ids;
 
+	private final HashMap<ProvidedObjectID, ProvidedObjectImpl> localProvidedObjects2;
+	private final List<ProvidedObjectID> ids2;
+
 	private boolean enabled = true;
 
 	public ProvidedObjectManagerImpl() {
 		localProvidedObjects = new HashMap<ProvidedObjectID, ProvidedObjectImpl>();
 		ids = new ArrayList<ProvidedObjectID>();
+		localProvidedObjects2 = new HashMap<ProvidedObjectID, ProvidedObjectImpl>();
+		ids2 = new ArrayList<ProvidedObjectID>();
 	}
 
 	public ProvidedObjectLifeCycleListener.ListenerList getProvidedObjectLifeCylceListeners() {
@@ -151,5 +156,20 @@ public class ProvidedObjectManagerImpl implements ProvidedObjectManager {
 		localProvidedObjects.clear();
 		ids.clear();
 		providedObjectLifeCycleListeners.removeAll();
+	}
+	
+	
+	public void backup() {
+		ids2.clear();
+		ids2.addAll(ids);
+		localProvidedObjects2.clear();
+		localProvidedObjects2.putAll(localProvidedObjects);
+	}
+	
+	public void restore() {
+		ids.clear();
+		ids.addAll(ids2);
+		localProvidedObjects.clear();
+		localProvidedObjects.putAll(localProvidedObjects2);
 	}
 }

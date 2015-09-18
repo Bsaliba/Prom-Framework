@@ -100,4 +100,8 @@ public interface ProvidedObjectManager {
 	boolean isEnabled();
 
 	void clear();
+	
+	void backup();
+	
+	void restore();
 }
