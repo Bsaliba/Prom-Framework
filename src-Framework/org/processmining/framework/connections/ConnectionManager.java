@@ -129,8 +129,4 @@ public interface ConnectionManager {
 	void setEnabled(boolean isEnabled);
 
 	void clear();
-	
-	void backup();
-	
-	void restore();
 }

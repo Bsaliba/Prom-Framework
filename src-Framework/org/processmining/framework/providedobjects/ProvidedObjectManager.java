@@ -101,7 +101,4 @@ public interface ProvidedObjectManager {
 
 	void clear();
 	
-	void backup();
-	
-	void restore();
 }

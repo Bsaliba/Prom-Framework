@@ -24,7 +24,6 @@ import org.processmining.framework.util.Pair;
 public class ConnectionManagerImpl implements ConnectionManager {
 
 	private final Map<ConnectionID, Connection> connections = new HashMap<ConnectionID, Connection>();
-	private final Map<ConnectionID, Connection> connections2 = new HashMap<ConnectionID, Connection>();
 	private final ConnectionObjectListener.ListenerList connectionListeners = new ConnectionObjectListener.ListenerList();
 	private final PluginManager pluginManager;
 	private boolean isEnabled = true;
@@ -159,13 +158,4 @@ public class ConnectionManagerImpl implements ConnectionManager {
 		return connections.keySet();
 	}
 
-	public void backup() {
-		connections2.clear();
-		connections2.putAll(connections);
-	}
-
-	public void restore() {
-		connections.clear();
-		connections.putAll(connections2);
-	}
 }
