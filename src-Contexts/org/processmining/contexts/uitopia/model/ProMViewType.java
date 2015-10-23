@@ -1,11 +1,15 @@
 package org.processmining.contexts.uitopia.model;
 
+import java.text.MessageFormat;
+
 import org.deckfour.uitopia.api.model.Resource;
 import org.deckfour.uitopia.api.model.ResourceType;
 import org.deckfour.uitopia.api.model.View;
 import org.deckfour.uitopia.api.model.ViewType;
 import org.processmining.contexts.uitopia.annotations.Visualizer;
 import org.processmining.contexts.uitopia.hub.ProMViewManager;
+import org.processmining.framework.packages.PackageDescriptor;
+import org.processmining.framework.plugin.PluginDescriptor;
 import org.processmining.framework.plugin.PluginParameterBinding;
 import org.processmining.framework.util.Pair;
 
@@ -45,7 +49,12 @@ public class ProMViewType extends AbstractAuthored implements ViewType {
 	}
 
 	public String toString() {
-		return getTypeName();
+		PackageDescriptor packageDesc = binding.getSecond().getPlugin().getPackage();
+		if (packageDesc != null) {
+			return MessageFormat.format("{0} ({1})", getTypeName(), packageDesc.getName());
+		} else {
+			return MessageFormat.format("{0}", getTypeName());
+		}		
 	}
 
 	public boolean equals(Object o) {
@@ -58,5 +67,11 @@ public class ProMViewType extends AbstractAuthored implements ViewType {
 
 	public int hashCode() {
 		return binding.hashCode();
+	}
+
+	public Class<?> getPrimaryType() {
+		PluginParameterBinding pluginMethod = binding.getSecond();
+		PluginDescriptor plugin = pluginMethod.getPlugin();
+		return plugin.getPluginParameterType(pluginMethod.getMethodIndex(), 0);
 	}
 }

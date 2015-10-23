@@ -12,12 +12,14 @@ import java.awt.Image;
 import java.awt.RenderingHints;
 import java.awt.Transparency;
 import java.awt.image.BufferedImage;
+import java.util.List;
+import java.util.concurrent.CancellationException;
 
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
 import javax.swing.JComponent;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JTextArea;
 
 import org.deckfour.uitopia.api.model.Resource;
 import org.deckfour.uitopia.api.model.View;
@@ -27,9 +29,26 @@ import org.processmining.contexts.uitopia.hub.ProMViewManager;
 import org.processmining.contexts.uitopia.hub.overlay.ProgressOverlayDialog;
 import org.processmining.framework.plugin.PluginExecutionResult;
 import org.processmining.framework.plugin.PluginParameterBinding;
+import org.processmining.framework.plugin.ProMCanceller;
 import org.processmining.framework.util.Pair;
 
+import com.google.common.base.Throwables;
+
 public class ProMView implements View {
+
+	private static final class ProMCancellerImpl implements ProMCanceller {
+
+		private boolean isCancelled = false;
+		
+		public boolean isCancelled() {
+			return isCancelled;
+		}
+
+		public void cancel() {
+			isCancelled = true;
+		}
+		
+	}
 
 	private final JPanel component;
 	private final ProMViewManager manager;
@@ -41,6 +60,7 @@ public class ProMView implements View {
 	private BufferedImage scaledImage;
 	private final Pair<Integer, PluginParameterBinding> binding;
 	private boolean working = true;
+	private final ProMCancellerImpl proMCanceller;
 
 	public ProMView(ProMViewManager manager, ProMViewType type, ProMResource<?> resource, String name,
 			Pair<Integer, PluginParameterBinding> binding) {
@@ -54,12 +74,13 @@ public class ProMView implements View {
 		component.setBorder(BorderFactory.createEmptyBorder());
 		component.setOpaque(false);
 		original = toBufferedImage(resource.getType().getTypeIcon());
-
+		proMCanceller = new ProMCancellerImpl();
 		refresh(0);
 	}
 
-	public void destroy() {
+	public void destroy() {		
 		component.removeAll();
+		proMCanceller.cancel();
 	}
 
 	public String getCustomName() {
@@ -193,21 +214,27 @@ public class ProMView implements View {
 					working = true;
 				}
 
-				PluginExecutionResult result = binding.getSecond().invoke(context, resource.getInstance());
+				PluginExecutionResult result = getVisualizationResult(context, proMCanceller);
 
-				String message = "";
+				String message = "no message";
+				String stacktrace = "unavailable";
 				JComponent content = null;
 				try {
 					context.log("Starting visualization of " + resource);
 					result.synchronize();
 					content = result.getResult(binding.getFirst());
+					
 					if (content == null) {
-						throw new Exception(resource.toString());
+						throw new Exception("The visualiser for " + resource.toString()
+								+ " returned null. Please select another visualiser.");
 					}
+				} catch (CancellationException e) {
+					proMCanceller.cancel();
+					message = "The visualiser is cancelled.";
+					stacktrace = "not available";
 				} catch (Exception e) {
-					//throw new IllegalArgumentException("Failed to create visualization of " + resource, e);
-					manager.getContext().getController().getMainView().showWorkspaceView();
 					message = e.getMessage();
+					stacktrace = Throwables.getStackTraceAsString(e);
 				} finally {
 					context.getParentContext().deleteChild(context);
 
@@ -220,10 +247,12 @@ public class ProMView implements View {
 							e.printStackTrace();
 							//ignore
 							message = e.getMessage();
+							stacktrace = Throwables.getStackTraceAsString(e);
 						}
 					}
 					if (component.getComponents().length == 0) {
-						component.add(new JLabel("<HTML>Unable to produce visualization. Reason:<BR>"+message+"</HTML>"), BorderLayout.CENTER);
+						component.add(new JTextArea("Unable to produce the visualization.\n\nMessage:\n" + message
+								+ "\n\nError report:\n" + stacktrace), BorderLayout.CENTER);
 					}
 					dialog.changeProgress(dialog.getMaximum());
 					synchronized (ProMView.this) {
@@ -234,6 +263,19 @@ public class ProMView implements View {
 				}
 
 			}
+
+			private PluginExecutionResult getVisualizationResult(final UIPluginContext context,
+					ProMCanceller proMCanceller) {
+				PluginParameterBinding parameterBinding = binding.getSecond();
+				List<Class<?>> parameterTypes = parameterBinding.getPlugin().getParameterTypes(
+						parameterBinding.getMethodIndex());
+				if (parameterTypes.size() == 2 && parameterTypes.get(1) == ProMCanceller.class) {
+					return parameterBinding.invoke(context, resource.getInstance(), proMCanceller);
+				} else {
+					return parameterBinding.invoke(context, resource.getInstance());
+				}
+			}
+
 		});
 		thread.start();
 
