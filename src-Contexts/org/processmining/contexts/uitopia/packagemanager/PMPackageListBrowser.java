@@ -54,7 +54,7 @@ public class PMPackageListBrowser extends JPanel {
 	private final Type type;
 
 	private PMPackageListModel listModel;
-	private JList packageList;
+	private JList<? extends PMPackage> packageList;
 	private JComponent viewport;
 	private JLabel header;
 
@@ -100,7 +100,7 @@ public class PMPackageListBrowser extends JPanel {
 	public boolean isEmpty() {
 		return packages.isEmpty();
 	}
-	
+
 	public void selectPackage(String name) {
 		for (int i = 0; i < listModel.getSize(); i++) {
 			if (((PMPackage) listModel.getElementAt(i)).getPackageName().equals(name)) {
@@ -110,7 +110,7 @@ public class PMPackageListBrowser extends JPanel {
 			}
 		}
 	}
-	
+
 	public void setSelectionContent(PMPackage reference, boolean showParents) {
 		if (showParents) {
 			packages = controller.getParentPackages(reference);
@@ -269,7 +269,28 @@ public class PMPackageListBrowser extends JPanel {
 		} else if (type.equals(Type.TOINSTALL)) {
 			packages = controller.getToInstallPackages();
 		}
-		listModel = new PMPackageListModel(packages);
+
+		// Filter packages to keep only those that match the given query
+		String query = controller.getQuery();
+		List<PMPackage> filteredPackages = new ArrayList<PMPackage>();
+		if (query.isEmpty()) {
+			filteredPackages.addAll(packages);
+		} else {
+			for (PMPackage pack : packages) {
+				if (pack.getAuthorName().toLowerCase().matches(query) || pack.getPackageName().toLowerCase().matches(query)
+						|| pack.getDescription().toLowerCase().matches(query) || pack.getVersion().toLowerCase().matches(query)
+						|| pack.getDescriptor().getOrganisation().toLowerCase().matches(query)
+						|| pack.getDescriptor().getAuthor().toLowerCase().matches(query)
+						|| pack.getDescriptor().getDescription().toLowerCase().matches(query)
+						|| pack.getDescriptor().getMaintainer().toLowerCase().matches(query)
+						|| pack.getDescriptor().getLicense().toLowerCase().matches(query)
+						|| pack.getDescriptor().getName().toLowerCase().matches(query)
+						|| pack.getDescriptor().getKeywords().toLowerCase().matches(query)) {
+					filteredPackages.add(pack);
+				}
+			}
+		}
+		listModel = new PMPackageListModel(filteredPackages);
 		final Object selected = packageList.getSelectedValue();
 		int index = packageList.getSelectedIndex();
 
@@ -277,7 +298,7 @@ public class PMPackageListBrowser extends JPanel {
 		sortList(false);
 		packageList.setSelectedValue(selected, true);
 		if (packageList.isSelectionEmpty()) {
-			int i = Math.max(0, Math.min(index, packages.size() - 1));
+			int i = Math.max(0, Math.min(index, filteredPackages.size() - 1));
 			packageList.setSelectedIndex(i);
 			packageList.ensureIndexIsVisible(i);
 		}
@@ -286,10 +307,10 @@ public class PMPackageListBrowser extends JPanel {
 
 	private void updateViewport() {
 		viewport.removeAll();
-		Object[] selected = packageList.getSelectedValues();
+		List<? extends PMPackage> selected = packageList.getSelectedValuesList();
 		Collection<PMPackage> selectedPacks = new HashSet<PMPackage>();
-		for (int i = 0; i < selected.length; i++) {
-			selectedPacks.add((PMPackage) selected[i]);
+		for (int i = 0; i < selected.size(); i++) {
+			selectedPacks.add(selected.get(i));
 		}
 		if (!selectedPacks.isEmpty()) {
 			pmPackageView = new PMPackageView(selectedPacks, controller);
@@ -299,7 +320,6 @@ public class PMPackageListBrowser extends JPanel {
 		}
 		viewport.revalidate();
 	}
-
 
 	public PMPackageView getPackageView() {
 		return pmPackageView;

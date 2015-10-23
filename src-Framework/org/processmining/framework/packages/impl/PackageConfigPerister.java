@@ -97,6 +97,7 @@ public class PackageConfigPerister {
 		private static final String MAINTAINER_ATTR = "maintainer";
 
 		private static final String LOGO_URL_ATTR = "logo";
+		private static final String KEYWORDS_ATTR = "keywords";
 
 		private Repository curRepo = null;
 		private String curPackageName = null;
@@ -119,6 +120,7 @@ public class PackageConfigPerister {
 		private final Canceller canceller;
 		private String curPackageOS;
 		private String curPackageMaintainer;
+		private String curKeywords;
 
 		public ConfigHandler(Set<Repository> repositories, Set<PackageDescriptor> available,
 				Set<PackageDescriptor> installed, Canceller canceller) {
@@ -161,6 +163,7 @@ public class PackageConfigPerister {
 					String hasPlugins = attributes.getValue(HAS_PLUGINS_ATTR);
 					String os = attributes.getValue(OS_ATTR);
 					String maintainer = attributes.getValue(MAINTAINER_ATTR);
+					String keywords = attributes.getValue(KEYWORDS_ATTR);
 
 					if ((name != null) && (name.trim().length() > 0) && //
 							(version != null) && (version.trim().length() > 0) && //
@@ -178,6 +181,7 @@ public class PackageConfigPerister {
 						curPackageMaintainer = maintainer == null ? author : maintainer;
 						curPackageAutoInstalled = auto == null ? "" : auto;
 						curPackageHasPlugins = hasPlugins == null ? "" : hasPlugins;
+						curKeywords = keywords == null ? "" : keywords;
 						dependencies.clear();
 						conflicts.clear();
 					}
@@ -214,7 +218,7 @@ public class PackageConfigPerister {
 				if (os.isUsable()) {
 					PackageDescriptor pack = new PackageDescriptor(curPackageName, curPackageVersion, os,
 							curPackageDesc, curPackageOrg, curPackageAuthor, curPackageMaintainer, curPackageLicense,
-							curPackageURL, curLogoURL, "true".equals(curPackageAutoInstalled), !"false"
+							curPackageURL, curLogoURL,  curKeywords, "true".equals(curPackageAutoInstalled), !"false"
 									.equals(curPackageHasPlugins), dependencies, conflicts);
 					if (insideInstalled) {
 						installed.add(pack);
@@ -292,6 +296,7 @@ public class PackageConfigPerister {
 				" " + ConfigHandler.AUTHOR_ATTR + "=\"" + pack.getAuthor() + "\"" + //
 				" " + ConfigHandler.MAINTAINER_ATTR + "=\"" + pack.getMaintainer() + "\"" + //
 				" " + ConfigHandler.LOGO_URL_ATTR + "=\"" + pack.getLogoURL() + "\"" + //
+				" " + ConfigHandler.KEYWORDS_ATTR + "=\"" + pack.getKeywords() + "\"" + //
 				">" + nl);
 		for (String dep : pack.getDependencies()) {
 			writer.write("    <" + ConfigHandler.DEPENDENCY + " " + ConfigHandler.NAME_ATTR + "=\"" + dep + "\""

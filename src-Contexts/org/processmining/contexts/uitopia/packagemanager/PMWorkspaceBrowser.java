@@ -99,6 +99,8 @@ public class PMWorkspaceBrowser extends JPanel {
 	}
 
 	private void setupUI() {
+		this.add(new PMSearchView(this, controller), BorderLayout.NORTH);
+
 		browserToUninstall = new PMPackageListBrowser(controller, PMPackageListBrowser.Type.TOUNINSTALL);
 		browserToUpdate = new PMPackageListBrowser(controller, PMPackageListBrowser.Type.TOUPDATE);
 		browserToInstall = new PMPackageListBrowser(controller, PMPackageListBrowser.Type.TOINSTALL);
@@ -143,7 +145,8 @@ public class PMWorkspaceBrowser extends JPanel {
 					/*
 					 * No packages at all. User may have no internet conenction.
 					 */
-					JOptionPane.showMessageDialog(controller.getMainView(), "No packages were found. Please check your internet connection.");
+					JOptionPane.showMessageDialog(controller.getMainView(),
+							"No packages were found. Please check your internet connection.");
 				}
 			}
 		}
@@ -155,5 +158,12 @@ public class PMWorkspaceBrowser extends JPanel {
 
 		this.add(tabs, BorderLayout.CENTER);
 		this.add(new PMMemoryView(), BorderLayout.SOUTH);
+	}
+
+	public void update() {
+		browserToUninstall.updateData();
+		browserToUpdate.updateData();
+		browserToInstall.updateData();
+		browserSelection.updateData();
 	}
 }

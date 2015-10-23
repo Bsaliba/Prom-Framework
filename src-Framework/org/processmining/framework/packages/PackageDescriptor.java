@@ -60,10 +60,11 @@ public class PackageDescriptor implements Comparable<PackageDescriptor> {
 	private final String logoUrl;
 	private final OS os;
 	private final String maintainer;
+	private final String keywords;
 
 	public PackageDescriptor(String name, String version, OS os, String description, String organisation,
-			String author, String maintainer, String license, String url, String logoUrl, boolean autoInstalled,
-			boolean hasPlugins, List<String> dependencies, List<String> conflicts) {
+			String author, String maintainer, String license, String url, String logoUrl, String keywords,
+			boolean autoInstalled, boolean hasPlugins, List<String> dependencies, List<String> conflicts) {
 		this.name = name;
 		this.os = os;
 		this.maintainer = maintainer;
@@ -76,6 +77,7 @@ public class PackageDescriptor implements Comparable<PackageDescriptor> {
 		this.author = author;
 		this.license = license;
 		this.url = url;
+		this.keywords = keywords;
 		this.dependencies = Collections.unmodifiableSet(new HashSet<String>(dependencies));
 		this.conflicts = Collections.unmodifiableSet(new HashSet<String>(conflicts));
 		broken = false;
@@ -157,14 +159,16 @@ public class PackageDescriptor implements Comparable<PackageDescriptor> {
 		return license;
 	}
 
-	public int compareTo(PackageDescriptor pack) {
-		if (pack.name.equals(name)) {
-			if (version.equals(pack.version)) {
-				return os.compareTo(pack.os);
-			}
-			return -version.compareTo(pack.version);
-		}
-		return name.compareTo(pack.name);
+	public OS getOS() {
+		return os;
+	}
+
+	public String getMaintainer() {
+		return maintainer;
+	}
+
+	public String getKeywords() {
+		return keywords;
 	}
 
 	public boolean getAutoInstalled() {
@@ -214,11 +218,13 @@ public class PackageDescriptor implements Comparable<PackageDescriptor> {
 		return buffer.toString();
 	}
 
-	public OS getOS() {
-		return os;
-	}
-
-	public String getMaintainer() {
-		return maintainer;
+	public int compareTo(PackageDescriptor pack) {
+		if (pack.name.equals(name)) {
+			if (version.equals(pack.version)) {
+				return os.compareTo(pack.os);
+			}
+			return -version.compareTo(pack.version);
+		}
+		return name.compareTo(pack.name);
 	}
 }

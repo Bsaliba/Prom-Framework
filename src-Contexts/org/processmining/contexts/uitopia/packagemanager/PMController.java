@@ -16,8 +16,9 @@ public class PMController {
 
 	private final PMMainView mainView;
 	private final PackageManager manager;
-	
-	public PMController( Boot.Level verbose) {
+	private String query;
+
+	public PMController(Boot.Level verbose) {
 		manager = PackageManager.getInstance();
 		manager.initialize(verbose);
 		try {
@@ -28,7 +29,7 @@ public class PMController {
 			e.printStackTrace();
 		}
 
-		mainView = new PMMainView(this);		
+		mainView = new PMMainView(this);
 	}
 
 	/**
@@ -68,7 +69,6 @@ public class PMController {
 		}
 		return list;
 	}
-	
 
 	public java.util.List<? extends PMPackage> getToUpdatePackages() {
 		Set<PackageDescriptor> descriptors = manager.getAvailablePackages();
@@ -216,5 +216,13 @@ public class PMController {
 
 		});
 		t.start();
+	}
+
+	public String getQuery() {
+		return query == null ? "" : query;
+	}
+
+	public void setQuery(String query) {
+		this.query = query;
 	}
 }
