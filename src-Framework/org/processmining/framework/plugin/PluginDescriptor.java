@@ -346,5 +346,10 @@ public interface PluginDescriptor extends Comparable<PluginDescriptor> {
 	 */
 	String[] getCategories();
 
-
+	/**
+	 * Return whether this plug-in meets the quality threshold.
+	 * 
+	 * @return whether this plug-in meets the quality threshold
+	 */
+	boolean meetsQualityThreshold();
 }

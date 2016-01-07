@@ -719,7 +719,10 @@ public final class PluginManagerImpl implements PluginManager {
 			// mustBeUserVisible AND NOT visible, OR
 			// visible AND NOT canBeUserVisible
 			if (!((mustBeUserVisible && !visible) || (!canBeUserVisible && visible))) {
-				result.add(plugin);
+				// Do not include if quality threshold is not met.
+				if (plugin.meetsQualityThreshold()) {
+					result.add(plugin);
+				}
 			}
 		}
 		return Collections.unmodifiableSortedSet(result);

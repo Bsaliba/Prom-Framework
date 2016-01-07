@@ -7,6 +7,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 import org.processmining.framework.connections.Connection;
@@ -46,6 +47,9 @@ public abstract class AbstractConnection implements Connection {
 	protected transient ConnectionManager manager = null;
 
 	protected AbstractConnection(String label) {
+		if (label == null) {
+			throw new NullPointerException("Connection label should not be NULL");
+		}
 		this.label = label;
 		id = new ConnectionIDImpl();
 		mapping = new HashMap<String, WeakReference<?>>();
@@ -108,8 +112,9 @@ public abstract class AbstractConnection implements Connection {
 		return "Connection labelled " + label + ", connecting " + super.toString();
 	}
 
+	@Override
 	public int hashCode() {
-		return label.hashCode();
+		return Objects.hashCode(id);
 	}
 
 	public MultiSet<Object> getObjects() {
@@ -125,12 +130,26 @@ public abstract class AbstractConnection implements Connection {
 		return result;
 	}
 
+	@Override
 	public boolean equals(Object o) {
+		if (this == o) {
+			return true;
+		}
+		if (o == null) {
+			return false;
+		}
 		if (!(o instanceof AbstractConnection)) {
 			return false;
 		}
 		AbstractConnection a = (AbstractConnection) o;
-		return id.equals(a.id);
+		if (id == null) {
+			if (a.id != null) {
+				return false;
+			}
+		} else if (!id.equals(a.id)) {
+			return false;
+		}
+		return true;
 	}
 
 	public ConnectionID getID() {
@@ -181,6 +200,9 @@ public abstract class AbstractConnection implements Connection {
 	 * @param name
 	 */
 	public void setLabel(String name) {
+		if (name == null) {
+			throw new NullPointerException("Connection label should not be NULL");
+		}
 		boolean changed = name.equals(label);
 		this.label = name;
 		if (changed) {

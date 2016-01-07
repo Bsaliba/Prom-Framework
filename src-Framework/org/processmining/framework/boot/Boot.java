@@ -16,6 +16,7 @@ import org.processmining.framework.packages.PackageManager;
 import org.processmining.framework.plugin.PluginContext;
 import org.processmining.framework.plugin.PluginManager;
 import org.processmining.framework.plugin.annotations.Bootable;
+import org.processmining.framework.plugin.annotations.PluginQuality;
 import org.processmining.framework.plugin.impl.PluginManagerImpl;
 import org.processmining.framework.util.CommandLineArgumentList;
 import org.processmining.framework.util.OsUtil;
@@ -36,6 +37,7 @@ public class Boot {
 	public static String MACRO_FOLDER;
 	public static String PACKAGE_FOLDER;
 	public static String WORKSPACE_FOLDER;
+	public static PluginQuality PLUGIN_QUALITY_THRESHOLD;
 	public static Level VERBOSE;
 	public static URL DEFAULT_REPOSITORY;
 	public static int OPENXES_SHADOW_SIZE;
@@ -128,7 +130,17 @@ public class Boot {
 		HIDE_OLD_PACKAGES = new Boolean(ini.getProperty("HIDE_OLD_PACKAGES", "false"));
 		CHECK_PACKAGES = new Boolean(ini.getProperty("CHECK_PACKAGES", "false"));
 		
+		PLUGIN_QUALITY_THRESHOLD = PluginQuality.VeryPoor;
+		String mq = ini.getProperty("PLUGIN_QUALITY_THRESHOLD", PLUGIN_QUALITY_THRESHOLD.getName());	
+		for (PluginQuality quality : PluginQuality.values()) {
+			if (quality.getName().equals(mq)) {
+				PLUGIN_QUALITY_THRESHOLD = quality;
+				break;
+			}
+		}
+		
 		if (VERBOSE == Level.ALL) {
+			System.out.println("Plug-in quality threshold set to " + PLUGIN_QUALITY_THRESHOLD.getName());
 			System.out.println("Ini file processed");
 		}
 

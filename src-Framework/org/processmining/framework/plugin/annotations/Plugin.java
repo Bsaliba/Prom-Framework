@@ -108,4 +108,10 @@ public @interface Plugin {
 	 * Keywords / tags for the plugin (extra description)
 	 */
 	String[] keywords() default {};
+	
+	/**
+	 * Indication of quality for plug-in.
+	 * @return
+	 */
+	PluginQuality quality() default PluginQuality.VeryPoor;
 }

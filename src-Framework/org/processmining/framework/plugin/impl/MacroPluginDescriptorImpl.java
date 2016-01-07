@@ -429,6 +429,10 @@ public class MacroPluginDescriptorImpl extends AbstractPluginDescriptor {
 	public String[] getCategories() {
 		return new String[0];
 	}
+	
+	public boolean meetsQualityThreshold() {
+		return false;
+	}
 
 }
 

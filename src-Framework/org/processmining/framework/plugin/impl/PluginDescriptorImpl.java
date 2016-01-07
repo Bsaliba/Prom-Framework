@@ -11,12 +11,14 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.processmining.framework.boot.Boot;
 import org.processmining.framework.packages.PackageDescriptor;
 import org.processmining.framework.plugin.PluginContext;
 import org.processmining.framework.plugin.PluginDescriptor;
 import org.processmining.framework.plugin.PluginDescriptorID;
 import org.processmining.framework.plugin.annotations.Plugin;
 import org.processmining.framework.plugin.annotations.PluginCategory;
+import org.processmining.framework.plugin.annotations.PluginQuality;
 import org.processmining.framework.plugin.annotations.PluginVariant;
 
 public class PluginDescriptorImpl extends AbstractPluginDescriptor {
@@ -38,7 +40,8 @@ public class PluginDescriptorImpl extends AbstractPluginDescriptor {
 	private String help;
 	private String[] keywords;
 	private PluginCategory[] categories;
-
+	private PluginQuality quality;
+	
 	PluginDescriptorImpl(Method method, PackageDescriptor pack) throws Exception {
 		assert (method != null);
 		assert (method.isAnnotationPresent(Plugin.class));
@@ -62,6 +65,7 @@ public class PluginDescriptorImpl extends AbstractPluginDescriptor {
 		help = method.getAnnotation(Plugin.class).help();
 		keywords = method.getAnnotation(Plugin.class).keywords();
 		categories = method.getAnnotation(Plugin.class).categories();
+		quality = method.getAnnotation(Plugin.class).quality();
 		//		System.out.println("PluginDescriptorImpl,\"" + name + "\",\"" + (pack == null ? "" : pack.getName()) + "\"");
 
 		parameterNames = Arrays.asList(getAnnotation(Plugin.class).parameterLabels());
@@ -122,6 +126,7 @@ public class PluginDescriptorImpl extends AbstractPluginDescriptor {
 		help = type.getAnnotation(Plugin.class).help();
 		keywords = type.getAnnotation(Plugin.class).keywords();
 		categories = type.getAnnotation(Plugin.class).categories();
+		quality = type.getAnnotation(Plugin.class).quality();
 		//		System.out.println("PluginDescriptorImpl,\"" + name + "\",\"" + (pack == null ? "" : pack.getName()) + "\"");
 
 		// There are either no parameters, or all parameters are required at least once
@@ -478,4 +483,7 @@ public class PluginDescriptorImpl extends AbstractPluginDescriptor {
 		return categoryLabels;
 	}
 
+	public boolean meetsQualityThreshold() {
+		return Boot.PLUGIN_QUALITY_THRESHOLD.getValue() <= quality.getValue();
+	}
 }
