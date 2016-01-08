@@ -605,10 +605,9 @@ public final class PluginManagerImpl implements PluginManager {
 			return result;
 		}
 		for (PluginDescriptor plugin : pls) {
-			if (mustBeUserVisible && (!plugin.meetsQualityThreshold() || !plugin.meetsLevelThreshold())) {
+			if (!plugin.meetsQualityThreshold() || !plugin.meetsLevelThreshold()) {
 				/*
-				 * Plug-in must be user-visible (that is, should show in the GUI), but does not meet some
-				 * required threshold to do so. Ignore it.
+				 * Plug-in does not meet some required threshold to do so. Ignore it.
 				 */
 				break;
 			}
@@ -722,7 +721,7 @@ public final class PluginManagerImpl implements PluginManager {
 		SortedSet<PluginDescriptor> result = new TreeSet<PluginDescriptor>();
 		for (PluginDescriptor plugin : plugins.values()) {
 			boolean visible = plugin.isUserAccessible();
-			if (mustBeUserVisible && (!plugin.meetsQualityThreshold() || !plugin.meetsLevelThreshold())) {
+			if (canBeUserVisible && (!plugin.meetsQualityThreshold() || !plugin.meetsLevelThreshold())) {
 				/*
 				 * Plug-in must be suer visible (that is, should end up in the GUI), but does not meet
 				 * some required threshold. Ignore it.
