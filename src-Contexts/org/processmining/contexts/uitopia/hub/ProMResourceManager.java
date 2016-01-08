@@ -149,7 +149,7 @@ public class ProMResourceManager extends UpdateSignaller implements ResourceMana
 	public Collection<FileFilter> getExportFilters(Resource resource) {
 		Collection<FileFilter> exportfilters = new HashSet<FileFilter>();
 		Set<PluginParameterBinding> potentialExportPlugins = context.getPluginManager().getPluginsAcceptingInAnyOrder(
-				UIPluginContext.class, false, File.class, resource.getType().getTypeClass());
+				UIPluginContext.class, true, File.class, resource.getType().getTypeClass());
 
 		for (PluginParameterBinding binding : potentialExportPlugins) {
 			if (binding.getPlugin().getAnnotation(UIExportPlugin.class) != null) {
@@ -488,7 +488,7 @@ public class ProMResourceManager extends UpdateSignaller implements ResourceMana
 		});
 
 		Set<PluginParameterBinding> potentialImportPlugins = context.getPluginManager().getPluginsAcceptingOrdered(
-				UIPluginContext.class, false, File.class);
+				UIPluginContext.class, true, File.class);
 
 		for (PluginParameterBinding binding : potentialImportPlugins) {
 			if (binding.getPlugin().hasAnnotation(UIImportPlugin.class)) {

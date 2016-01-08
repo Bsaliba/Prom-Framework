@@ -19,8 +19,8 @@ import org.processmining.contexts.uitopia.annotations.UITopiaVariant;
 import org.processmining.contexts.uitopia.annotations.Visualizer;
 import org.processmining.contexts.uitopia.model.ProMAction;
 import org.processmining.framework.plugin.PluginDescriptor;
-import org.processmining.framework.plugin.PluginParameterBinding;
 import org.processmining.framework.plugin.PluginManager.PluginManagerListener;
+import org.processmining.framework.plugin.PluginParameterBinding;
 
 public class ProMActionManager implements ActionManager<ProMAction>, PluginManagerListener {
 
@@ -30,7 +30,7 @@ public class ProMActionManager implements ActionManager<ProMAction>, PluginManag
 	private ProMActionManager(UIContext context) {
 
 		this.context = context;
-		for (PluginDescriptor plugin : context.getPluginManager().getAllPlugins()) {
+		for (PluginDescriptor plugin : context.getPluginManager().getAllPlugins(true)) {
 			addPlugin(plugin);
 		}
 		context.getPluginManager().addListener(this);
