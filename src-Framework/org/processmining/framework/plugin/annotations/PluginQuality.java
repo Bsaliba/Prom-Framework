@@ -2,7 +2,7 @@ package org.processmining.framework.plugin.annotations;
 
 public enum PluginQuality {
 	VeryPoor( //
-			"Very poor", //
+			"VeryPoor", //
 			0), //
 	Poor( //
 			"Poor", //
@@ -14,7 +14,7 @@ public enum PluginQuality {
 			"Good", //
 			3), //
 	VeryGood( //
-			"Very good", //
+			"VeryGood", //
 			4);
 
 	private final String name;

@@ -18,6 +18,7 @@ import org.processmining.framework.plugin.PluginDescriptor;
 import org.processmining.framework.plugin.PluginDescriptorID;
 import org.processmining.framework.plugin.annotations.Plugin;
 import org.processmining.framework.plugin.annotations.PluginCategory;
+import org.processmining.framework.plugin.annotations.PluginLevel;
 import org.processmining.framework.plugin.annotations.PluginQuality;
 import org.processmining.framework.plugin.annotations.PluginVariant;
 
@@ -41,6 +42,7 @@ public class PluginDescriptorImpl extends AbstractPluginDescriptor {
 	private String[] keywords;
 	private PluginCategory[] categories;
 	private PluginQuality quality;
+	private PluginLevel level;
 	
 	PluginDescriptorImpl(Method method, PackageDescriptor pack) throws Exception {
 		assert (method != null);
@@ -66,6 +68,7 @@ public class PluginDescriptorImpl extends AbstractPluginDescriptor {
 		keywords = method.getAnnotation(Plugin.class).keywords();
 		categories = method.getAnnotation(Plugin.class).categories();
 		quality = method.getAnnotation(Plugin.class).quality();
+		level = method.getAnnotation(Plugin.class).level();
 		//		System.out.println("PluginDescriptorImpl,\"" + name + "\",\"" + (pack == null ? "" : pack.getName()) + "\"");
 
 		parameterNames = Arrays.asList(getAnnotation(Plugin.class).parameterLabels());
@@ -127,6 +130,7 @@ public class PluginDescriptorImpl extends AbstractPluginDescriptor {
 		keywords = type.getAnnotation(Plugin.class).keywords();
 		categories = type.getAnnotation(Plugin.class).categories();
 		quality = type.getAnnotation(Plugin.class).quality();
+		level = type.getAnnotation(Plugin.class).level();
 		//		System.out.println("PluginDescriptorImpl,\"" + name + "\",\"" + (pack == null ? "" : pack.getName()) + "\"");
 
 		// There are either no parameters, or all parameters are required at least once
@@ -485,5 +489,9 @@ public class PluginDescriptorImpl extends AbstractPluginDescriptor {
 
 	public boolean meetsQualityThreshold() {
 		return Boot.PLUGIN_QUALITY_THRESHOLD.getValue() <= quality.getValue();
+	}
+
+	public boolean meetsLevelThreshold() {
+		return Boot.PLUGIN_LEVEL_THRESHOLD.getValue() <= level.getValue();
 	}
 }

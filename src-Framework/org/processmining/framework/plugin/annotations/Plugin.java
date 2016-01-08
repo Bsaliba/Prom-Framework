@@ -114,4 +114,9 @@ public @interface Plugin {
 	 * @return
 	 */
 	PluginQuality quality() default PluginQuality.VeryPoor;
+	/**
+	 * Indication of level for plug-in.
+	 * @return
+	 */
+	PluginLevel level() default PluginLevel.Default;
 }

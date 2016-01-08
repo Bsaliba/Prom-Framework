@@ -352,4 +352,10 @@ public interface PluginDescriptor extends Comparable<PluginDescriptor> {
 	 * @return whether this plug-in meets the quality threshold
 	 */
 	boolean meetsQualityThreshold();
+	/**
+	 * Return whether this plug-in meets the level threshold.
+	 * 
+	 * @return whether this plug-in meets the level threshold
+	 */
+	boolean meetsLevelThreshold();
 }

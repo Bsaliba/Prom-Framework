@@ -434,6 +434,10 @@ public class MacroPluginDescriptorImpl extends AbstractPluginDescriptor {
 		return false;
 	}
 
+	public boolean meetsLevelThreshold() {
+		return false;
+	}
+
 }
 
 class InputParameter extends Pair<String, Class<?>> {

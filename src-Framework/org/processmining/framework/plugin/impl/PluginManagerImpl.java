@@ -605,6 +605,13 @@ public final class PluginManagerImpl implements PluginManager {
 			return result;
 		}
 		for (PluginDescriptor plugin : pls) {
+			if (mustBeUserVisible && (!plugin.meetsQualityThreshold() || !plugin.meetsLevelThreshold())) {
+				/*
+				 * Plug-in must be user-visible (that is, should show in the GUI), but does not meet some
+				 * required threshold to do so. Ignore it.
+				 */
+				break;
+			}
 			if (!mustBeUserVisible || plugin.isUserAccessible()) {
 				int i = (resultType == null ? 0 : plugin.getReturnTypes().indexOf(resultType));
 				if (i < 0) {
@@ -715,14 +722,19 @@ public final class PluginManagerImpl implements PluginManager {
 		SortedSet<PluginDescriptor> result = new TreeSet<PluginDescriptor>();
 		for (PluginDescriptor plugin : plugins.values()) {
 			boolean visible = plugin.isUserAccessible();
+			if (mustBeUserVisible && (!plugin.meetsQualityThreshold() || !plugin.meetsLevelThreshold())) {
+				/*
+				 * Plug-in must be suer visible (that is, should end up in the GUI), but does not meet
+				 * some required threshold. Ignore it.
+				 */
+				break;
+			}
 			// Do not include, if:
 			// mustBeUserVisible AND NOT visible, OR
 			// visible AND NOT canBeUserVisible
 			if (!((mustBeUserVisible && !visible) || (!canBeUserVisible && visible))) {
-				// Do not include if quality threshold is not met.
-				if (plugin.meetsQualityThreshold()) {
-					result.add(plugin);
-				}
+				// Do not include if quality or level threshold is not met.
+				result.add(plugin);
 			}
 		}
 		return Collections.unmodifiableSortedSet(result);
