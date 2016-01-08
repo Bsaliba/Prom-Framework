@@ -141,7 +141,7 @@ public class Boot {
 			}
 		}
 		
-		PLUGIN_LEVEL_THRESHOLD = PluginLevel.Default;
+		PLUGIN_LEVEL_THRESHOLD = PluginLevel.NightlyBuild;
 		threshold = ini.getProperty("PLUGIN_LEVEL_THRESHOLD", PLUGIN_LEVEL_THRESHOLD.getName());	
 		for (PluginLevel level : PluginLevel.values()) {
 			if (level.getName().equals(threshold)) {

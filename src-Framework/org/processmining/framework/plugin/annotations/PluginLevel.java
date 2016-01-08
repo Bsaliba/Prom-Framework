@@ -1,27 +1,21 @@
 package org.processmining.framework.plugin.annotations;
 
 public enum PluginLevel {
-	Default( //
-			"Default", //
+	Local( //
+			"Local", //
 			1), //
-	WorksForDeveloperOnSomeCase( //
-			"WorksForDeveloperOnSomeCase", //
+	NightlyBuild( //
+			"NightlyBuild", //
 			2), //
-	WorksForDeveloperOnDeveloperCases( //
-			"WorksForDeveloperOnDeveloperCases", //
+	Regular( //
+			"Regular", //
 			3), //
-	WorksForDeveloperOnSupervisorCases( //
-			"WorksForDeveloperOnSupervisorCases", //
+	PeerReviewed( //
+			"PeerReviewed", //
 			4), //
-	WorksForSupervisorOnSupervisorCases( //
-			"WorksForSupervisorOnSupervisorCases", //
-			5), //
-	WorksForColleaguesOnColleagueCases( //
-			"WorksForColleaguesOnColleagueCases", //
-			5), //
 	BulletProof( //
 			"BulletProof", //
-			6);
+			5);
 
 	private final String name;
 	private final int value;

@@ -118,5 +118,5 @@ public @interface Plugin {
 	 * Indication of level for plug-in.
 	 * @return
 	 */
-	PluginLevel level() default PluginLevel.Default;
+	PluginLevel level() default PluginLevel.NightlyBuild;
 }
