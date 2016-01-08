@@ -609,7 +609,7 @@ public final class PluginManagerImpl implements PluginManager {
 				/*
 				 * Plug-in does not meet some required threshold to do so. Ignore it.
 				 */
-				break;
+				continue;
 			}
 			if (!mustBeUserVisible || plugin.isUserAccessible()) {
 				int i = (resultType == null ? 0 : plugin.getReturnTypes().indexOf(resultType));
@@ -723,16 +723,15 @@ public final class PluginManagerImpl implements PluginManager {
 			boolean visible = plugin.isUserAccessible();
 			if (canBeUserVisible && (!plugin.meetsQualityThreshold() || !plugin.meetsLevelThreshold())) {
 				/*
-				 * Plug-in must be suer visible (that is, should end up in the GUI), but does not meet
+				 * Plug-in can be user visible (that is, should end up in the GUI), but does not meet
 				 * some required threshold. Ignore it.
 				 */
-				break;
+				continue;
 			}
 			// Do not include, if:
 			// mustBeUserVisible AND NOT visible, OR
 			// visible AND NOT canBeUserVisible
 			if (!((mustBeUserVisible && !visible) || (!canBeUserVisible && visible))) {
-				// Do not include if quality or level threshold is not met.
 				result.add(plugin);
 			}
 		}
