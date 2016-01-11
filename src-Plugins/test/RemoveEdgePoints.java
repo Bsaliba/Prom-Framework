@@ -7,6 +7,7 @@ import org.processmining.contexts.uitopia.annotations.UITopiaVariant;
 import org.processmining.framework.connections.ConnectionCannotBeObtained;
 import org.processmining.framework.plugin.PluginContext;
 import org.processmining.framework.plugin.annotations.Plugin;
+import org.processmining.framework.plugin.annotations.PluginLevel;
 import org.processmining.models.connections.GraphLayoutConnection;
 import org.processmining.models.graphbased.directed.DirectedGraph;
 import org.processmining.models.graphbased.directed.DirectedGraphEdge;
@@ -15,7 +16,7 @@ import org.processmining.models.graphbased.undirected.UndirectedGraphEdge;
 
 public class RemoveEdgePoints {
 
-	@Plugin(name = "Remove edgepoints", parameterLabels = { "graph" }, returnLabels = {}, returnTypes = { }, userAccessible = true, mostSignificantResult = -1)
+	@Plugin(name = "Remove edgepoints", level = PluginLevel.Local, parameterLabels = { "graph" }, returnLabels = {}, returnTypes = { }, userAccessible = true, mostSignificantResult = -1)
 	@UITopiaVariant(affiliation = UITopiaVariant.EHV, author = "B.F. van Dongen", email = "b.f.v.dongen@tue.nl")
 	@SuppressWarnings("rawtypes")
 	public static void removeEdgePoints(PluginContext context, Object graph) throws ConnectionCannotBeObtained {

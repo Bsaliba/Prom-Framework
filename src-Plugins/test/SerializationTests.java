@@ -3,13 +3,14 @@ package test;
 import org.processmining.contexts.uitopia.annotations.UITopiaVariant;
 import org.processmining.framework.plugin.PluginContext;
 import org.processmining.framework.plugin.annotations.Plugin;
+import org.processmining.framework.plugin.annotations.PluginLevel;
 import org.processmining.framework.providedobjects.ProvidedObjectDeletedException;
 import org.processmining.framework.providedobjects.ProvidedObjectID;
 
 public class SerializationTests {
 	static int i = 0;
 
-	@Plugin(name = "Generate serialization test object", parameterLabels = {}, returnLabels = { "Test object" }, returnTypes = { RefObject.class }, userAccessible = true)
+	@Plugin(name = "Generate serialization test object", level = PluginLevel.Local, parameterLabels = {}, returnLabels = { "Test object" }, returnTypes = { RefObject.class }, userAccessible = true)
 	@UITopiaVariant(affiliation = UITopiaVariant.EHV, author = "B.F. van Dongen", email = "b.f.v.dongen@tue.nl")
 	public static Object testSerialization(PluginContext context) {
 		final String s = "Test object " + i++;
@@ -17,7 +18,7 @@ public class SerializationTests {
 		return new RefObject(null, s);
 	}
 
-	@Plugin(name = "Generate referencing test object", parameterLabels = { "References Object" }, returnLabels = { "Test object" }, returnTypes = { RefObject.class }, userAccessible = true)
+	@Plugin(name = "Generate referencing test object", level = PluginLevel.Local, parameterLabels = { "References Object" }, returnLabels = { "Test object" }, returnTypes = { RefObject.class }, userAccessible = true)
 	@UITopiaVariant(affiliation = UITopiaVariant.EHV, author = "B.F. van Dongen", email = "b.f.v.dongen@tue.nl")
 	public static Object testSerialization(PluginContext context, final RefObject toReference) {
 		final String s = "Test object " + i++;
@@ -25,7 +26,7 @@ public class SerializationTests {
 		return new RefObject(toReference, s);
 	}
 
-	@Plugin(name = "Generate serialization updating object", parameterLabels = {}, returnLabels = { "Test object" }, returnTypes = { RefObject.class }, userAccessible = true)
+	@Plugin(name = "Generate serialization updating object", level = PluginLevel.Local, parameterLabels = {}, returnLabels = { "Test object" }, returnTypes = { RefObject.class }, userAccessible = true)
 	@UITopiaVariant(affiliation = UITopiaVariant.EHV, author = "B.F. van Dongen", email = "b.f.v.dongen@tue.nl")
 	public static Object testUpdating(PluginContext context) throws InterruptedException {
 		String s = "Test object " + i++;
