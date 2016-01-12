@@ -5,19 +5,21 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 
 import javax.swing.GroupLayout;
-import javax.swing.JEditorPane;
 import javax.swing.GroupLayout.Alignment;
+import javax.swing.JEditorPane;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
 
 import org.processmining.contexts.uitopia.annotations.Visualizer;
 import org.processmining.framework.plugin.PluginContext;
 import org.processmining.framework.plugin.annotations.Plugin;
+import org.processmining.framework.plugin.annotations.PluginLevel;
 import org.processmining.framework.util.HTMLToString;
 
 public class HtmlPanel extends javax.swing.JPanel implements HyperlinkListener {
 
 	@Plugin(name = "Visualize HTML text", //
+	level = PluginLevel.PeerReviewed,
 	parameterLabels = { "HTML text" }, //
 	returnLabels = { "HTML panel" }, //
 	returnTypes = { HtmlPanel.class }, //
