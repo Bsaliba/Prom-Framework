@@ -23,7 +23,7 @@ public class HtmlPanel extends javax.swing.JPanel implements HyperlinkListener {
 	parameterLabels = { "HTML text" }, //
 	returnLabels = { "HTML panel" }, //
 	returnTypes = { HtmlPanel.class }, //
-	userAccessible = false, //
+	userAccessible = true, //
 	help = "Visualizes HTML text.", mostSignificantResult = 1)
 	@Visualizer
 	public static HtmlPanel visualizeHTML(PluginContext context, HTMLToString htmlText) {
