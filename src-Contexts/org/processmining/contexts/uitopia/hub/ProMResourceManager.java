@@ -352,13 +352,22 @@ public class ProMResourceManager extends UpdateSignaller implements ResourceMana
 			fc.addChoosableFileFilter(filter);
 		}
 		fc.setAcceptAllFileFilterUsed(true);
-		fc.setMultiSelectionEnabled(true);
+		/*
+		 * Disable multi-selection, as this allows for the user to select two files simultaneously
+		 * that cannot be handled by a single importer. The user can only use one importer...
+		 */
+//		fc.setMultiSelectionEnabled(true);
 		fc.setFileFilter(fc.getAcceptAllFileFilter());
 
 		int returnVal = fc.showOpenDialog(context.getUI());
 
 		if (returnVal == JFileChooser.APPROVE_OPTION) {
-			File[] files = fc.getSelectedFiles();
+			/*
+			 * As a result of disabling the multi-selection, use a different way
+			 * to get the selected file(s).
+			 */
+//			File[] files = fc.getSelectedFiles();
+			File[] files = new File[]{ fc.getSelectedFile() };
 
 			FileFilter selectedFilter = fc.getFileFilter();
 			PluginParameterBinding binding = importplugins.get(selectedFilter);
@@ -394,7 +403,14 @@ public class ProMResourceManager extends UpdateSignaller implements ResourceMana
 			// user chose the "all files" option
 			Map<String, PluginParameterBinding> bindings = new HashMap<String, PluginParameterBinding>();
 			for (FileFilter filter : importplugins.keySet()) {
-				if (filter.accept(files[0])) {
+				// HV: Only show plug-ins that can handle all files, as all files will be imported by it.
+				boolean ok = true;
+				for (File file : files) {
+					if (!filter.accept(file)) {
+						ok = false;
+					}
+				}
+				if (ok) {
 					bindings.put(filter.getDescription(), importplugins.get(filter));
 				}
 			}
