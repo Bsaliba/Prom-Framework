@@ -102,7 +102,7 @@ public @interface Plugin {
 	/**
 	 * Categories define the 'type' of functionality the plugin provides.
 	 */
-	PluginCategory[] categories() default {};
+	PluginCategory[] categories() default { PluginCategory.Analytics };
 
 	/**
 	 * Keywords / tags for the plugin (extra description)
