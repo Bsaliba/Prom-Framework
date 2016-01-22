@@ -11,15 +11,20 @@ import java.awt.HeadlessException;
 import java.awt.Image;
 import java.awt.RenderingHints;
 import java.awt.Transparency;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 import java.util.List;
 import java.util.concurrent.CancellationException;
 
 import javax.swing.BorderFactory;
+import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
+import javax.swing.JButton;
 import javax.swing.JComponent;
+import javax.swing.JEditorPane;
 import javax.swing.JPanel;
-import javax.swing.JTextArea;
+import javax.swing.JScrollPane;
 
 import org.deckfour.uitopia.api.model.Resource;
 import org.deckfour.uitopia.api.model.View;
@@ -27,11 +32,13 @@ import org.deckfour.uitopia.api.model.ViewType;
 import org.processmining.contexts.uitopia.UIPluginContext;
 import org.processmining.contexts.uitopia.hub.ProMViewManager;
 import org.processmining.contexts.uitopia.hub.overlay.ProgressOverlayDialog;
+import org.processmining.framework.plugin.PluginDescriptor;
 import org.processmining.framework.plugin.PluginExecutionResult;
 import org.processmining.framework.plugin.PluginParameterBinding;
 import org.processmining.framework.plugin.ProMCanceller;
 import org.processmining.framework.util.Pair;
 
+import com.fluxicon.slickerbox.factory.SlickerFactory;
 import com.google.common.base.Throwables;
 
 public class ProMView implements View {
@@ -39,7 +46,7 @@ public class ProMView implements View {
 	private static final class ProMCancellerImpl implements ProMCanceller {
 
 		private boolean isCancelled = false;
-		
+
 		public boolean isCancelled() {
 			return isCancelled;
 		}
@@ -47,7 +54,7 @@ public class ProMView implements View {
 		public void cancel() {
 			isCancelled = true;
 		}
-		
+
 	}
 
 	private final JPanel component;
@@ -78,7 +85,7 @@ public class ProMView implements View {
 		refresh(0);
 	}
 
-	public void destroy() {		
+	public void destroy() {
 		component.removeAll();
 		proMCanceller.cancel();
 	}
@@ -223,7 +230,7 @@ public class ProMView implements View {
 					context.log("Starting visualization of " + resource);
 					result.synchronize();
 					content = result.getResult(binding.getFirst());
-					
+
 					if (content == null) {
 						throw new Exception("The visualiser for " + resource.toString()
 								+ " returned null. Please select another visualiser.");
@@ -251,8 +258,7 @@ public class ProMView implements View {
 						}
 					}
 					if (component.getComponents().length == 0) {
-						component.add(new JTextArea("Unable to produce the visualization.\n\nMessage:\n" + message
-								+ "\n\nError report:\n" + stacktrace), BorderLayout.CENTER);
+						component.add(buildErrorComponent(message, stacktrace, result.getPlugin()), BorderLayout.CENTER);
 					}
 					dialog.changeProgress(dialog.getMaximum());
 					synchronized (ProMView.this) {
@@ -262,6 +268,36 @@ public class ProMView implements View {
 					manager.getContext().getController().getMainView().hideOverlay();
 				}
 
+			}
+
+			private JComponent buildErrorComponent(final String message, final String stacktrace, final PluginDescriptor plugin) {
+				final JPanel errorPanel = new JPanel();
+				errorPanel.setLayout(new BoxLayout(errorPanel, BoxLayout.Y_AXIS));
+				String userfriendlyMessage = String.format("<html><h1>Unable to produce the requested visualization</h1><h2>Error Message</h2><h3>%s</b></h3></html>", message);
+				final JEditorPane messagePanel = new JEditorPane("text/html", userfriendlyMessage);				
+				messagePanel.setEditable(false);
+				final JButton debugButton = SlickerFactory.instance().createButton("Show Debug Information");
+				debugButton.setAlignmentX(JComponent.CENTER_ALIGNMENT);
+				debugButton.addActionListener(new ActionListener() {
+
+					public void actionPerformed(ActionEvent e) {
+						String debugMessage = String.format("<html><body><h1>Unable to produce the requested visualization</h1>"
+								+ "<h2>Error Message</h2><h3>%s</b></h3>"
+								+ "<h2>Debug Information for Reporting</h2>"
+								+ "<p><b>Visualizer</b>: %s</p>"
+								+ "<p><b>Stack trace</b>: %s</p>"
+								+ "</body></html>", message, plugin.getName(), stacktrace.replace(System.getProperty("line.separator"), "<p>\n"));
+						messagePanel
+								.setText(debugMessage);
+						messagePanel.setCaretPosition(0);
+						debugButton.removeActionListener(this);
+						errorPanel.remove(debugButton);
+						errorPanel.validate();
+					}
+				});
+				errorPanel.add(new JScrollPane(messagePanel));
+				errorPanel.add(debugButton);
+				return errorPanel;
 			}
 
 			private PluginExecutionResult getVisualizationResult(final UIPluginContext context,
