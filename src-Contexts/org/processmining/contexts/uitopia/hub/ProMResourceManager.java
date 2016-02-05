@@ -180,7 +180,7 @@ public class ProMResourceManager extends UpdateSignaller implements ResourceMana
 					}
 				});
 		Set<PluginParameterBinding> potentialExportPlugins = context.getPluginManager().getPluginsAcceptingInAnyOrder(
-				UIPluginContext.class, false, File.class, resource.getType().getTypeClass());
+				UIPluginContext.class, true, File.class, resource.getType().getTypeClass());
 
 		for (PluginParameterBinding binding : potentialExportPlugins) {
 			if (binding.getPlugin().getAnnotation(UIExportPlugin.class) != null) {
