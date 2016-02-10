@@ -43,7 +43,7 @@ public class Boot {
 	public static Level VERBOSE;
 	public static URL DEFAULT_REPOSITORY;
 	public static int OPENXES_SHADOW_SIZE;
-	
+
 	public static boolean HIDE_OLD_PACKAGES;
 	public static boolean CHECK_PACKAGES;
 
@@ -52,108 +52,135 @@ public class Boot {
 
 	static {
 
+		/*
+		 * Preset defaults, just in case something fails down th eroad.
+		 */
+		PROM_VERSION = "";
+		RELEASE_PACKAGE = "RunnerUpPackages";
+		VERBOSE = Level.NONE;
+		LIB_FOLDER = "lib";
+		IMAGES_FOLDER = "images";
+		MACRO_FOLDER = "macros";
+		try {
+			DEFAULT_REPOSITORY = new URL("http://www.promtools.org/prom6/packages/packages.xml");
+		} catch (MalformedURLException e1) {
+			e1.printStackTrace();
+		}
+		PROM_USER_FOLDER = System.getProperty("user.home", "") + File.separator + ".ProM";
+		PACKAGE_FOLDER = PROM_USER_FOLDER + File.separator + "packages";
+		WORKSPACE_FOLDER = PROM_USER_FOLDER + File.separator + "workspace";
+		HIDE_OLD_PACKAGES = false;
+		CHECK_PACKAGES = false;
+		PLUGIN_QUALITY_THRESHOLD = PluginQuality.VeryPoor;
+		PLUGIN_LEVEL_THRESHOLD = PluginLevel.NightlyBuild;
+
 		Properties ini = new Properties();
 		FileInputStream is;
 		try {
 			is = new FileInputStream("ProM.ini");
-		} catch (FileNotFoundException e) {
-			throw new RuntimeException("ProM.ini file not found. Exiting ProM.", e);
-		}
 
-		try {
-			ini.load(is);
-			is.close();
-		} catch (IOException e) {
-			throw new RuntimeException("Error while reading ProM.ini file. Exiting ProM.", e);
-		}
-
-		if (!ini.containsKey("PROM_VERSION") || !ini.containsKey("RELEASE_PACKAGE")) {
-			throw new RuntimeException("Error while reading ProM.ini file, missing required"
-					+ " keys PROM_VERSION and or RELEASE_PACKAGE . Exiting ProM.");
-		}
-
-		PROM_VERSION = ini.getProperty("PROM_VERSION");
-		if (!PROM_VERSION.contains(".")) {
-			PROM_VERSION = "";
-		}
-
-		RELEASE_PACKAGE = ini.getProperty("RELEASE_PACKAGE");
-
-//		OPENXES_SHADOW_SIZE = Integer.parseInt(ini.getProperty("OPENXES_SHADOW_SIZE", "4"));
-//		NikeFS2FileAccessMonitor.instance(OPENXES_SHADOW_SIZE);
-		
-		try {
-			VERBOSE = Level.valueOf(ini.getProperty("VERBOSE", Level.ALL.name()));
-		} catch (IllegalArgumentException e) {
-			if (e.getMessage().toLowerCase().endsWith(".true")) {
-				VERBOSE = Level.ALL;
-			} else if (e.getMessage().toLowerCase().endsWith(".false")) {
-				VERBOSE = Level.NONE;
-			} else {
-				throw e;
-			}
-		}
-
-		LIB_FOLDER = ini.getProperty("LIB_FOLDER", "lib").replace("/", File.separator);
-		PathHacker.addLibraryPathFromDirectory(new File("." + File.separator + LIB_FOLDER));
-
-		IMAGES_FOLDER = LIB_FOLDER + File.separator
-				+ ini.getProperty("IMAGES_FOLDER", "images").replace("/", File.separator);
-		PathHacker.addLibraryPathFromDirectory(new File("." + File.separator + IMAGES_FOLDER));
-
-		MACRO_FOLDER = LIB_FOLDER + File.separator
-				+ ini.getProperty("MACRO_FOLDER", "macros").replace("/", File.separator);
-		PathHacker.addLibraryPathFromDirectory(new File("." + File.separator + MACRO_FOLDER));
-
-		try {
-			DEFAULT_REPOSITORY = new URL(ini.getProperty("PACKAGE_URL",
-					"http://www.promtools.org/prom6/packages" + PROM_VERSION.replaceAll("\\.", "") + "/packages.xml"));
-		} catch (MalformedURLException e) {
 			try {
-				DEFAULT_REPOSITORY = new URL("http://www.promtools.org/prom6/packages" + PROM_VERSION.replaceAll("\\.", "") + "/packages.xml");
-			} catch (MalformedURLException e1) {
-				assert (false);
+				ini.load(is);
+				is.close();
+
+				if (!ini.containsKey("PROM_VERSION") || !ini.containsKey("RELEASE_PACKAGE")) {
+					throw new RuntimeException("Error while reading ProM.ini file, missing required"
+							+ " keys PROM_VERSION and or RELEASE_PACKAGE . Exiting ProM.");
+				}
+
+				PROM_VERSION = ini.getProperty("PROM_VERSION");
+				if (!PROM_VERSION.contains(".")) {
+					PROM_VERSION = "";
+				}
+
+				RELEASE_PACKAGE = ini.getProperty("RELEASE_PACKAGE");
+
+				//		OPENXES_SHADOW_SIZE = Integer.parseInt(ini.getProperty("OPENXES_SHADOW_SIZE", "4"));
+				//		NikeFS2FileAccessMonitor.instance(OPENXES_SHADOW_SIZE);
+
+				try {
+					VERBOSE = Level.valueOf(ini.getProperty("VERBOSE", Level.ALL.name()));
+				} catch (IllegalArgumentException e) {
+					if (e.getMessage().toLowerCase().endsWith(".true")) {
+						VERBOSE = Level.ALL;
+					} else if (e.getMessage().toLowerCase().endsWith(".false")) {
+						VERBOSE = Level.NONE;
+					} else {
+						throw e;
+					}
+				}
+
+				LIB_FOLDER = ini.getProperty("LIB_FOLDER", "lib").replace("/", File.separator);
+				PathHacker.addLibraryPathFromDirectory(new File("." + File.separator + LIB_FOLDER));
+
+				IMAGES_FOLDER = LIB_FOLDER + File.separator
+						+ ini.getProperty("IMAGES_FOLDER", "images").replace("/", File.separator);
+				PathHacker.addLibraryPathFromDirectory(new File("." + File.separator + IMAGES_FOLDER));
+
+				MACRO_FOLDER = LIB_FOLDER + File.separator
+						+ ini.getProperty("MACRO_FOLDER", "macros").replace("/", File.separator);
+				PathHacker.addLibraryPathFromDirectory(new File("." + File.separator + MACRO_FOLDER));
+
+				try {
+					DEFAULT_REPOSITORY = new URL(
+							ini.getProperty("PACKAGE_URL", "http://www.promtools.org/prom6/packages"
+									+ PROM_VERSION.replaceAll("\\.", "") + "/packages.xml"));
+				} catch (MalformedURLException e) {
+					try {
+						DEFAULT_REPOSITORY = new URL("http://www.promtools.org/prom6/packages"
+								+ PROM_VERSION.replaceAll("\\.", "") + "/packages.xml");
+					} catch (MalformedURLException e1) {
+						assert(false);
+					}
+				}
+
+				String prom_user_folder = ini.getProperty("PROM_USER_FOLDER", "").replace("/", File.separator);
+				if (prom_user_folder.equals("")) {
+					PROM_USER_FOLDER = System.getProperty("user.home", "") + File.separator + ".ProM"
+							+ PROM_VERSION.replaceAll("\\.", "");
+				} else {
+					PROM_USER_FOLDER = prom_user_folder;
+				}
+
+				PACKAGE_FOLDER = PROM_USER_FOLDER + File.separator
+						+ ini.getProperty("PACKAGE_FOLDER", "packages").replace("/", File.separator);
+
+				WORKSPACE_FOLDER = PROM_USER_FOLDER + File.separator
+						+ ini.getProperty("WORKSPACE_FOLDER", "workspace").replace("/", File.separator);
+
+				HIDE_OLD_PACKAGES = new Boolean(ini.getProperty("HIDE_OLD_PACKAGES", "false"));
+				CHECK_PACKAGES = new Boolean(ini.getProperty("CHECK_PACKAGES", "false"));
+
+				PLUGIN_QUALITY_THRESHOLD = PluginQuality.VeryPoor;
+				String threshold = ini.getProperty("PLUGIN_QUALITY_THRESHOLD", PLUGIN_QUALITY_THRESHOLD.getName());
+				for (PluginQuality quality : PluginQuality.values()) {
+					if (quality.getName().equals(threshold)) {
+						PLUGIN_QUALITY_THRESHOLD = quality;
+						break;
+					}
+				}
+
+				PLUGIN_LEVEL_THRESHOLD = PluginLevel.NightlyBuild;
+				threshold = ini.getProperty("PLUGIN_LEVEL_THRESHOLD", PLUGIN_LEVEL_THRESHOLD.getName());
+				for (PluginLevel level : PluginLevel.values()) {
+					if (level.getName().equals(threshold)) {
+						PLUGIN_LEVEL_THRESHOLD = level;
+						break;
+					}
+				}
+
+				if (VERBOSE == Level.ALL) {
+					System.out.println("Plug-in level threshold set to " + PLUGIN_LEVEL_THRESHOLD.getName());
+					System.out.println("Plug-in quality threshold set to " + PLUGIN_QUALITY_THRESHOLD.getName());
+					System.out.println("Ini file processed");
+				}
+			} catch (IOException e) {
+				//					throw new RuntimeException("Error while reading ProM.ini file. Exiting ProM.", e);
+				System.err.println("Error while reading ProM.ini file.\n" + e + "\nReverting to default settings.");
 			}
-		}
-
-		String prom_user_folder = ini.getProperty("PROM_USER_FOLDER", "").replace("/", File.separator);
-		if (prom_user_folder.equals("")) {
-			PROM_USER_FOLDER = System.getProperty("user.home", "") + File.separator + ".ProM" + PROM_VERSION.replaceAll("\\.", "");
-		} else {
-			PROM_USER_FOLDER = prom_user_folder;
-		}
-
-		PACKAGE_FOLDER = PROM_USER_FOLDER + File.separator
-				+ ini.getProperty("PACKAGE_FOLDER", "packages").replace("/", File.separator);
-
-		WORKSPACE_FOLDER = PROM_USER_FOLDER + File.separator
-				+ ini.getProperty("WORKSPACE_FOLDER", "workspace").replace("/", File.separator);
-
-		HIDE_OLD_PACKAGES = new Boolean(ini.getProperty("HIDE_OLD_PACKAGES", "false"));
-		CHECK_PACKAGES = new Boolean(ini.getProperty("CHECK_PACKAGES", "false"));
-		
-		PLUGIN_QUALITY_THRESHOLD = PluginQuality.VeryPoor;
-		String threshold = ini.getProperty("PLUGIN_QUALITY_THRESHOLD", PLUGIN_QUALITY_THRESHOLD.getName());	
-		for (PluginQuality quality : PluginQuality.values()) {
-			if (quality.getName().equals(threshold)) {
-				PLUGIN_QUALITY_THRESHOLD = quality;
-				break;
-			}
-		}
-		
-		PLUGIN_LEVEL_THRESHOLD = PluginLevel.NightlyBuild;
-		threshold = ini.getProperty("PLUGIN_LEVEL_THRESHOLD", PLUGIN_LEVEL_THRESHOLD.getName());	
-		for (PluginLevel level : PluginLevel.values()) {
-			if (level.getName().equals(threshold)) {
-				PLUGIN_LEVEL_THRESHOLD = level;
-				break;
-			}
-		}
-
-		if (VERBOSE == Level.ALL) {
-			System.out.println("Plug-in level threshold set to " + PLUGIN_LEVEL_THRESHOLD.getName());
-			System.out.println("Plug-in quality threshold set to " + PLUGIN_QUALITY_THRESHOLD.getName());
-			System.out.println("Ini file processed");
+		} catch (FileNotFoundException e) {
+			//				throw new RuntimeException("ProM.ini file not found. Exiting ProM.", e);
+			System.err.println("ProM.ini file not found.\n" + e + "\nReverting to default settings.");
 		}
 
 	}
@@ -186,8 +213,8 @@ public class Boot {
 		long startPackages = System.currentTimeMillis();
 		packages.initialize(VERBOSE);
 		if (VERBOSE == Level.ALL) {
-			System.out.println(">>> Scanning for packages took " + (System.currentTimeMillis() - startPackages)
-					/ 1000.0 + " seconds");
+			System.out.println(">>> Scanning for packages took " + (System.currentTimeMillis() - startPackages) / 1000.0
+					+ " seconds");
 		}
 
 		long startPlugins = System.currentTimeMillis();
@@ -326,7 +353,7 @@ public class Boot {
 				}
 			}
 		} catch (MalformedURLException e) {
-			assert (false);
+			assert(false);
 		}
 
 	}
