@@ -19,6 +19,7 @@ public class AttributeMap {
 
 	public final static String SHAPE = PREFIX + "shape";
 	public final static String FILLCOLOR = PREFIX + "fillcolor";
+	public final static String GRADIENTCOLOR = PREFIX + "gradientcolor";
 	public final static String ICON = PREFIX + "icon";
 	public final static String BORDERWIDTH = PREFIX + "border";
 	public final static String LABEL = PREFIX + "label";
