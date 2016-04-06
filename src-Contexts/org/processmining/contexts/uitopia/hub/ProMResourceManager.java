@@ -2,6 +2,7 @@ package org.processmining.contexts.uitopia.hub;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -19,6 +20,7 @@ import java.util.prefs.Preferences;
 
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
+import javax.swing.SwingUtilities;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
@@ -83,6 +85,9 @@ public class ProMResourceManager extends UpdateSignaller implements ResourceMana
 	private final Preferences preferences;
 
 	private ConnectionManager connectionManager;
+	
+	private int selectedOption;
+	private String selectedPlugin;
 
 	private ProMResourceManager(UIContext context) {
 
@@ -347,7 +352,7 @@ public class ProMResourceManager extends UpdateSignaller implements ResourceMana
 			}
 		}
 		// HV Start from the location of the last file imported.
-		JFileChooser fc = (lastImportedFile != null ? new JFileChooser(lastImportedFile) : new JFileChooser());
+		final JFileChooser fc = (lastImportedFile != null ? new JFileChooser(lastImportedFile) : new JFileChooser());
 		for (FileFilter filter : importplugins.keySet()) {
 			fc.addChoosableFileFilter(filter);
 		}
@@ -359,7 +364,25 @@ public class ProMResourceManager extends UpdateSignaller implements ResourceMana
 //		fc.setMultiSelectionEnabled(true);
 		fc.setFileFilter(fc.getAcceptAllFileFilter());
 
-		int returnVal = fc.showOpenDialog(context.getUI());
+		selectedOption = JFileChooser.CANCEL_OPTION;
+		/*
+		 * HV: This method does not run in the EDT. Delegate the next dialog to the EDT, and wait for the answer.
+		 */
+		try {
+			SwingUtilities.invokeAndWait(new Runnable() {
+				public void run() {
+//					System.out.println("[PromResourceManager] EDT shows open dialog");
+					selectedOption = fc.showOpenDialog(context.getUI());
+				}
+			});
+		} catch (InvocationTargetException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		int returnVal = selectedOption; //fc.showOpenDialog(context.getUI());
 
 		if (returnVal == JFileChooser.APPROVE_OPTION) {
 			/*
@@ -422,8 +445,18 @@ public class ProMResourceManager extends UpdateSignaller implements ResourceMana
 				}
 			}
 			if (bindings.size() == 0) {
-				JOptionPane.showMessageDialog(context.getUI(), "No import plugins available",
-						"No input plugins available!", JOptionPane.ERROR_MESSAGE);
+				/*
+				 * HV: This method does not run in the EDT. Delegate the next message to the EDT.
+				 */
+				SwingUtilities.invokeLater(new Runnable() {
+					public void run() {
+//						System.out.println("[PromResourceManager] EDT shows message dialog");
+						JOptionPane.showMessageDialog(context.getUI(), "No import plugins available",
+								"No input plugins available!", JOptionPane.ERROR_MESSAGE);
+					}
+				});
+//				JOptionPane.showMessageDialog(context.getUI(), "No import plugins available",
+//						"No input plugins available!", JOptionPane.ERROR_MESSAGE);
 				return false;
 			}
 
@@ -431,11 +464,33 @@ public class ProMResourceManager extends UpdateSignaller implements ResourceMana
 			if (bindings.size() > 1) {
 
 				String key = FAVORITEIMPORT + extractFileType(files[0].getAbsolutePath());
-				String[] possibilities = bindings.keySet().toArray(new String[0]);
-				String preferredImport = preferences.get(key, possibilities[0]);
+				final String[] possibilities = bindings.keySet().toArray(new String[0]);
+				final String preferredImport = preferences.get(key, possibilities[0]);
 
-				String selected = (String) JOptionPane.showInputDialog(context.getUI(), "Available Import Plugins:",
-						"Select an import plugin...", JOptionPane.PLAIN_MESSAGE, null, possibilities, preferredImport);
+				selectedPlugin = null;
+				try {
+					/*
+					 * HV: This method does not run in the EDT. Delegate the next dialog to the EDT, and wait for the answer.
+					 */
+					SwingUtilities.invokeAndWait(new Runnable() {
+
+						public void run() {
+							// TODO Auto-generated method stub
+//							System.out.println("[PromResourceManager] EDT shows import plugin dialog");
+							selectedPlugin = (String) JOptionPane.showInputDialog(context.getUI(), "Available Import Plugins:",
+									"Select an import plugin...", JOptionPane.PLAIN_MESSAGE, null, possibilities, preferredImport);
+						}
+						
+					});
+				} catch (InvocationTargetException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				String selected = selectedPlugin; //(String) JOptionPane.showInputDialog(context.getUI(), "Available Import Plugins:",
+						//"Select an import plugin...", JOptionPane.PLAIN_MESSAGE, null, possibilities, preferredImport);
 
 				if (selected == null) {
 					return false;
