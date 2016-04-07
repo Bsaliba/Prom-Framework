@@ -1,5 +1,6 @@
 package org.processmining.contexts.uitopia.hub;
 
+import java.awt.EventQueue;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
@@ -88,6 +89,7 @@ public class ProMResourceManager extends UpdateSignaller implements ResourceMana
 	
 	private int selectedOption;
 	private String selectedPlugin;
+	private boolean importResourceResult;
 
 	private ProMResourceManager(UIContext context) {
 
@@ -406,7 +408,31 @@ public class ProMResourceManager extends UpdateSignaller implements ResourceMana
 		return importResource(null, files);
 	}
 
-	public synchronized boolean importResource(PluginParameterBinding binding, File... files) {
+	public synchronized boolean importResource(final PluginParameterBinding binding, final File... files) {
+		importResourceResult = false;
+		if (EventQueue.isDispatchThread()) {
+			/*
+			 * Called from the EDT. Spawn a new thread to do the import.
+			 */
+			Runnable importThread = new Runnable() {
+				public void run() {
+					importResourceResult = importResourceNotInEDT(binding, files);
+				}
+			};
+			(new Thread(importThread)).start();
+		} else {
+			/*
+			 * Not called from the EDT. OK.
+			 */
+			importResourceResult = importResourceNotInEDT(binding, files);
+		}
+		return importResourceResult;
+	}
+	
+	/*
+	 * This method should not be called from the EDT, as it will then block.
+	 */
+	private synchronized boolean importResourceNotInEDT(PluginParameterBinding binding, File... files) {
 		synchronized (importPluginAdded) {
 			if (importPluginAdded) {
 				buildImportPlugins();
@@ -448,6 +474,9 @@ public class ProMResourceManager extends UpdateSignaller implements ResourceMana
 				/*
 				 * HV: This method does not run in the EDT. Delegate the next message to the EDT.
 				 */
+				if (EventQueue.isDispatchThread()) {
+				
+				} else {
 				SwingUtilities.invokeLater(new Runnable() {
 					public void run() {
 //						System.out.println("[PromResourceManager] EDT shows message dialog");
@@ -455,6 +484,7 @@ public class ProMResourceManager extends UpdateSignaller implements ResourceMana
 								"No input plugins available!", JOptionPane.ERROR_MESSAGE);
 					}
 				});
+				}
 //				JOptionPane.showMessageDialog(context.getUI(), "No import plugins available",
 //						"No input plugins available!", JOptionPane.ERROR_MESSAGE);
 				return false;
