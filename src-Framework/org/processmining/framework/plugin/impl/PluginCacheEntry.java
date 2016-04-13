@@ -10,8 +10,10 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.prefs.Preferences;
 
 import org.processmining.framework.boot.Boot;
@@ -19,6 +21,8 @@ import org.processmining.framework.boot.Boot.Level;
 import org.processmining.framework.packages.PackageDescriptor;
 
 public class PluginCacheEntry {
+
+	private static final String CURRENT_VERSION = "currentVersion";
 
 	private static final String FILE_PROTOCOL = "file";
 
@@ -143,9 +147,7 @@ public class PluginCacheEntry {
 			//System.out.println("  -> " + key);
 			//System.out.println("  -> len=" + key.length());
 		} else {
-			key = packageDescriptor.getName();
-			key += " ";
-			key += packageDescriptor.getVersion();
+			key = createPackageBasedKey();
 		}
 
 		String names = getSettings().get(key, null);
@@ -168,6 +170,14 @@ public class PluginCacheEntry {
 			parseKey(key);
 		}
 		inCache = true;
+	}
+
+	private String createPackageBasedKey() {
+		assert packageDescriptor != null;
+		String key = packageDescriptor.getName();
+		key += " ";
+		key += packageDescriptor.getVersion();
+		return key;
 	}
 
 	private void parseKey(String key) {
@@ -221,6 +231,32 @@ public class PluginCacheEntry {
 		if (key != null) {
 			if (verbose == Level.ALL) {
 				System.out.println("UPDATING CACHE: " + key);
+			}
+
+			// updating. Remove the previpous version if present and add the new classes
+			if (packageDescriptor != null) {
+				String previous = getSettings().get(CURRENT_VERSION, null);
+				if (previous != null) {
+					TreeSet<String> installed = new TreeSet<>(Arrays.asList(previous.split("/")));
+					Iterator<String> it = installed.iterator();
+					if (installed.size() >= 5) {
+						// already keeping 5 versions alive. Remove one if
+						// current not already present.
+						if (!installed.contains(createPackageBasedKey())) {
+							String toRemove = it.next();
+							getSettings().remove(toRemove);
+
+						}
+					}
+					previous = createPackageBasedKey();
+					while (it.hasNext()) {
+						previous += '/';
+						previous += it.next();
+					}
+					getSettings().put(CURRENT_VERSION, previous);
+				} else {
+					getSettings().put(CURRENT_VERSION, createPackageBasedKey());
+				}
 			}
 
 			classNames.clear();
