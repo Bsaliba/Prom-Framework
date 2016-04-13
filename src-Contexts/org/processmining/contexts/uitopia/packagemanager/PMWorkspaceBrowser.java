@@ -157,7 +157,7 @@ public class PMWorkspaceBrowser extends JPanel {
 		tabs.selectTab(currentBrowser);
 
 		this.add(tabs, BorderLayout.CENTER);
-		this.add(new PMMemoryView(), BorderLayout.SOUTH);
+		this.add(new PMMemoryView(controller), BorderLayout.SOUTH);
 	}
 
 	public void update() {

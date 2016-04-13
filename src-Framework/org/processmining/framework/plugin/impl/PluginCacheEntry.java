@@ -14,6 +14,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 
 import org.processmining.framework.boot.Boot;
@@ -313,4 +314,24 @@ public class PluginCacheEntry {
 			return Preferences.userRoot().node(className + '/' + packageDescriptor.getName());
 		}
 	}
+
+	/**
+	 * Clear the cache here.
+	 * 
+	 * @return
+	 */
+	public static void clearSettingsCache() throws BackingStoreException {
+		String className = PluginCacheEntry.class.getName();
+		int pkgEndIndex = className.lastIndexOf('.');
+		if (pkgEndIndex < 0) {
+			className = "/<unnamed>";
+		} else {
+			String packageName = className.substring(0, pkgEndIndex);
+			className = "/" + packageName.replace('.', '/');
+		}
+		Preferences.userRoot().node(className + "_old").removeNode();
+		Preferences.userRoot().node(className).removeNode();
+
+	}
+
 }

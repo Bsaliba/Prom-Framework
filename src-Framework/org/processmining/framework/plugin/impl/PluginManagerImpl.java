@@ -215,7 +215,6 @@ public final class PluginManagerImpl implements PluginManager {
 
 	private void scanUrl(URL url, PackageDescriptor pack, ClassLoader loader) {
 
-		//EXPENSIVE TO CREATE CACHE ENTRY
 		PluginCacheEntry cached = new PluginCacheEntry(url, Boot.VERBOSE, pack);
 
 		if (cached.isInCache()) {

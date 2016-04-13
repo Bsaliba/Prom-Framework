@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
+import java.util.prefs.BackingStoreException;
 
 import org.processmining.framework.boot.Boot;
 import org.processmining.framework.packages.PackageDescriptor;
@@ -30,6 +31,10 @@ public class PMController {
 		}
 
 		mainView = new PMMainView(this);
+	}
+	
+	public void cleanPackageCache() throws BackingStoreException {
+		manager.cleanPackageCache();
 	}
 
 	/**

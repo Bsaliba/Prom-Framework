@@ -7,8 +7,11 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
+import java.net.SocketTimeoutException;
 import java.net.URL;
+import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -22,6 +25,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 
 import javax.xml.parsers.ParserConfigurationException;
@@ -33,6 +37,7 @@ import org.processmining.framework.boot.Boot.Level;
 import org.processmining.framework.packages.events.PackageManagerListener;
 import org.processmining.framework.packages.impl.CancelledException;
 import org.processmining.framework.packages.impl.PackageConfigPerister;
+import org.processmining.framework.plugin.impl.PluginCacheEntry;
 import org.processmining.framework.plugin.impl.PluginManagerImpl;
 import org.processmining.framework.util.OsUtil;
 import org.xml.sax.SAXException;
@@ -71,20 +76,24 @@ public class PackageManager {
 	private final PackageSet available = new PackageSet();
 
 	/*
-	 * Maps every package descriptor to whether it is still available.
-	 * This map acts as a cache to prevent us from have to access the URL over and over again.
+	 * Maps every package descriptor to whether it is still available. This map
+	 * acts as a cache to prevent us from have to access the URL over and over
+	 * again.
 	 * 
-	 * This map is also used by PackageConfigPersiter when writing the packages to the local repo again.
-	 * As a result, packages that are known to be unavailable will not be written back to the local repo.
+	 * This map is also used by PackageConfigPersiter when writing the packages
+	 * to the local repo again. As a result, packages that are known to be
+	 * unavailable will not be written back to the local repo.
 	 */
 	private Map<PackageDescriptor, Boolean> availability;
 
 	/**
-	 * Checks whether a package is still available.
-	 * This prevents the user from installing or updating a package that cannot be installed anymore.
+	 * Checks whether a package is still available. This prevents the user from
+	 * installing or updating a package that cannot be installed anymore.
 	 * 
-	 * @param descriptor The descriptor of the package.
-	 * @return Whether the URL of the package descriptor can be opened successfully.
+	 * @param descriptor
+	 *            The descriptor of the package.
+	 * @return Whether the URL of the package descriptor can be opened
+	 *         successfully.
 	 */
 	public boolean isAvailable(PackageDescriptor descriptor) {
 		if (!Boot.CHECK_PACKAGES) {
@@ -105,13 +114,21 @@ public class PackageManager {
 		InputStream is = null;
 		try {
 			URL url = new URL(descriptor.getURL());
-			is = url.openStream();
+			URLConnection conn = url.openConnection();
+			if (conn instanceof HttpURLConnection) {
+				HttpURLConnection httpCon = (HttpURLConnection) conn;
+				httpCon.setConnectTimeout(1000);
+				httpCon.setReadTimeout(10000);
+				//					httpCon.connect();
+			}
+
+			is = conn.getInputStream();
 		} catch (Exception e) {
 			/*
 			 * Something's wrong with this URL. Mark it as unavailable.
 			 */
-			System.err.println("Package found in local repository, but not in global repository: "+ descriptor);
-			availability.put(descriptor,  false);
+			System.err.println("Package found in local repository, but not in global repository: " + descriptor);
+			availability.put(descriptor, false);
 			return false;
 		} finally {
 			try {
@@ -119,11 +136,11 @@ public class PackageManager {
 			} catch (Exception e) {
 			}
 		}
-//		System.out.println("Package available: "+ descriptor);
+		//		System.out.println("Package available: "+ descriptor);
 		/*
 		 * All fine, still available. Mark it as such.
 		 */
-		availability.put(descriptor,  true);
+		availability.put(descriptor, true);
 		return true;
 	}
 
@@ -163,7 +180,7 @@ public class PackageManager {
 		return new File(Boot.PACKAGE_FOLDER);
 	}
 
-	public void initialize( Boot.Level verbose) {
+	public void initialize(Boot.Level verbose) {
 
 		doAutoUpdate = Boolean.parseBoolean(Preferences.userNodeForPackage(getClass()).get(DO_AUTO_UPDATES,
 				Boolean.FALSE.toString()));
@@ -200,7 +217,18 @@ public class PackageManager {
 				if (verbose == Level.ALL) {
 					System.out.println(">>> Loading packages from " + packages);
 				}
-				PackageConfigPerister.read(packages.openStream(), repositories, available, installed, canceller);
+				URLConnection conn = packages.openConnection();
+				if (conn instanceof HttpURLConnection) {
+					HttpURLConnection httpCon = (HttpURLConnection) conn;
+					httpCon.setConnectTimeout(100);
+					httpCon.setReadTimeout(1000);
+					//					httpCon.connect();
+				}
+				try {
+					PackageConfigPerister.read(conn.getInputStream(), repositories, available, installed, canceller);
+				} catch (SocketTimeoutException e) {
+					System.err.println("ERR");// NExt;
+				}
 			}
 			read.addAll(toRead);
 			toRead = new HashSet<Repository>(repositories);
@@ -220,7 +248,7 @@ public class PackageManager {
 		}
 	}
 
-	private void resolveAllConflicts( Boot.Level verbose) throws UnknownPackageException {
+	private void resolveAllConflicts(Boot.Level verbose) throws UnknownPackageException {
 		boolean ok;
 
 		do {
@@ -334,17 +362,18 @@ public class PackageManager {
 		Set<PackageDescriptor> broken = new HashSet<PackageDescriptor>();
 
 		Set<PackageDescriptor> installed = new HashSet<PackageDescriptor>(this.installed);
-		
+
 		/*
-		 * During every iteration we should be able to add at least one package to the result set.
-		 * Hence, we should need at most as many iterations as we have packages to add.
-		 * If after this number if iterations some packages have not yet been added, there
-		 * should be a cyclic dependency somewhere between the remaining packages.
+		 * During every iteration we should be able to add at least one package
+		 * to the result set. Hence, we should need at most as many iterations
+		 * as we have packages to add. If after this number if iterations some
+		 * packages have not yet been added, there should be a cyclic dependency
+		 * somewhere between the remaining packages.
 		 * 
 		 * Initialize the number of iterations we have still left.
 		 */
 		int iterationsLeft = installed.size();
-		
+
 		/*
 		 * Iterate as long as needed.
 		 */
@@ -358,7 +387,7 @@ public class PackageManager {
 					broken.add(pack);
 					it.remove();
 				} else {
-					
+
 					if (getPackageMap(result).keySet().containsAll(pack.getDependencies())) {
 						result.add(pack);
 						it.remove();
@@ -368,14 +397,14 @@ public class PackageManager {
 					}
 				}
 			}
-			
+
 			// after this iteration check whether we have any chance to resolve
 			// the remaining dependencies: if not, throw an exception
 			Set<String> listedPackages = new HashSet<String>(getPackageMap(this.installed).keySet());
 			requiredPackages.removeAll(listedPackages);
 			if (!requiredPackages.isEmpty()) {
 				for (String required : requiredPackages) {
-					System.out.println("Cannot find required package: "+required);
+					System.out.println("Cannot find required package: " + required);
 				}
 				throw new UnknownPackageException(requiredPackages.toString());
 			}
@@ -389,11 +418,11 @@ public class PackageManager {
 			System.out.println(">>> All dependencies have been resolved");
 		} else {
 			System.err.println(">>> The dependencies for the following packages have not been resolved:");
-			for (PackageDescriptor pack: installed) {
+			for (PackageDescriptor pack : installed) {
 				System.err.println(">>>     " + pack + " " + pack.getDependencies());
 			}
 		}
-		
+
 		return result;
 	}
 
@@ -990,5 +1019,9 @@ public class PackageManager {
 		this.doAutoUpdate = doAutoUpdate;
 		Preferences.userNodeForPackage(getClass()).put(DO_AUTO_UPDATES, Boolean.toString(doAutoUpdate));
 
+	}
+
+	public void cleanPackageCache() throws BackingStoreException {
+		PluginCacheEntry.clearSettingsCache();
 	}
 }
