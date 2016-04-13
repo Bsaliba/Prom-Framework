@@ -132,7 +132,7 @@ public final class PluginManagerImpl implements PluginManager {
 		URLClassLoader loader = new URLClassLoader(new URL[] { url });
 		register(url, pack, loader);
 	}
-	
+
 	public void register(URL url, PackageDescriptor pack, ClassLoader loader) {
 		if (url.getProtocol().equals(FILE_PROTOCOL)) {
 			try {
@@ -214,7 +214,9 @@ public final class PluginManagerImpl implements PluginManager {
 	}
 
 	private void scanUrl(URL url, PackageDescriptor pack, ClassLoader loader) {
-		PluginCacheEntry cached = new PluginCacheEntry(url, Boot.VERBOSE);
+
+		//EXPENSIVE TO CREATE CACHE ENTRY
+		PluginCacheEntry cached = new PluginCacheEntry(url, Boot.VERBOSE, pack);
 
 		if (cached.isInCache()) {
 			for (String className : cached.getCachedClassNames()) {
@@ -304,13 +306,14 @@ public final class PluginManagerImpl implements PluginManager {
 				set.add(pluginClass);
 			}
 
+			Method[] methods = pluginClass.getMethods();
 			// Check if plugin annotation is present
-			if (pluginClass.isAnnotationPresent(Plugin.class) && isGoodPlugin(pluginClass)) {
+			if (pluginClass.isAnnotationPresent(Plugin.class) && isGoodPlugin(pluginClass, methods)) {
 				PluginDescriptorImpl pl = new PluginDescriptorImpl(pluginClass, pluginContextType, pack);
 				addPlugin(pl);
 			}
 
-			for (Method method : pluginClass.getMethods()) {
+			for (Method method : methods) {
 				if (method.isAnnotationPresent(Plugin.class) && isGoodPlugin(method)) {
 					try {
 						PluginDescriptorImpl pl = new PluginDescriptorImpl(method, pack);
@@ -406,24 +409,24 @@ public final class PluginManagerImpl implements PluginManager {
 		return newTypes;
 	}
 
-	private boolean isGoodPlugin(Class<?> type)  {
+	private boolean isGoodPlugin(Class<?> type, Method[] methods) {
 		try {
 			if (!isRightlyAnnotated(type)) {
 				return false;
 			}
 			String[] names = type.getAnnotation(Plugin.class).parameterLabels();
 			Class<?>[] returnTypes = type.getAnnotation(Plugin.class).returnTypes();
-	
+
 			// Check if there is at least one method annotated with PluginVariant
-			List<Method> methods = new ArrayList<Method>();
-			for (Method m : type.getMethods()) {
+			List<Method> pluginMethods = new ArrayList<Method>(methods.length);
+			for (Method m : methods) {
 				if (m.isAnnotationPresent(PluginVariant.class)) {
-					methods.add(m);
+					pluginMethods.add(m);
 				}
 			}
-	
+
 			// Check if for all methods, the requiredTypes are set Correctly
-			Iterator<Method> it = methods.iterator();
+			Iterator<Method> it = pluginMethods.iterator();
 			loop: while (it.hasNext()) {
 				Method m = it.next();
 				int[] required = m.getAnnotation(PluginVariant.class).requiredParameterLabels();
@@ -450,9 +453,9 @@ public final class PluginManagerImpl implements PluginManager {
 					it.remove();
 				}
 			}
-	
+
 			// Check for corresponding contexts at first indes
-			it = methods.iterator();
+			it = pluginMethods.iterator();
 			loop: while (it.hasNext()) {
 				Method m = it.next();
 				if (!isCorrectPluginContextType(m)) {
@@ -467,8 +470,8 @@ public final class PluginManagerImpl implements PluginManager {
 					continue loop;
 				}
 			}
-	
-			it = methods.iterator();
+
+			it = pluginMethods.iterator();
 			loop: while (it.hasNext()) {
 				Method m = it.next();
 				if ((returnTypes.length > 1) && !Object[].class.isAssignableFrom(m.getReturnType())
@@ -483,17 +486,17 @@ public final class PluginManagerImpl implements PluginManager {
 					continue loop;
 				}
 			}
-	
-			if (methods.isEmpty()) {
+
+			if (pluginMethods.isEmpty()) {
 				if (Boot.VERBOSE != Level.NONE) {
 					System.err.println("Plugin " + type.toString()
 							+ " could not be added as a plugin. At least one variant has to be specified.");
 				}
 				return false;
 			}
-	
+
 			return true;
-			
+
 		} catch (NoClassDefFoundError e) {
 			// required class not on classpath, cannot load as plugin
 			return false;
@@ -530,7 +533,7 @@ public final class PluginManagerImpl implements PluginManager {
 			if (!isRightlyAnnotated(method)) {
 				return false;
 			}
-	
+
 			if ((method.getAnnotation(Plugin.class).parameterLabels().length != 0)
 					&& (method.getAnnotation(Plugin.class).parameterLabels().length != method.getParameterTypes().length - 1)) {
 				if (Boot.VERBOSE != Level.NONE) {
@@ -539,13 +542,13 @@ public final class PluginManagerImpl implements PluginManager {
 				}
 				return false;
 			}
-	
+
 			//		if (void.class.equals(method.getReturnType())) {
 			//			System.err.println("Method " + method.toGenericString()
 			//					+ " could not be added as a plugin, as the resultType is void.");
 			//			return false;
 			//		}
-	
+
 			Class<?>[] returnTypes = method.getAnnotation(Plugin.class).returnTypes();
 			if ((returnTypes.length > 1) && !Object[].class.isAssignableFrom(method.getReturnType())
 					&& !Object.class.equals(method.getReturnType())) {
@@ -556,7 +559,7 @@ public final class PluginManagerImpl implements PluginManager {
 				}
 				return false;
 			}
-	
+
 			Class<?>[] pars = method.getParameterTypes();
 			if (!isCorrectPluginContextType(method)) {
 				if (!method.isAnnotationPresent(Bootable.class)) {
@@ -607,7 +610,8 @@ public final class PluginManagerImpl implements PluginManager {
 		for (PluginDescriptor plugin : pls) {
 			if (mustBeUserVisible && (!plugin.meetsQualityThreshold() || !plugin.meetsLevelThreshold())) {
 				/*
-				 * Plug-in does not meet some required threshold to do so. Ignore it.
+				 * Plug-in does not meet some required threshold to do so.
+				 * Ignore it.
 				 */
 				continue;
 			}
@@ -723,8 +727,8 @@ public final class PluginManagerImpl implements PluginManager {
 			boolean visible = plugin.isUserAccessible();
 			if (mustBeUserVisible && (!plugin.meetsQualityThreshold() || !plugin.meetsLevelThreshold())) {
 				/*
-				 * Plug-in can be user visible (that is, should end up in the GUI), but does not meet
-				 * some required threshold. Ignore it.
+				 * Plug-in can be user visible (that is, should end up in the
+				 * GUI), but does not meet some required threshold. Ignore it.
 				 */
 				continue;
 			}

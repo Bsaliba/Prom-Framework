@@ -16,13 +16,14 @@ import java.util.prefs.Preferences;
 
 import org.processmining.framework.boot.Boot;
 import org.processmining.framework.boot.Boot.Level;
+import org.processmining.framework.packages.PackageDescriptor;
 
 public class PluginCacheEntry {
 
 	private static final String FILE_PROTOCOL = "file";
 
-	private static final Set<String> STANDARD_JRE_DIRS = new HashSet<String>(Arrays
-			.asList(new String[] { "jdk", "jre", }));
+	private static final Set<String> STANDARD_JRE_DIRS = new HashSet<String>(
+			Arrays.asList(new String[] { "jdk", "jre", }));
 	private static final String STANDARD_JRE_LIB_DIR = "lib";
 	private static final String STANDARD_JRE_EXT_DIR = "ext";
 	private static final Set<String> STANDARD_JAR_FILES = new HashSet<String>(Arrays.asList(new String[] {
@@ -33,11 +34,26 @@ public class PluginCacheEntry {
 	private boolean inCache;
 	private Set<String> classNames;
 	private String key;
-	private  Boot.Level verbose;
+	private Boot.Level verbose;
 
+	private final PackageDescriptor packageDescriptor;
+
+	/**
+	 * Deprecated. Use the version with the package descriptor for a
+	 * significantly faster cache lookup
+	 * 
+	 * @param url
+	 * @param verbose
+	 */
+	@Deprecated
 	public PluginCacheEntry(URL url, Boot.Level verbose) {
+		this(url, verbose, null);
+	}
+
+	public PluginCacheEntry(URL url, Boot.Level verbose, PackageDescriptor packageDescriptor) {
 		this.url = url;
 		this.verbose = verbose;
+		this.packageDescriptor = packageDescriptor;
 		reset();
 
 		try {
@@ -82,49 +98,55 @@ public class PluginCacheEntry {
 			return;
 		}
 
-		MessageDigest digest = null;
-		try {
-			digest = MessageDigest.getInstance("MD5");
-		} catch (NoSuchAlgorithmException e) {
-			// no MD5 available, so we cannot reliably detect whether the JAR is
-			// cached or not
-			return;
-		}
-
-		InputStream is = null;
-		try {
-			int numRead = 0;
-			byte[] buffer = new byte[4096];
-
-			is = url.openStream();
-			while ((numRead = is.read(buffer)) > 0) {
-				digest.update(buffer, 0, numRead);
+		if (packageDescriptor == null) {
+			MessageDigest digest = null;
+			try {
+				digest = MessageDigest.getInstance("MD5");
+			} catch (NoSuchAlgorithmException e) {
+				// no MD5 available, so we cannot reliably detect whether the JAR is
+				// cached or not
+				return;
 			}
-		} catch (IOException e) {
-			return;
-		} finally {
-			if (is != null) {
-				try {
-					is.close();
-				} catch (IOException e) {
-					return;
+
+			InputStream is = null;
+			try {
+				int numRead = 0;
+				byte[] buffer = new byte[4096];
+
+				is = url.openStream();
+				while ((numRead = is.read(buffer)) > 0) {
+					digest.update(buffer, 0, numRead);
+				}
+			} catch (IOException e) {
+				return;
+			} finally {
+				if (is != null) {
+					try {
+						is.close();
+					} catch (IOException e) {
+						return;
+					}
 				}
 			}
-		}
 
-		key = "";
-		for (byte b : digest.digest()) {
-			// append the signed byte as an unsigned hex number
-			key += Integer.toString(0xFF & b, 16);
+			key = "";
+			for (byte b : digest.digest()) {
+				// append the signed byte as an unsigned hex number
+				key += Integer.toString(0xFF & b, 16);
+			}
+			key += " " + new File(new URI(url.toString())).getName();
+			if (key.length() > 80) {
+				// make sure they is not too long for the preferences API
+				key = key.substring(0, 80);
+			}
+			//System.out.println("URL: " + url);
+			//System.out.println("  -> " + key);
+			//System.out.println("  -> len=" + key.length());
+		} else {
+			key = packageDescriptor.getName();
+			key += " ";
+			key += packageDescriptor.getVersion();
 		}
-		key += " " + new File(new URI(url.toString())).getName();
-		if (key.length() > 80) {
-			// make sure they is not too long for the preferences API
-			key = key.substring(0, 80);
-		}
-		//System.out.println("URL: " + url);
-		//System.out.println("  -> " + key);
-		//System.out.println("  -> len=" + key.length());
 
 		String names = getSettings().get(key, null);
 
@@ -223,8 +245,8 @@ public class PluginCacheEntry {
 				for (int i = 0; i < subkeys; i++) {
 					getSettings().put(
 							key + "-" + i,
-							value.substring(i * Preferences.MAX_VALUE_LENGTH, Math.min((i + 1)
-									* Preferences.MAX_VALUE_LENGTH, value.length())));
+							value.substring(i * Preferences.MAX_VALUE_LENGTH,
+									Math.min((i + 1) * Preferences.MAX_VALUE_LENGTH, value.length())));
 				}
 			} else {
 
@@ -233,7 +255,26 @@ public class PluginCacheEntry {
 		}
 	}
 
+	/**
+	 * If a package descriptor is given, we use that to build the cache. The
+	 * version number is increased automatically now with every build/release,
+	 * hence we can use that to determine the cache.
+	 * 
+	 * @return
+	 */
 	private Preferences getSettings() {
-		return Preferences.userNodeForPackage(getClass());
+		String className = getClass().getName();
+		int pkgEndIndex = className.lastIndexOf('.');
+		if (pkgEndIndex < 0) {
+			className = "/<unnamed>";
+		} else {
+			String packageName = className.substring(0, pkgEndIndex);
+			className = "/" + packageName.replace('.', '/');
+		}
+		if (packageDescriptor == null) {
+			return Preferences.userRoot().node(className + "_old");
+		} else {
+			return Preferences.userRoot().node(className + '/' + packageDescriptor.getName());
+		}
 	}
 }
