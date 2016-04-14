@@ -332,7 +332,7 @@ public final class PluginManagerImpl implements PluginManager {
 				System.err.println("ERROR while scanning for plugins at: " + url + ":");
 				System.err.println("   in file :" + className);
 				System.err.println("   " + t.getMessage());
-				t.printStackTrace();
+				//t.printStackTrace();
 			}
 		}
 		return isAnnotated ? className : null;

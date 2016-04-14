@@ -43,6 +43,8 @@ public class PluginCacheEntry {
 
 	private final PackageDescriptor packageDescriptor;
 
+	private final boolean packageSupplied;
+
 	/**
 	 * Deprecated. Use the version with the package descriptor for a
 	 * significantly faster cache lookup
@@ -52,13 +54,18 @@ public class PluginCacheEntry {
 	 */
 	@Deprecated
 	public PluginCacheEntry(URL url, Boot.Level verbose) {
-		this(url, verbose, null);
+		this(url, verbose, null, false);
 	}
 
 	public PluginCacheEntry(URL url, Boot.Level verbose, PackageDescriptor packageDescriptor) {
+		this(url, verbose, packageDescriptor, true);
+	}
+
+	private PluginCacheEntry(URL url, Boot.Level verbose, PackageDescriptor packageDescriptor, boolean packageSupplied) {
 		this.url = url;
 		this.verbose = verbose;
 		this.packageDescriptor = packageDescriptor;
+		this.packageSupplied = packageSupplied;
 		reset();
 
 		try {
@@ -103,7 +110,7 @@ public class PluginCacheEntry {
 			return;
 		}
 
-		if (packageDescriptor == null) {
+		if (!packageSupplied) {
 			MessageDigest digest = null;
 			try {
 				digest = MessageDigest.getInstance("MD5");
@@ -174,10 +181,16 @@ public class PluginCacheEntry {
 	}
 
 	private String createPackageBasedKey() {
-		assert packageDescriptor != null;
-		String key = packageDescriptor.getName();
-		key += " ";
-		key += packageDescriptor.getVersion();
+		assert packageSupplied;
+		String key;
+		if (packageDescriptor == null) {
+			key = url.toString();
+			key = key.substring(key.lastIndexOf('/'));
+		} else {
+			key = packageDescriptor.getName();
+			key += " ";
+			key += packageDescriptor.getVersion();
+		}
 		return key;
 	}
 
@@ -235,28 +248,32 @@ public class PluginCacheEntry {
 			}
 
 			// updating. Remove the previpous version if present and add the new classes
-			if (packageDescriptor != null) {
-				String previous = getSettings().get(CURRENT_VERSION, null);
-				if (previous != null) {
-					TreeSet<String> installed = new TreeSet<>(Arrays.asList(previous.split("/")));
-					Iterator<String> it = installed.iterator();
-					if (installed.size() >= 5) {
-						// already keeping 5 versions alive. Remove one if
-						// current not already present.
-						if (!installed.contains(createPackageBasedKey())) {
-							String toRemove = it.next();
-							getSettings().remove(toRemove);
+			if (packageSupplied) {
+				if (packageDescriptor != null) {
 
+					String previous = getSettings().get(CURRENT_VERSION, null);
+					if (previous != null) {
+						TreeSet<String> installed = new TreeSet<>(Arrays.asList(previous.split("/")));
+						Iterator<String> it = installed.iterator();
+						if (installed.size() >= 5) {
+							// already keeping 5 versions alive. Remove one if
+							// current not already present.
+							if (!installed.contains(createPackageBasedKey())) {
+								String toRemove = it.next();
+								getSettings().remove(toRemove);
+
+							}
 						}
+						previous = createPackageBasedKey();
+						while (it.hasNext()) {
+							previous += '/';
+							previous += it.next();
+						}
+						getSettings().put(CURRENT_VERSION, previous);
+
+					} else {
+						getSettings().put(CURRENT_VERSION, createPackageBasedKey());
 					}
-					previous = createPackageBasedKey();
-					while (it.hasNext()) {
-						previous += '/';
-						previous += it.next();
-					}
-					getSettings().put(CURRENT_VERSION, previous);
-				} else {
-					getSettings().put(CURRENT_VERSION, createPackageBasedKey());
 				}
 			}
 
@@ -308,8 +325,10 @@ public class PluginCacheEntry {
 			String packageName = className.substring(0, pkgEndIndex);
 			className = "/" + packageName.replace('.', '/');
 		}
-		if (packageDescriptor == null) {
+		if (!packageSupplied) {
 			return Preferences.userRoot().node(className + "_old");
+		} else if (packageDescriptor == null) {
+			return Preferences.userRoot().node(className + "/jarFiles");
 		} else {
 			return Preferences.userRoot().node(className + '/' + packageDescriptor.getName());
 		}
