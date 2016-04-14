@@ -43,8 +43,6 @@ public class PluginCacheEntry {
 
 	private final PackageDescriptor packageDescriptor;
 
-	private final boolean packageSupplied;
-
 	/**
 	 * Deprecated. Use the version with the package descriptor for a
 	 * significantly faster cache lookup
@@ -54,18 +52,13 @@ public class PluginCacheEntry {
 	 */
 	@Deprecated
 	public PluginCacheEntry(URL url, Boot.Level verbose) {
-		this(url, verbose, null, false);
+		this(url, verbose, null);
 	}
 
 	public PluginCacheEntry(URL url, Boot.Level verbose, PackageDescriptor packageDescriptor) {
-		this(url, verbose, packageDescriptor, true);
-	}
-
-	private PluginCacheEntry(URL url, Boot.Level verbose, PackageDescriptor packageDescriptor, boolean packageSupplied) {
 		this.url = url;
 		this.verbose = verbose;
 		this.packageDescriptor = packageDescriptor;
-		this.packageSupplied = packageSupplied;
 		reset();
 
 		try {
@@ -110,7 +103,7 @@ public class PluginCacheEntry {
 			return;
 		}
 
-		if (!packageSupplied) {
+		if (packageDescriptor == null) {
 			MessageDigest digest = null;
 			try {
 				digest = MessageDigest.getInstance("MD5");
@@ -123,7 +116,7 @@ public class PluginCacheEntry {
 			InputStream is = null;
 			try {
 				int numRead = 0;
-				byte[] buffer = new byte[4096];
+				byte[] buffer = new byte[4096 * 1024];
 
 				is = url.openStream();
 				while ((numRead = is.read(buffer)) > 0) {
@@ -181,17 +174,12 @@ public class PluginCacheEntry {
 	}
 
 	private String createPackageBasedKey() {
-		assert packageSupplied;
+		assert packageDescriptor != null;
 		String key;
-		if (packageDescriptor == null) {
-			key = url.toString();
-			key = key.substring(key.lastIndexOf('/'));
-		} else {
-			key = packageDescriptor.getName();
-			key += " ";
-			key += packageDescriptor.getVersion();
-		}
-		return key;
+		key = packageDescriptor.getName();
+		key += " ";
+		key += packageDescriptor.getVersion();
+		return key.toLowerCase();
 	}
 
 	private void parseKey(String key) {
@@ -248,32 +236,30 @@ public class PluginCacheEntry {
 			}
 
 			// updating. Remove the previpous version if present and add the new classes
-			if (packageSupplied) {
-				if (packageDescriptor != null) {
+			if (packageDescriptor != null) {
 
-					String previous = getSettings().get(CURRENT_VERSION, null);
-					if (previous != null) {
-						TreeSet<String> installed = new TreeSet<>(Arrays.asList(previous.split("/")));
-						Iterator<String> it = installed.iterator();
-						if (installed.size() >= 5) {
-							// already keeping 5 versions alive. Remove one if
-							// current not already present.
-							if (!installed.contains(createPackageBasedKey())) {
-								String toRemove = it.next();
-								getSettings().remove(toRemove);
+				String previous = getSettings().get(CURRENT_VERSION, null);
+				if (previous != null) {
+					TreeSet<String> installed = new TreeSet<>(Arrays.asList(previous.split("/")));
+					Iterator<String> it = installed.iterator();
+					if (installed.size() >= 5) {
+						// already keeping 5 versions alive. Remove one if
+						// current not already present.
+						if (!installed.contains(createPackageBasedKey())) {
+							String toRemove = it.next();
+							getSettings().remove(toRemove);
 
-							}
 						}
-						previous = createPackageBasedKey();
-						while (it.hasNext()) {
-							previous += '/';
-							previous += it.next();
-						}
-						getSettings().put(CURRENT_VERSION, previous);
-
-					} else {
-						getSettings().put(CURRENT_VERSION, createPackageBasedKey());
 					}
+					previous = createPackageBasedKey();
+					while (it.hasNext()) {
+						previous += '/';
+						previous += it.next();
+					}
+					getSettings().put(CURRENT_VERSION, previous);
+
+				} else {
+					getSettings().put(CURRENT_VERSION, createPackageBasedKey());
 				}
 			}
 
@@ -325,12 +311,10 @@ public class PluginCacheEntry {
 			String packageName = className.substring(0, pkgEndIndex);
 			className = "/" + packageName.replace('.', '/');
 		}
-		if (!packageSupplied) {
-			return Preferences.userRoot().node(className + "_old");
-		} else if (packageDescriptor == null) {
-			return Preferences.userRoot().node(className + "/jarFiles");
+		if (packageDescriptor == null) {
+			return Preferences.userRoot().node(className + "_md5_based");
 		} else {
-			return Preferences.userRoot().node(className + '/' + packageDescriptor.getName());
+			return Preferences.userRoot().node(className + '/' + packageDescriptor.getName().toLowerCase());
 		}
 	}
 

@@ -231,12 +231,14 @@ public final class PluginManagerImpl implements PluginManager {
 				while ((je = jis.getNextJarEntry()) != null) {
 					if (!je.isDirectory() && je.getName().endsWith(CLASS_EXTENSION)) {
 						String loadedClass = loadClassFromFile(loader, url, je.getName(), pack);
-						loadedClasses.add(loadedClass);
+						if (loadedClass != null) {
+							loadedClasses.add(loadedClass);
+						}
 					}
 				}
 				jis.close();
 				is.close();
-
+				
 				cached.update(loadedClasses);
 			} catch (IOException e) {
 				fireError(url, e, null);
@@ -293,7 +295,7 @@ public final class PluginManagerImpl implements PluginManager {
 		className = className.trim();
 		try {
 			Class<?> pluginClass = Class.forName(className, false, loader);
-			isAnnotated = (pluginClass.getAnnotations().length > 0);
+			//isAnnotated = (pluginClass.getAnnotations().length > 0);
 
 			// register all annotated classes
 			for (Annotation a : pluginClass.getAnnotations()) {
@@ -310,6 +312,7 @@ public final class PluginManagerImpl implements PluginManager {
 			if (pluginClass.isAnnotationPresent(Plugin.class) && isGoodPlugin(pluginClass, methods)) {
 				PluginDescriptorImpl pl = new PluginDescriptorImpl(pluginClass, pluginContextType, pack);
 				addPlugin(pl);
+				isAnnotated = true;
 			}
 
 			for (Method method : methods) {
