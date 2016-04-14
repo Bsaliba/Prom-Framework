@@ -377,7 +377,6 @@ public class ProMResourceManager extends UpdateSignaller implements ResourceMana
 	 * This method should only be called from a non-EDT thread.
 	 */
 	private synchronized boolean importResourceNotInEDT() {
-		assert!EventQueue.isDispatchThread();
 		synchronized (importPluginAdded) {
 			if (importPluginAdded) {
 				buildImportPlugins();
@@ -477,7 +476,6 @@ public class ProMResourceManager extends UpdateSignaller implements ResourceMana
 	 * This method should not be called from the EDT, as it will then block.
 	 */
 	private synchronized boolean importResourceNotInEDT(PluginParameterBinding binding, final File... files) {
-		assert!EventQueue.isDispatchThread();
 		synchronized (importPluginAdded) {
 			if (importPluginAdded) {
 				buildImportPlugins();
