@@ -25,6 +25,7 @@ import javax.swing.JComponent;
 import javax.swing.JEditorPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.SwingUtilities;
 
 import org.deckfour.uitopia.api.model.Resource;
 import org.deckfour.uitopia.api.model.View;
@@ -42,6 +43,73 @@ import com.fluxicon.slickerbox.factory.SlickerFactory;
 import com.google.common.base.Throwables;
 
 public class ProMView implements View {
+
+	private final class ProMViewRunnable implements Runnable {
+		
+		private JComponent content;
+		private ProgressOverlayDialog dialog;
+		
+		private String message;
+		private String stacktrace;
+		private PluginDescriptor descriptor;		
+		
+		public ProMViewRunnable(JComponent content, ProgressOverlayDialog dialog, String message, String stacktrace, PluginDescriptor descriptor){
+			this.content = content;
+			this.dialog = dialog;
+			this.message = message;
+			this.stacktrace = stacktrace;
+			this.descriptor = descriptor;
+		}
+		
+		public void run() {
+			component.removeAll();
+			if (content != null) {
+				try {
+					content.repaint();
+					component.add(content, BorderLayout.CENTER);
+				} catch (Exception e) {
+					e.printStackTrace();
+					//ignore
+					message = e.getMessage();
+					stacktrace = Throwables.getStackTraceAsString(e);
+				}
+			}
+			if (component.getComponents().length == 0) {
+				component.add(buildErrorComponent(message, stacktrace, descriptor), BorderLayout.CENTER);
+			}	
+			dialog.changeProgress(dialog.getMaximum());
+		}
+		
+		private JComponent buildErrorComponent(final String message, final String stacktrace, final PluginDescriptor plugin) {
+			final JPanel errorPanel = new JPanel();
+			errorPanel.setLayout(new BoxLayout(errorPanel, BoxLayout.Y_AXIS));
+			String userfriendlyMessage = String.format("<html><h1>Unable to produce the requested visualization</h1><h2>Error Message</h2><h3>%s</b></h3></html>", message);
+			final JEditorPane messagePanel = new JEditorPane("text/html", userfriendlyMessage);				
+			messagePanel.setEditable(false);
+			final JButton debugButton = SlickerFactory.instance().createButton("Show Debug Information");
+			debugButton.setAlignmentX(JComponent.CENTER_ALIGNMENT);
+			debugButton.addActionListener(new ActionListener() {
+
+				public void actionPerformed(ActionEvent e) {
+					String debugMessage = String.format("<html><body><h1>Unable to produce the requested visualization</h1>"
+							+ "<h2>Error Message</h2><h3>%s</b></h3>"
+							+ "<h2>Debug Information for Reporting</h2>"
+							+ "<p><b>Visualizer</b>: %s</p>"
+							+ "<p><b>Stack trace</b>: %s</p>"
+							+ "</body></html>", message, plugin.getName(), stacktrace.replace(System.getProperty("line.separator"), "<p>\n"));
+					messagePanel
+							.setText(debugMessage);
+					messagePanel.setCaretPosition(0);
+					debugButton.removeActionListener(this);
+					errorPanel.remove(debugButton);
+					errorPanel.validate();
+				}
+			});
+			errorPanel.add(new JScrollPane(messagePanel));
+			errorPanel.add(debugButton);
+			return errorPanel;
+		}
+	}
 
 	private static final class ProMCancellerImpl implements ProMCanceller {
 
@@ -244,23 +312,9 @@ public class ProMView implements View {
 					stacktrace = Throwables.getStackTraceAsString(e);
 				} finally {
 					context.getParentContext().deleteChild(context);
-
-					component.removeAll();
-					if (content != null) {
-						try {
-							content.repaint();
-							component.add(content, BorderLayout.CENTER);
-						} catch (Exception e) {
-							e.printStackTrace();
-							//ignore
-							message = e.getMessage();
-							stacktrace = Throwables.getStackTraceAsString(e);
-						}
-					}
-					if (component.getComponents().length == 0) {
-						component.add(buildErrorComponent(message, stacktrace, result.getPlugin()), BorderLayout.CENTER);
-					}
-					dialog.changeProgress(dialog.getMaximum());
+					SwingUtilities.invokeLater(
+						new ProMViewRunnable(content, dialog, message, stacktrace, result.getPlugin())
+					);					
 					synchronized (ProMView.this) {
 						working = false;
 						ProMView.this.notifyAll();
@@ -268,36 +322,6 @@ public class ProMView implements View {
 					manager.getContext().getController().getMainView().hideOverlay();
 				}
 
-			}
-
-			private JComponent buildErrorComponent(final String message, final String stacktrace, final PluginDescriptor plugin) {
-				final JPanel errorPanel = new JPanel();
-				errorPanel.setLayout(new BoxLayout(errorPanel, BoxLayout.Y_AXIS));
-				String userfriendlyMessage = String.format("<html><h1>Unable to produce the requested visualization</h1><h2>Error Message</h2><h3>%s</b></h3></html>", message);
-				final JEditorPane messagePanel = new JEditorPane("text/html", userfriendlyMessage);				
-				messagePanel.setEditable(false);
-				final JButton debugButton = SlickerFactory.instance().createButton("Show Debug Information");
-				debugButton.setAlignmentX(JComponent.CENTER_ALIGNMENT);
-				debugButton.addActionListener(new ActionListener() {
-
-					public void actionPerformed(ActionEvent e) {
-						String debugMessage = String.format("<html><body><h1>Unable to produce the requested visualization</h1>"
-								+ "<h2>Error Message</h2><h3>%s</b></h3>"
-								+ "<h2>Debug Information for Reporting</h2>"
-								+ "<p><b>Visualizer</b>: %s</p>"
-								+ "<p><b>Stack trace</b>: %s</p>"
-								+ "</body></html>", message, plugin.getName(), stacktrace.replace(System.getProperty("line.separator"), "<p>\n"));
-						messagePanel
-								.setText(debugMessage);
-						messagePanel.setCaretPosition(0);
-						debugButton.removeActionListener(this);
-						errorPanel.remove(debugButton);
-						errorPanel.validate();
-					}
-				});
-				errorPanel.add(new JScrollPane(messagePanel));
-				errorPanel.add(debugButton);
-				return errorPanel;
 			}
 
 			private PluginExecutionResult getVisualizationResult(final UIPluginContext context,
