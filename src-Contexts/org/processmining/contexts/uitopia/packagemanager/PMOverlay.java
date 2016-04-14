@@ -4,8 +4,6 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Image;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Timer;
@@ -13,7 +11,6 @@ import java.util.TimerTask;
 
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
-import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -76,23 +73,23 @@ public class PMOverlay extends TwoButtonOverlayDialog implements PackageManager.
 		southPanel.setOpaque(false);
 		southPanel.setBorder(BorderFactory.createEmptyBorder());
 
-		JCheckBox check = new JCheckBox(
-				"Automatically install new versions of packages (requires an internet connection)");
-		check.setOpaque(false);
-		check.setSelected(PackageManager.getInstance().doAutoUpdate());
-		check.addItemListener(new ItemListener() {
-
-			public void itemStateChanged(ItemEvent e) {
-				if (e.getStateChange() == ItemEvent.DESELECTED) {
-					PackageManager.getInstance().setAutoUpdate(false);
-				} else if (e.getStateChange() == ItemEvent.SELECTED) {
-					PackageManager.getInstance().setAutoUpdate(true);
-				}
-			}
-		});
+//		JCheckBox check = new JCheckBox(
+//				"Automatically install new versions of packages (requires an internet connection (xx))");
+//		check.setOpaque(false);
+//		check.setSelected(PackageManager.getInstance().doAutoUpdate());
+//		check.addItemListener(new ItemListener() {
+//
+//			public void itemStateChanged(ItemEvent e) {
+//				if (e.getStateChange() == ItemEvent.DESELECTED) {
+//					PackageManager.getInstance().setAutoUpdate(false);
+//				} else if (e.getStateChange() == ItemEvent.SELECTED) {
+//					PackageManager.getInstance().setAutoUpdate(true);
+//				}
+//			}
+//		});
 
 		southPanel.add(scrollpane, BorderLayout.CENTER);
-		southPanel.add(check, BorderLayout.SOUTH);
+//		southPanel.add(check, BorderLayout.SOUTH);
 
 		mainPanel.add(label, BorderLayout.CENTER);
 		mainPanel.add(southPanel, BorderLayout.SOUTH);

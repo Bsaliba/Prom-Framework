@@ -86,7 +86,7 @@ public class ProMResourceManager extends UpdateSignaller implements ResourceMana
 	private final Preferences preferences;
 
 	private ConnectionManager connectionManager;
-	
+
 	private int selectedOption;
 	private String selectedPlugin;
 	private boolean importResourceResult;
@@ -170,7 +170,7 @@ public class ProMResourceManager extends UpdateSignaller implements ResourceMana
 	}
 
 	public boolean exportResource(Resource resource) throws IOException {
-		assert (resource instanceof ProMResource<?>);
+		assert(resource instanceof ProMResource<?>);
 
 		String lastChosenExportPlugin = preferences.get(FAVORITEEXPORT + resource.getType().getTypeName(), "");
 		if (lastChosenExportPlugin.isEmpty()) {
@@ -227,8 +227,9 @@ public class ProMResourceManager extends UpdateSignaller implements ResourceMana
 					file = new File(name);
 				}
 				if (!file.createNewFile()) {
-					int ow = JOptionPane.showConfirmDialog(context.getUI(), "Are you sure you want to overwrite "
-							+ file.getName(), "Confirm overwrite", JOptionPane.YES_NO_OPTION);
+					int ow = JOptionPane.showConfirmDialog(context.getUI(),
+							"Are you sure you want to overwrite " + file.getName(), "Confirm overwrite",
+							JOptionPane.YES_NO_OPTION);
 					if (ow == JOptionPane.NO_OPTION) {
 						continue askForFile;
 					}
@@ -247,8 +248,8 @@ public class ProMResourceManager extends UpdateSignaller implements ResourceMana
 				preferences.put(FAVORITEEXPORT + resource.getType().getTypeName(),
 						binding.getPlugin().getAnnotation(UIExportPlugin.class).description());
 
-				UIPluginContext importContext = context.getMainPluginContext().createChildContext(
-						"Saving file with " + binding.getPlugin().getName());
+				UIPluginContext importContext = context.getMainPluginContext()
+						.createChildContext("Saving file with " + binding.getPlugin().getName());
 
 				PluginExecutionResult result = binding.invoke(importContext, file,
 						((ProMResource<?>) resource).getInstance());
@@ -346,7 +347,37 @@ public class ProMResourceManager extends UpdateSignaller implements ResourceMana
 		return filterList(filtered, filter);
 	}
 
-	public synchronized boolean importResource() throws IOException {
+	/**
+	 * Start the import dialog for a resource. Can be called from the EDT or any
+	 * other thread.
+	 * Makes sure that the actual import is not run in the EDT.
+	 */
+	public synchronized boolean importResource() {
+		importResourceResult = false;
+		if (EventQueue.isDispatchThread()) {
+			/*
+			 * Called from the EDT. Spawn a new thread to do the import.
+			 */
+			Runnable importThread = new Runnable() {
+				public void run() {
+					importResourceResult = importResourceNotInEDT();
+				}
+			};
+			(new Thread(importThread)).start();
+		} else {
+			/*
+			 * Not called from the EDT. OK.
+			 */
+			importResourceResult = importResourceNotInEDT();
+		}
+		return importResourceResult;
+	}
+
+	/*
+	 * This method should only be called from a non-EDT thread.
+	 */
+	private synchronized boolean importResourceNotInEDT() {
+		assert!EventQueue.isDispatchThread();
 		synchronized (importPluginAdded) {
 			if (importPluginAdded) {
 				buildImportPlugins();
@@ -360,20 +391,22 @@ public class ProMResourceManager extends UpdateSignaller implements ResourceMana
 		}
 		fc.setAcceptAllFileFilterUsed(true);
 		/*
-		 * Disable multi-selection, as this allows for the user to select two files simultaneously
-		 * that cannot be handled by a single importer. The user can only use one importer...
+		 * Disable multi-selection, as this allows for the user to select two
+		 * files simultaneously that cannot be handled by a single importer. The
+		 * user can only use one importer...
 		 */
-//		fc.setMultiSelectionEnabled(true);
+		fc.setMultiSelectionEnabled(true);
 		fc.setFileFilter(fc.getAcceptAllFileFilter());
 
 		selectedOption = JFileChooser.CANCEL_OPTION;
 		/*
-		 * HV: This method does not run in the EDT. Delegate the next dialog to the EDT, and wait for the answer.
+		 * HV: This method does not run in the EDT. Delegate the next dialog to
+		 * the EDT, and wait for the answer.
 		 */
 		try {
 			SwingUtilities.invokeAndWait(new Runnable() {
 				public void run() {
-//					System.out.println("[PromResourceManager] EDT shows open dialog");
+					//					System.out.println("[PromResourceManager] EDT shows open dialog");
 					selectedOption = fc.showOpenDialog(context.getUI());
 				}
 			});
@@ -391,12 +424,16 @@ public class ProMResourceManager extends UpdateSignaller implements ResourceMana
 			 * As a result of disabling the multi-selection, use a different way
 			 * to get the selected file(s).
 			 */
-//			File[] files = fc.getSelectedFiles();
-			File[] files = new File[]{ fc.getSelectedFile() };
+			File[] files = fc.getSelectedFiles();
+			//			File[] files = new File[]{ fc.getSelectedFile() };
 
-			FileFilter selectedFilter = fc.getFileFilter();
-			PluginParameterBinding binding = importplugins.get(selectedFilter);
-			return importResource(binding, files);
+			// XL: parse file one for one
+			boolean importedSuccessfully = true;
+			for (final File f : files) {
+				PluginParameterBinding binding = importplugins.get(fc.getFileFilter());
+				importedSuccessfully &= importResourceNotInEDT(binding, f);
+			}
+			return importedSuccessfully;
 
 		} else {
 			return false;
@@ -404,10 +441,17 @@ public class ProMResourceManager extends UpdateSignaller implements ResourceMana
 		}
 	}
 
+	/**
+	 * Can be called from the EDT or any other thread.
+	 */
 	public synchronized boolean importResources(File... files) {
 		return importResource(null, files);
 	}
 
+	/**
+	 * Can be called from the EDT or any other thread.
+	 * Makes sure that the actual import is not run in the EDT.
+	 */
 	public synchronized boolean importResource(final PluginParameterBinding binding, final File... files) {
 		importResourceResult = false;
 		if (EventQueue.isDispatchThread()) {
@@ -428,11 +472,12 @@ public class ProMResourceManager extends UpdateSignaller implements ResourceMana
 		}
 		return importResourceResult;
 	}
-	
+
 	/*
 	 * This method should not be called from the EDT, as it will then block.
 	 */
-	private synchronized boolean importResourceNotInEDT(PluginParameterBinding binding, File... files) {
+	private synchronized boolean importResourceNotInEDT(PluginParameterBinding binding, final File... files) {
+		assert!EventQueue.isDispatchThread();
 		synchronized (importPluginAdded) {
 			if (importPluginAdded) {
 				buildImportPlugins();
@@ -472,21 +517,16 @@ public class ProMResourceManager extends UpdateSignaller implements ResourceMana
 			}
 			if (bindings.size() == 0) {
 				/*
-				 * HV: This method does not run in the EDT. Delegate the next message to the EDT.
+				 * HV: This method does not run in the EDT. Delegate the next
+				 * message to the EDT.
 				 */
-				if (EventQueue.isDispatchThread()) {
-				
-				} else {
 				SwingUtilities.invokeLater(new Runnable() {
 					public void run() {
-//						System.out.println("[PromResourceManager] EDT shows message dialog");
+						//						System.out.println("[PromResourceManager] EDT shows message dialog");
 						JOptionPane.showMessageDialog(context.getUI(), "No import plugins available",
 								"No input plugins available!", JOptionPane.ERROR_MESSAGE);
 					}
 				});
-				}
-//				JOptionPane.showMessageDialog(context.getUI(), "No import plugins available",
-//						"No input plugins available!", JOptionPane.ERROR_MESSAGE);
 				return false;
 			}
 
@@ -500,17 +540,19 @@ public class ProMResourceManager extends UpdateSignaller implements ResourceMana
 				selectedPlugin = null;
 				try {
 					/*
-					 * HV: This method does not run in the EDT. Delegate the next dialog to the EDT, and wait for the answer.
+					 * HV: This method does not run in the EDT. Delegate the
+					 * next dialog to the EDT, and wait for the answer.
 					 */
 					SwingUtilities.invokeAndWait(new Runnable() {
 
 						public void run() {
 							// TODO Auto-generated method stub
-//							System.out.println("[PromResourceManager] EDT shows import plugin dialog");
-							selectedPlugin = (String) JOptionPane.showInputDialog(context.getUI(), "Available Import Plugins:",
-									"Select an import plugin...", JOptionPane.PLAIN_MESSAGE, null, possibilities, preferredImport);
+							//							System.out.println("[PromResourceManager] EDT shows import plugin dialog");
+							selectedPlugin = (String) JOptionPane.showInputDialog(context.getUI(),
+									"Available Import Plugins for file " + files[0].getName() + ":", "Select an import plugin...",
+									JOptionPane.PLAIN_MESSAGE, null, possibilities, preferredImport);
 						}
-						
+
 					});
 				} catch (InvocationTargetException e) {
 					// TODO Auto-generated catch block
@@ -520,7 +562,7 @@ public class ProMResourceManager extends UpdateSignaller implements ResourceMana
 					e.printStackTrace();
 				}
 				String selected = selectedPlugin; //(String) JOptionPane.showInputDialog(context.getUI(), "Available Import Plugins:",
-						//"Select an import plugin...", JOptionPane.PLAIN_MESSAGE, null, possibilities, preferredImport);
+				//"Select an import plugin...", JOptionPane.PLAIN_MESSAGE, null, possibilities, preferredImport);
 
 				if (selected == null) {
 					return false;
@@ -536,8 +578,8 @@ public class ProMResourceManager extends UpdateSignaller implements ResourceMana
 		}
 
 		for (File f : files) {
-			UIPluginContext importContext = context.getMainPluginContext().createChildContext(
-					"Opening file with " + binding.getPlugin().getName());
+			UIPluginContext importContext = context.getMainPluginContext()
+					.createChildContext("Opening file with " + binding.getPlugin().getName());
 			importContext.getPluginLifeCycleEventListeners().add(this);
 
 			ProgressOverlayDialog progress = new ProgressOverlayDialog(context.getController().getMainView(),
@@ -552,8 +594,8 @@ public class ProMResourceManager extends UpdateSignaller implements ResourceMana
 				result.synchronize();
 			} catch (CancellationException e) {
 				context.getController().getMainView().hideOverlay();
-				JOptionPane.showMessageDialog(context.getUI(), "Import of " + files + " cancelled.",
-						"Import cancelled", JOptionPane.WARNING_MESSAGE);
+				JOptionPane.showMessageDialog(context.getUI(), "Import of " + files + " cancelled.", "Import cancelled",
+						JOptionPane.WARNING_MESSAGE);
 				context.getMainPluginContext().log("Import of " + files + " cancelled.");
 				return false;
 			} catch (Exception e) {
@@ -588,14 +630,14 @@ public class ProMResourceManager extends UpdateSignaller implements ResourceMana
 			}
 		});
 
-		Set<PluginParameterBinding> potentialImportPlugins = context.getPluginManager().getPluginsAcceptingOrdered(
-				UIPluginContext.class, true, File.class);
+		Set<PluginParameterBinding> potentialImportPlugins = context.getPluginManager()
+				.getPluginsAcceptingOrdered(UIPluginContext.class, true, File.class);
 
 		for (PluginParameterBinding binding : potentialImportPlugins) {
 			if (binding.getPlugin().hasAnnotation(UIImportPlugin.class)) {
-				FileNameExtensionFilter filter = new FileNameExtensionFilter(binding.getPlugin()
-						.getAnnotation(UIImportPlugin.class).description(), binding.getPlugin()
-						.getAnnotation(UIImportPlugin.class).extensions());
+				FileNameExtensionFilter filter = new FileNameExtensionFilter(
+						binding.getPlugin().getAnnotation(UIImportPlugin.class).description(),
+						binding.getPlugin().getAnnotation(UIImportPlugin.class).extensions());
 				importplugins.put(filter, binding);
 			}
 		}
@@ -610,7 +652,8 @@ public class ProMResourceManager extends UpdateSignaller implements ResourceMana
 		return resourceClasses.keySet().contains(type);
 	}
 
-	private java.util.List<ProMResource<?>> filterList(java.util.List<ProMResource<?>> filtered, ResourceFilter filter) {
+	private java.util.List<ProMResource<?>> filterList(java.util.List<ProMResource<?>> filtered,
+			ResourceFilter filter) {
 		synchronized (filtered) {
 			Iterator<ProMResource<?>> it = filtered.iterator();
 			while (it.hasNext()) {
@@ -652,8 +695,8 @@ public class ProMResourceManager extends UpdateSignaller implements ResourceMana
 		if (resType != null) {
 			ProMResource<?> res;
 			try {
-				res = context.getResourceManager().getResourceForInstance(
-						context.getProvidedObjectManager().getProvidedObjectObject(id, true));
+				res = context.getResourceManager()
+						.getResourceForInstance(context.getProvidedObjectManager().getProvidedObjectObject(id, true));
 				if (res == null) {
 					res = new ProMPOResource(context, null, resType, id,
 							Collections.<Collection<ProMPOResource>>emptyList());
@@ -783,7 +826,7 @@ public class ProMResourceManager extends UpdateSignaller implements ResourceMana
 					for (Object o : conn.getObjects().baseSet()) {
 						ProMResource<?> r = context.getResourceManager().getResourceForInstance(o);
 						if (r != null) {
-							assert (r instanceof ProMPOResource);
+							assert(r instanceof ProMPOResource);
 							Collection<ProMPOResource> c = new LinkedList<ProMPOResource>();
 							c.add((ProMPOResource) r);
 							values.add(c);
@@ -808,7 +851,7 @@ public class ProMResourceManager extends UpdateSignaller implements ResourceMana
 	}
 
 	public void connectionUpdated(ConnectionID id) {
-		assert (resources.containsKey(id));
+		assert(resources.containsKey(id));
 		// No need to alert the serializer, the connections is not serialized yet, it will
 		// be on exit, not earlier.
 		signalUpdate();

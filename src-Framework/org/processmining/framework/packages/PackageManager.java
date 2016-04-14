@@ -151,7 +151,7 @@ public class PackageManager {
 	private final PackageManagerListener.ListenerList listeners = new PackageManagerListener.ListenerList();
 	private PackageStateReport report = null;
 	private Canceller canceller = null;
-	private boolean doAutoUpdate = true;
+	private boolean doAutoUpdate = false;
 
 	public static PackageManager getInstance() {
 		if (instance == null) {
@@ -1011,10 +1011,12 @@ public class PackageManager {
 		return listeners;
 	}
 
+	@Deprecated
 	public boolean doAutoUpdate() {
 		return doAutoUpdate;
 	}
 
+	@Deprecated
 	public void setAutoUpdate(boolean doAutoUpdate) {
 		this.doAutoUpdate = doAutoUpdate;
 		Preferences.userNodeForPackage(getClass()).put(DO_AUTO_UPDATES, Boolean.toString(doAutoUpdate));
