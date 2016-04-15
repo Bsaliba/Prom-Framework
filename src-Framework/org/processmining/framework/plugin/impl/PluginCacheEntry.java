@@ -23,7 +23,9 @@ import org.processmining.framework.packages.PackageDescriptor;
 
 public class PluginCacheEntry {
 
-	private static final String CURRENT_VERSION = "currentVersion";
+	private byte[] buffer = new byte[2 * 1024 * 1024];
+
+	private static final String CURRENT_VERSION = "currentversion";
 
 	private static final String FILE_PROTOCOL = "file";
 
@@ -43,6 +45,20 @@ public class PluginCacheEntry {
 
 	private final PackageDescriptor packageDescriptor;
 
+	private final String jarName;
+
+	private static MessageDigest digest;
+
+	static {
+		try {
+			digest = MessageDigest.getInstance("MD5");
+		} catch (NoSuchAlgorithmException e) {
+			// no MD5 available, so we cannot reliably detect whether the JAR is
+			// cached or not
+			digest = null;
+		}
+	}
+
 	/**
 	 * Deprecated. Use the version with the package descriptor for a
 	 * significantly faster cache lookup
@@ -59,6 +75,8 @@ public class PluginCacheEntry {
 		this.url = url;
 		this.verbose = verbose;
 		this.packageDescriptor = packageDescriptor;
+		this.jarName = packageDescriptor == null ? url.toString().substring(url.toString().lastIndexOf('/') + 1)
+				.toLowerCase() : packageDescriptor.getName().toLowerCase();
 		reset();
 
 		try {
@@ -104,49 +122,14 @@ public class PluginCacheEntry {
 		}
 
 		if (packageDescriptor == null) {
-			MessageDigest digest = null;
-			try {
-				digest = MessageDigest.getInstance("MD5");
-			} catch (NoSuchAlgorithmException e) {
-				// no MD5 available, so we cannot reliably detect whether the JAR is
-				// cached or not
+			if (digest == null) {
 				return;
 			}
-
-			InputStream is = null;
 			try {
-				int numRead = 0;
-				byte[] buffer = new byte[4096 * 1024];
-
-				is = url.openStream();
-				while ((numRead = is.read(buffer)) > 0) {
-					digest.update(buffer, 0, numRead);
-				}
+				key = createMD5BasedKey(digest);
 			} catch (IOException e) {
 				return;
-			} finally {
-				if (is != null) {
-					try {
-						is.close();
-					} catch (IOException e) {
-						return;
-					}
-				}
 			}
-
-			key = "";
-			for (byte b : digest.digest()) {
-				// append the signed byte as an unsigned hex number
-				key += Integer.toString(0xFF & b, 16);
-			}
-			key += " " + new File(new URI(url.toString())).getName();
-			if (key.length() > 80) {
-				// make sure they is not too long for the preferences API
-				key = key.substring(0, 80);
-			}
-			//System.out.println("URL: " + url);
-			//System.out.println("  -> " + key);
-			//System.out.println("  -> len=" + key.length());
 		} else {
 			key = createPackageBasedKey();
 		}
@@ -180,6 +163,36 @@ public class PluginCacheEntry {
 		key += " ";
 		key += packageDescriptor.getVersion();
 		return key.toLowerCase();
+	}
+
+	private String createMD5BasedKey(MessageDigest digest) throws IOException {
+		InputStream is = null;
+		try {
+			int numRead = 0;
+
+			is = url.openStream();
+			while ((numRead = is.read(buffer)) > 0) {
+				digest.update(buffer, 0, numRead);
+			}
+
+		} finally {
+			if (is != null) {
+				is.close();
+			}
+		}
+
+		key = "";
+		for (byte b : digest.digest()) {
+			// append the signed byte as an unsigned hex number
+			key += Integer.toString(0xFF & b, 16);
+		}
+		// No need to put the jarName in the key anymore.
+		//		key += " " + new File(new URI(url.toString())).getName();
+		if (key.length() > 80) {
+			// make sure they is not too long for the preferences API
+			key = key.substring(0, 80);
+		}
+		return key;
 	}
 
 	private void parseKey(String key) {
@@ -231,36 +244,49 @@ public class PluginCacheEntry {
 
 	public void update(List<String> classes) {
 		if (key != null) {
+			String newKey;
+			if (packageDescriptor == null) {
+				try {
+					if (digest != null) {
+						newKey = createMD5BasedKey(digest);
+					} else {
+						return;
+					}
+				} catch (IOException e) {
+					return;
+				}
+			} else {
+				newKey = createPackageBasedKey();
+			}
+
 			if (verbose == Level.ALL) {
 				System.out.println("UPDATING CACHE: " + key);
 			}
 
 			// updating. Remove the previpous version if present and add the new classes
-			if (packageDescriptor != null) {
 
-				String previous = getSettings().get(CURRENT_VERSION, null);
-				if (previous != null) {
-					TreeSet<String> installed = new TreeSet<>(Arrays.asList(previous.split("/")));
-					Iterator<String> it = installed.iterator();
-					if (installed.size() >= 5) {
-						// already keeping 5 versions alive. Remove one if
-						// current not already present.
-						if (!installed.contains(createPackageBasedKey())) {
-							String toRemove = it.next();
-							getSettings().remove(toRemove);
+			String previous = getSettings().get(CURRENT_VERSION, null);
+			if (previous != null) {
+				TreeSet<String> installed = new TreeSet<>(Arrays.asList(previous.split("/")));
+				Iterator<String> it = installed.iterator();
+				if (installed.size() >= 5) {
+					// already keeping 5 versions alive. Remove one if
+					// current not already present.
+					if (!installed.contains(newKey)) {
+						String toRemove = it.next();
+						getSettings().remove(toRemove);
 
-						}
 					}
-					previous = createPackageBasedKey();
-					while (it.hasNext()) {
-						previous += '/';
-						previous += it.next();
-					}
-					getSettings().put(CURRENT_VERSION, previous);
-
-				} else {
-					getSettings().put(CURRENT_VERSION, createPackageBasedKey());
 				}
+				previous = newKey;
+				while (it.hasNext()) {
+					previous += '/';
+					previous += it.next();
+				}
+				getSettings().put(CURRENT_VERSION, previous);
+
+			} else {
+				getSettings().put(CURRENT_VERSION, newKey);
 			}
 
 			classNames.clear();
@@ -312,9 +338,9 @@ public class PluginCacheEntry {
 			className = "/" + packageName.replace('.', '/');
 		}
 		if (packageDescriptor == null) {
-			return Preferences.userRoot().node(className + "_md5_based");
+			return Preferences.userRoot().node(className + "/_md5_based/" + jarName);
 		} else {
-			return Preferences.userRoot().node(className + '/' + packageDescriptor.getName().toLowerCase());
+			return Preferences.userRoot().node(className + '/' + jarName);
 		}
 	}
 
@@ -332,7 +358,6 @@ public class PluginCacheEntry {
 			String packageName = className.substring(0, pkgEndIndex);
 			className = "/" + packageName.replace('.', '/');
 		}
-		Preferences.userRoot().node(className + "_old").removeNode();
 		Preferences.userRoot().node(className).removeNode();
 
 	}
