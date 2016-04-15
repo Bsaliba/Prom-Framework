@@ -1,8 +1,6 @@
 package org.processmining.framework.plugin.impl;
 
 import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -125,9 +123,8 @@ public class PluginCacheEntry {
 			if (digest == null) {
 				return;
 			}
-			try {
-				key = createMD5BasedKey(digest);
-			} catch (IOException e) {
+			key = createFileBasedKey(new File(url.toURI()));
+			if (key == null) {
 				return;
 			}
 		} else {
@@ -165,33 +162,44 @@ public class PluginCacheEntry {
 		return key.toLowerCase();
 	}
 
-	private String createMD5BasedKey(MessageDigest digest) throws IOException {
-		InputStream is = null;
-		try {
-			int numRead = 0;
+	private String createFileBasedKey(File file) {
+		//		InputStream is = null;
+		//		try {
+		long modified = file.lastModified();
 
-			is = url.openStream();
-			while ((numRead = is.read(buffer)) > 0) {
-				digest.update(buffer, 0, numRead);
-			}
+		key = Long.toHexString(modified);
 
-		} finally {
-			if (is != null) {
-				is.close();
-			}
-		}
+		//			int numRead = 0;
+		//
+		//			is = url.openStream();
+		//			while ((numRead = is.read(buffer)) > 0) {
+		//				digest.update(buffer, 0, numRead);
+		//			}
 
-		key = "";
-		for (byte b : digest.digest()) {
-			// append the signed byte as an unsigned hex number
-			key += Integer.toString(0xFF & b, 16);
-		}
+		//		} catch (IOException e) {
+		//			return null;
+		//		} finally {
+		//			if (is != null) {
+		//				try {
+		//					is.close();
+		//				} catch (IOException e) {
+		//
+		//				}
+		//			}
+		//		}
+
+		//		key = "";
+		//		for (byte b : digest.digest()) {
+		//			// append the signed byte as an unsigned hex number
+		//			key += Integer.toString(0xFF & b, 16);
+		//		}
+
 		// No need to put the jarName in the key anymore.
 		//		key += " " + new File(new URI(url.toString())).getName();
-		if (key.length() > 80) {
-			// make sure they is not too long for the preferences API
-			key = key.substring(0, 80);
-		}
+		//		if (key.length() > 80) {
+		//			// make sure they is not too long for the preferences API
+		//			key = key.substring(0, 80);
+		//		}
 		return key;
 	}
 
@@ -244,20 +252,15 @@ public class PluginCacheEntry {
 
 	public void update(List<String> classes) {
 		if (key != null) {
-			String newKey;
-			if (packageDescriptor == null) {
-				try {
-					if (digest != null) {
-						newKey = createMD5BasedKey(digest);
-					} else {
-						return;
-					}
-				} catch (IOException e) {
-					return;
-				}
-			} else {
-				newKey = createPackageBasedKey();
-			}
+			String newKey = key;
+			//			if (packageDescriptor == null) {
+			//				newKey = createKey();
+			//				if (newKey == null) {
+			//					return;
+			//				}
+			//			} else {
+			//				newKey = createPackageBasedKey();
+			//			}
 
 			if (verbose == Level.ALL) {
 				System.out.println("UPDATING CACHE: " + key);
@@ -338,7 +341,7 @@ public class PluginCacheEntry {
 			className = "/" + packageName.replace('.', '/');
 		}
 		if (packageDescriptor == null) {
-			return Preferences.userRoot().node(className + "/_md5_based/" + jarName);
+			return Preferences.userRoot().node(className + "/_jarfiles/" + jarName);
 		} else {
 			return Preferences.userRoot().node(className + '/' + jarName);
 		}
