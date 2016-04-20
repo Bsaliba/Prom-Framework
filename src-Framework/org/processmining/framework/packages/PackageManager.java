@@ -220,14 +220,19 @@ public class PackageManager {
 				URLConnection conn = packages.openConnection();
 				if (conn instanceof HttpURLConnection) {
 					HttpURLConnection httpCon = (HttpURLConnection) conn;
-					httpCon.setConnectTimeout(100);
-					httpCon.setReadTimeout(1000);
+					httpCon.setConnectTimeout(Boot.CONNECT_TIMEOUT);
+					httpCon.setReadTimeout(Boot.READ_TIMEOUT);
 					//					httpCon.connect();
 				}
+				long time = -System.currentTimeMillis();
 				try {
 					PackageConfigPerister.read(conn.getInputStream(), repositories, available, installed, canceller);
+					time += System.currentTimeMillis();
+					System.out.println("Read package in " + time + " milliseconds.");
 				} catch (SocketTimeoutException e) {
+					time += System.currentTimeMillis();
 					System.err.println("ERR");// NExt;
+					System.err.println("Failed to read package in " + time + " milliseconds.");
 				}
 			}
 			read.addAll(toRead);

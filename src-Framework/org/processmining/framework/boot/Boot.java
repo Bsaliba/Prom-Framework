@@ -43,6 +43,8 @@ public class Boot {
 	public static Level VERBOSE;
 	public static URL DEFAULT_REPOSITORY;
 	public static int OPENXES_SHADOW_SIZE;
+	public static int CONNECT_TIMEOUT;
+	public static int READ_TIMEOUT;
 
 	public static boolean HIDE_OLD_PACKAGES;
 	public static boolean CHECK_PACKAGES;
@@ -73,7 +75,9 @@ public class Boot {
 		CHECK_PACKAGES = false;
 		PLUGIN_QUALITY_THRESHOLD = PluginQuality.VeryPoor;
 		PLUGIN_LEVEL_THRESHOLD = PluginLevel.NightlyBuild;
-
+		CONNECT_TIMEOUT = 100;
+		READ_TIMEOUT = 1000;
+		
 		Properties ini = new Properties();
 		FileInputStream is;
 		try {
@@ -98,6 +102,9 @@ public class Boot {
 				//		OPENXES_SHADOW_SIZE = Integer.parseInt(ini.getProperty("OPENXES_SHADOW_SIZE", "4"));
 				//		NikeFS2FileAccessMonitor.instance(OPENXES_SHADOW_SIZE);
 
+				CONNECT_TIMEOUT = Integer.parseInt(ini.getProperty("CONNECT_TIMEOUT", "100"));
+				READ_TIMEOUT = Integer.parseInt(ini.getProperty("READ_TIMEOUT", "1000"));
+				
 				try {
 					VERBOSE = Level.valueOf(ini.getProperty("VERBOSE", Level.ALL.name()));
 				} catch (IllegalArgumentException e) {
