@@ -117,8 +117,12 @@ public class PackageManager {
 			URLConnection conn = url.openConnection();
 			if (conn instanceof HttpURLConnection) {
 				HttpURLConnection httpCon = (HttpURLConnection) conn;
-				httpCon.setConnectTimeout(1000);
-				httpCon.setReadTimeout(10000);
+				if (Boot.CONNECT_TIMEOUT > 0) {
+					httpCon.setConnectTimeout(Boot.CONNECT_TIMEOUT);
+				}
+				if (Boot.READ_TIMEOUT > 0) {
+					httpCon.setReadTimeout(Boot.READ_TIMEOUT);
+				}
 				//					httpCon.connect();
 			}
 
@@ -182,8 +186,8 @@ public class PackageManager {
 
 	public void initialize(Boot.Level verbose) {
 
-		doAutoUpdate = Boolean.parseBoolean(Preferences.userNodeForPackage(getClass()).get(DO_AUTO_UPDATES,
-				Boolean.FALSE.toString()));
+		doAutoUpdate = Boolean.parseBoolean(
+				Preferences.userNodeForPackage(getClass()).get(DO_AUTO_UPDATES, Boolean.FALSE.toString()));
 
 		getPackagesDirectory().mkdirs();
 		File config = getConfigFile();
@@ -220,8 +224,12 @@ public class PackageManager {
 				URLConnection conn = packages.openConnection();
 				if (conn instanceof HttpURLConnection) {
 					HttpURLConnection httpCon = (HttpURLConnection) conn;
-					httpCon.setConnectTimeout(Boot.CONNECT_TIMEOUT);
-					httpCon.setReadTimeout(Boot.READ_TIMEOUT);
+					if (Boot.CONNECT_TIMEOUT > 0) {
+						httpCon.setConnectTimeout(Boot.CONNECT_TIMEOUT);
+					}
+					if (Boot.READ_TIMEOUT > 0) {
+						httpCon.setReadTimeout(Boot.READ_TIMEOUT);
+					}
 					//					httpCon.connect();
 				}
 				long time = -System.currentTimeMillis();
@@ -245,11 +253,10 @@ public class PackageManager {
 	private void writeDefaultConfigIfNeeded(File config) throws IOException {
 		config.createNewFile();
 		if (config.length() == 0) {
-			PackageConfigPerister
-					.write(config,
-							new HashSet<Repository>(Arrays.asList(new Repository[] { new Repository(
-									Boot.DEFAULT_REPOSITORY) })), new HashSet<PackageDescriptor>(),
-							new HashSet<PackageDescriptor>());
+			PackageConfigPerister.write(config,
+					new HashSet<Repository>(
+							Arrays.asList(new Repository[] { new Repository(Boot.DEFAULT_REPOSITORY) })),
+					new HashSet<PackageDescriptor>(), new HashSet<PackageDescriptor>());
 		}
 	}
 
@@ -543,8 +550,8 @@ public class PackageManager {
 		return null;
 	}
 
-	public PackageDescriptor[] findOrInstallPackages(String... packageNames) throws UnknownPackageTypeException,
-			UnknownPackageException, CancelledException {
+	public PackageDescriptor[] findOrInstallPackages(String... packageNames)
+			throws UnknownPackageTypeException, UnknownPackageException, CancelledException {
 
 		if (doAutoUpdate) {
 			update(false, Level.NONE);
