@@ -2,13 +2,17 @@ package org.processmining.contexts.uitopia;
 
 import java.io.File;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Collection;
 
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 
 import org.deckfour.uitopia.ui.UITopiaController;
 import org.deckfour.uitopia.ui.main.Overlayable;
 import org.deckfour.uitopia.ui.overlay.TwoButtonOverlayDialog;
 import org.deckfour.uitopia.ui.util.ImageLoader;
+import org.processmining.contexts.uitopia.packagemanager.PMController;
 import org.processmining.contexts.uitopia.packagemanager.PMFrame;
 import org.processmining.contexts.uitopia.packagemanager.PMMainView;
 import org.processmining.contexts.uitopia.packagemanager.PMPackage;
@@ -51,7 +55,7 @@ public class UI {
 
 	public static void main(String[] args) throws Exception {
 
-		if (!Boot.isLatestReleaseInstalled()) {
+		if (Boot.AUTO_UPDATE.equals("auto") || Boot.AUTO_UPDATE.equals("user") || !Boot.isLatestReleaseInstalled()) {
 			Boot.setReleaseInstalled("", "");
 			PMFrame frame = (PMFrame) Boot.boot(PMFrame.class);
 			frame.setIconImage(ImageLoader.load("prom_icon_32x32.png"));
@@ -64,10 +68,63 @@ public class UI {
 			}
 
 			if (releasePackage.getStatus() == PMStatus.TOUNINSTALL) {
-				// Package is upToDate and installed.
-				// Do not show package manager and start ProM
-				Boot.setLatestReleaseInstalled();
-				Boot.boot(UI.class, UIPluginContext.class, args);
+
+				int option = JOptionPane.NO_OPTION;
+
+				if (Boot.AUTO_UPDATE.equals("auto") || Boot.AUTO_UPDATE.equals("user")) {
+					/*
+					 * HV: Check for packages to install or update.
+					 */
+					PMController pmController = frame.getController();
+					if (Boot.AUTO_UPDATE.equals("user")) {
+						if (!pmController.getToInstallPackages().isEmpty()) {
+							if (!pmController.getToUpdatePackages().isEmpty()) {
+								option = JOptionPane.showConfirmDialog(frame,
+										"New packages and package updates are available.\nDo you want ProM to install and/or update them now?",
+										"Install and update packages?", JOptionPane.YES_NO_OPTION);
+							} else {
+								option = JOptionPane.showConfirmDialog(frame,
+										"New packages are available.\nDo you want ProM to install them now?",
+										"Install packages?", JOptionPane.YES_NO_OPTION);
+							}
+						} else if (!pmController.getToUpdatePackages().isEmpty()) {
+							option = JOptionPane.showConfirmDialog(frame,
+									"Package updates are available.\nDo you want ProM to update them now?",
+									"Update packages?", JOptionPane.YES_NO_OPTION);
+						}
+					} else { // auto
+						option = JOptionPane.YES_OPTION;
+					}
+					if (option == JOptionPane.YES_OPTION) {
+						// Start listening
+						UIPackageManagerListener listener = new UIPackageManagerListener(frame, args);
+						PackageManager.getInstance().addListener(listener);
+
+						// Show the package manager
+						frame.setVisible(true);
+						Collection<PMPackage> toUpdate = new ArrayList<PMPackage>();
+						toUpdate.addAll(pmController.getToInstallPackages());
+						toUpdate.addAll(pmController.getToUpdatePackages());
+
+						frame.getController().update(toUpdate, frame.getController().getMainView().getWorkspaceView());
+
+						// ProM will be started as soon as the package manager finishes.
+
+						synchronized (listener) {
+							while (!listener.isDone()) {
+								listener.wait();
+							}
+						}
+
+					}
+				}
+
+				if (option == JOptionPane.NO_OPTION) {
+					// Package is upToDate and installed.
+					// Do not show package manager and start ProM
+					Boot.setLatestReleaseInstalled();
+					Boot.boot(UI.class, UIPluginContext.class, args);
+				}
 
 			} else {
 
@@ -107,9 +164,9 @@ class FirstTimeOverlay extends TwoButtonOverlayDialog {
 	private static final long serialVersionUID = 494237962617678531L;
 
 	public FirstTimeOverlay(Overlayable mainView) {
-		super(mainView, "Starting ProM", "Cancel", "  OK  ",//
-				new JLabel("<html>All packages have been downloaded.<BR>"
-						+ "Please wait while starting ProM<BR>for the first time.<BR><BR>"
+		super(mainView, "Starting ProM", "Cancel", "  OK  ", //
+				new JLabel("<html>All packages have been installed and/or updated.<BR>"
+						+ "Please wait while starting ProM.<BR><BR>"
 						+ "If this is the first time you run ProM on this computer, please be patient.</html>"));
 
 		getCancelButton().setEnabled(true);

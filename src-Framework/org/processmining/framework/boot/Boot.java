@@ -49,6 +49,8 @@ public class Boot {
 	public static boolean HIDE_OLD_PACKAGES;
 	public static boolean CHECK_PACKAGES;
 
+	public static String AUTO_UPDATE;
+	
 	public final static String LAST_RELEASE_AUTOINSTALLED_KEY = "last_release_autoinstalled";
 	public static final String LAST_RELEASE_PACKAGE_KEY = "last_release_package_installed";
 
@@ -157,6 +159,7 @@ public class Boot {
 
 				HIDE_OLD_PACKAGES = new Boolean(ini.getProperty("HIDE_OLD_PACKAGES", "false"));
 				CHECK_PACKAGES = new Boolean(ini.getProperty("CHECK_PACKAGES", "false"));
+				AUTO_UPDATE = new String(ini.getProperty("AUTO_UPDATE", "never"));
 
 				PLUGIN_QUALITY_THRESHOLD = PluginQuality.VeryPoor;
 				String threshold = ini.getProperty("PLUGIN_QUALITY_THRESHOLD", PLUGIN_QUALITY_THRESHOLD.getName());
