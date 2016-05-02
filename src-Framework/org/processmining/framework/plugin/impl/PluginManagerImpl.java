@@ -302,7 +302,7 @@ public final class PluginManagerImpl implements PluginManager {
 			Annotation[] annotations = pluginClass.getAnnotations();
 			boolean foundKeepInCacheAnnotation = false;
 			for (int i = 0; !foundKeepInCacheAnnotation && i < annotations.length; i++) {
-				foundKeepInCacheAnnotation = annotations[i].annotationType().isAssignableFrom(KeepInProMCache.class);
+				foundKeepInCacheAnnotation = annotations[i] instanceof KeepInProMCache;
 			}
 			if (foundKeepInCacheAnnotation) {
 				isAnnotated = true;
