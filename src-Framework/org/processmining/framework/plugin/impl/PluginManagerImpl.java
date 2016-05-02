@@ -40,6 +40,7 @@ import org.processmining.framework.plugin.PluginDescriptorID;
 import org.processmining.framework.plugin.PluginManager;
 import org.processmining.framework.plugin.PluginParameterBinding;
 import org.processmining.framework.plugin.annotations.Bootable;
+import org.processmining.framework.plugin.annotations.KeepInProMCache;
 import org.processmining.framework.plugin.annotations.Plugin;
 import org.processmining.framework.plugin.annotations.PluginVariant;
 import org.processmining.framework.util.Pair;
@@ -238,7 +239,7 @@ public final class PluginManagerImpl implements PluginManager {
 				}
 				jis.close();
 				is.close();
-				
+
 				cached.update(loadedClasses);
 			} catch (IOException e) {
 				fireError(url, e, null);
@@ -298,13 +299,21 @@ public final class PluginManagerImpl implements PluginManager {
 			//isAnnotated = (pluginClass.getAnnotations().length > 0);
 
 			// register all annotated classes
-			for (Annotation a : pluginClass.getAnnotations()) {
-				Set<Class<?>> set = annotatedClasses.get(a.annotationType());
-				if (set == null) {
-					set = new HashSet<Class<?>>();
-					annotatedClasses.put(a.annotationType(), set);
+			Annotation[] annotations = pluginClass.getAnnotations();
+			boolean foundKeepInCacheAnnotation = false;
+			for (int i = 0; !foundKeepInCacheAnnotation && i < annotations.length; i++) {
+				foundKeepInCacheAnnotation = annotations[i].annotationType().isAssignableFrom(KeepInProMCache.class);
+			}
+			if (foundKeepInCacheAnnotation) {
+				isAnnotated = true;
+				for (int i = 0; i < annotations.length; i++) {
+					Set<Class<?>> set = annotatedClasses.get(annotations[i]);
+					if (set == null) {
+						set = new HashSet<Class<?>>();
+						annotatedClasses.put(annotations[i].annotationType(), set);
+					}
+					set.add(pluginClass);
 				}
-				set.add(pluginClass);
 			}
 
 			Method[] methods = pluginClass.getMethods();

@@ -343,12 +343,14 @@ public interface PluginManager {
 	 */
 	Set<Class<?>> getKnownObjectTypes();
 
-
 	/**
-	 * Returns all known classes annotated with a certain annotationType.
-	 * Not all of these classes are plugins!
-	 * @param annotationType the type of annotation to be found
+	 * Returns all known classes annotated with a certain annotationType. Not
+	 * all of these classes are plugins! Note that only classes are available
+	 * that carry the @KeepInProMCache annotation
+	 * 
+	 * @param annotationType
+	 *            the type of annotation to be found
 	 * @return a (possibly empty) set of classes (not null)
 	 */
-	Set<Class<?>> getKnownClassesAnnotatedWith(Class<?extends Annotation> annotationType);
+	Set<Class<?>> getKnownClassesAnnotatedWith(Class<? extends Annotation> annotationType);
 }

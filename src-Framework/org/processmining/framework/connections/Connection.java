@@ -4,6 +4,7 @@ import java.util.Collection;
 import java.util.Set;
 
 import org.processmining.framework.connections.annotations.ConnectionDoesntExistMessage;
+import org.processmining.framework.plugin.annotations.KeepInProMCache;
 import org.processmining.framework.util.collection.MultiSet;
 
 /**
@@ -23,6 +24,7 @@ import org.processmining.framework.util.collection.MultiSet;
  * @author bfvdonge
  * 
  */
+@KeepInProMCache
 @ConnectionAnnotation
 @ConnectionDoesntExistMessage(message = "Connection Doesn't Exist")
 public interface Connection {
