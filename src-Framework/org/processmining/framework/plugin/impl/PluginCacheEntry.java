@@ -4,8 +4,6 @@ import java.io.File;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -21,7 +19,7 @@ import org.processmining.framework.packages.PackageDescriptor;
 
 public class PluginCacheEntry {
 
-	private byte[] buffer = new byte[2 * 1024 * 1024];
+//	private byte[] buffer = new byte[2 * 1024 * 1024];
 
 	private static final String CURRENT_VERSION = "currentversion";
 
@@ -45,17 +43,17 @@ public class PluginCacheEntry {
 
 	private final String jarName;
 
-	private static MessageDigest digest;
-
-	static {
-		try {
-			digest = MessageDigest.getInstance("MD5");
-		} catch (NoSuchAlgorithmException e) {
-			// no MD5 available, so we cannot reliably detect whether the JAR is
-			// cached or not
-			digest = null;
-		}
-	}
+	//	private static MessageDigest digest;
+	//
+	//	static {
+	//		try {
+	//			digest = MessageDigest.getInstance("MD5");
+	//		} catch (NoSuchAlgorithmException e) {
+	//			// no MD5 available, so we cannot reliably detect whether the JAR is
+	//			// cached or not
+	//			digest = null;
+	//		}
+	//	}
 
 	/**
 	 * Deprecated. Use the version with the package descriptor for a
@@ -120,9 +118,9 @@ public class PluginCacheEntry {
 		}
 
 		if (packageDescriptor == null) {
-			if (digest == null) {
-				return;
-			}
+			//			if (digest == null) {
+			//				return;
+			//			}
 			key = createFileBasedKey(new File(url.toURI()));
 			if (key == null) {
 				return;
