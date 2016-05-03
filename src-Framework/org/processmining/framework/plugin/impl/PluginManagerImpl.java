@@ -299,15 +299,11 @@ public final class PluginManagerImpl implements PluginManager {
 			//isAnnotated = (pluginClass.getAnnotations().length > 0);
 
 			// register all annotated classes
-			Annotation[] annotations = pluginClass.getAnnotations();
-			boolean foundKeepInCacheAnnotation = false;
-			for (int i = 0; !foundKeepInCacheAnnotation && i < annotations.length; i++) {
-				foundKeepInCacheAnnotation = annotations[i] instanceof KeepInProMCache;
-			}
-			if (foundKeepInCacheAnnotation) {
+			if (pluginClass.isAnnotationPresent(KeepInProMCache.class)) {
+				Annotation[] annotations = pluginClass.getAnnotations();
 				isAnnotated = true;
 				for (int i = 0; i < annotations.length; i++) {
-					Set<Class<?>> set = annotatedClasses.get(annotations[i]);
+					Set<Class<?>> set = annotatedClasses.get(annotations[i].annotationType());
 					if (set == null) {
 						set = new HashSet<Class<?>>();
 						annotatedClasses.put(annotations[i].annotationType(), set);
