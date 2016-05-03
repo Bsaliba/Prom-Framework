@@ -7,6 +7,7 @@ import java.io.InputStream;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -299,7 +300,7 @@ public final class PluginManagerImpl implements PluginManager {
 			//isAnnotated = (pluginClass.getAnnotations().length > 0);
 
 			// register all annotated classes
-			if (pluginClass.isAnnotationPresent(KeepInProMCache.class)) {
+			if (pluginClass.isAnnotationPresent(KeepInProMCache.class) && !Modifier.isAbstract(pluginClass.getModifiers())) {
 				Annotation[] annotations = pluginClass.getAnnotations();
 				isAnnotated = true;
 				for (int i = 0; i < annotations.length; i++) {

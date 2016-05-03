@@ -37,7 +37,7 @@ public abstract class ProMResource<I extends ProMID> implements Resource {
 
 	public ProMResource(UIContext context, Action sourceAction, ResourceType resType, I id,
 			List<Collection<ProMPOResource>> parameterValues) {
-
+		assert resType != null;
 		this.sourceAction = sourceAction;
 		this.resType = resType;
 		this.id = id;

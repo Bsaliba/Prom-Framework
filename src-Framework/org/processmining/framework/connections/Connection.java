@@ -3,8 +3,6 @@ package org.processmining.framework.connections;
 import java.util.Collection;
 import java.util.Set;
 
-import org.processmining.framework.connections.annotations.ConnectionDoesntExistMessage;
-import org.processmining.framework.plugin.annotations.KeepInProMCache;
 import org.processmining.framework.util.collection.MultiSet;
 
 /**
@@ -18,15 +16,14 @@ import org.processmining.framework.util.collection.MultiSet;
  * isRemoved() method returns false, hence this method should return true at the
  * earliest occasion.
  * 
- * All implementations of this class should carry the @ConnectionAnnotation
- * annotation!
+ * All implementations of this class should carry the following annotations:
+ * @KeepInProMCache
+ * @ConnectionAnnotation
+ * @ConnectionDoesntExistMessage(message = "Message for case that connection Doesn't Exist")
  * 
  * @author bfvdonge
  * 
  */
-@KeepInProMCache
-@ConnectionAnnotation
-@ConnectionDoesntExistMessage(message = "Connection Doesn't Exist")
 public interface Connection {
 
 	/**

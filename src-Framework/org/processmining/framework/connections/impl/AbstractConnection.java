@@ -14,6 +14,8 @@ import org.processmining.framework.connections.Connection;
 import org.processmining.framework.connections.ConnectionAnnotation;
 import org.processmining.framework.connections.ConnectionID;
 import org.processmining.framework.connections.ConnectionManager;
+import org.processmining.framework.connections.annotations.ConnectionDoesntExistMessage;
+import org.processmining.framework.plugin.annotations.KeepInProMCache;
 import org.processmining.framework.util.collection.HashMultiSet;
 import org.processmining.framework.util.collection.MultiSet;
 
@@ -35,7 +37,9 @@ import org.processmining.framework.util.collection.MultiSet;
  * @author bfvdonge
  * 
  */
+@KeepInProMCache
 @ConnectionAnnotation
+@ConnectionDoesntExistMessage(message = "Connection Doesn't Exist")
 public abstract class AbstractConnection implements Connection {
 
 	private final Map<String, WeakReference<?>> mapping;
