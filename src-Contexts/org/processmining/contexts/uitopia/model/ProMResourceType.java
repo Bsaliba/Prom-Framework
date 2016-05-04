@@ -88,8 +88,21 @@ public class ProMResourceType implements ResourceType {
 			if (type.isAnnotationPresent(Icon.class)) {
 				icon = ImageLoader.load(type.getAnnotation(Icon.class).icon());
 			}
+
+			/*
+			 * HV: No icon found yet. Use default.
+			 */
 			if (icon == null) {
-				icon = ImageLoader.load(DEFAULT_ICON);
+				if (type.getName().equals("org.deckfour.xes.model.XLog")) {
+					/*
+					 * HV: The framework does not know the XLog interface, and
+					 * OpenXES does not know the @Icon annotation. Therefore, we
+					 * hardcode the link between an XLog and its icon here.
+					 */
+					icon = ImageLoader.load("resourcetype_log_30x35.png");
+				} else {
+					icon = ImageLoader.load(DEFAULT_ICON);
+				}
 			}
 		}
 
