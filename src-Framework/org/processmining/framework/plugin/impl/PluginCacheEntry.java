@@ -19,7 +19,7 @@ import org.processmining.framework.packages.PackageDescriptor;
 
 public class PluginCacheEntry {
 
-//	private byte[] buffer = new byte[2 * 1024 * 1024];
+	//	private byte[] buffer = new byte[2 * 1024 * 1024];
 
 	private static final String CURRENT_VERSION = "currentversion";
 
@@ -43,6 +43,8 @@ public class PluginCacheEntry {
 
 	private final String jarName;
 
+	private static Preferences PACKAGECACHE = initCache();
+
 	//	private static MessageDigest digest;
 	//
 	//	static {
@@ -65,6 +67,10 @@ public class PluginCacheEntry {
 	@Deprecated
 	public PluginCacheEntry(URL url, Boot.Level verbose) {
 		this(url, verbose, null);
+	}
+
+	private static Preferences initCache() {
+		return Preferences.userNodeForPackage(PluginCacheEntry.class).parent().node("_plugincache");
 	}
 
 	public PluginCacheEntry(URL url, Boot.Level verbose, PackageDescriptor packageDescriptor) {
@@ -330,18 +336,22 @@ public class PluginCacheEntry {
 	 * @return
 	 */
 	private Preferences getSettings() {
-		String className = getClass().getName();
-		int pkgEndIndex = className.lastIndexOf('.');
-		if (pkgEndIndex < 0) {
-			className = "/<unnamed>";
-		} else {
-			String packageName = className.substring(0, pkgEndIndex);
-			className = "/" + packageName.replace('.', '/');
-		}
+
+		//		String className = getClass().getName();
+		//		int pkgEndIndex = className.lastIndexOf('.');
+		//		if (pkgEndIndex < 0) {
+		//			className = "/<unnamed>";
+		//		} else {
+		//			String packageName = className.substring(0, pkgEndIndex);
+		//			className = "/" + packageName.replace('.', '/');
+		//		}
 		if (packageDescriptor == null) {
-			return Preferences.userRoot().node(className + "/_jarfiles/" + jarName);
+			//			return Preferences.userRoot().node(className + "/_jarfiles/" + jarName);
+			return PACKAGECACHE.node("_jarfiles/" + jarName);
+
 		} else {
-			return Preferences.userRoot().node(className + '/' + jarName);
+			return PACKAGECACHE.node(jarName);
+			//			return Preferences.userRoot().node(className + '/' + jarName);
 		}
 	}
 
@@ -351,16 +361,12 @@ public class PluginCacheEntry {
 	 * @return
 	 */
 	public static void clearSettingsCache() throws BackingStoreException {
-		String className = PluginCacheEntry.class.getName();
-		int pkgEndIndex = className.lastIndexOf('.');
-		if (pkgEndIndex < 0) {
-			className = "/<unnamed>";
-		} else {
-			String packageName = className.substring(0, pkgEndIndex);
-			className = "/" + packageName.replace('.', '/');
-		}
-		Preferences.userRoot().node(className).removeNode();
-
+		Preferences node = Preferences.userNodeForPackage(PluginCacheEntry.class);
+		node.removeNode();
+		node.flush();
+		PACKAGECACHE.removeNode();
+		PACKAGECACHE.flush();
+		PACKAGECACHE = initCache();
 	}
 
 }

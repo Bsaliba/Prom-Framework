@@ -58,6 +58,7 @@ import org.xml.sax.SAXException;
 public class PackageManager {
 
 	private final static String DO_AUTO_UPDATES = "do_auto_updates";
+	private static final String LITE_VERSION_INSTALLED = "lite_version_installed";
 
 	public static interface Canceller {
 		public boolean isCancelled();
@@ -156,6 +157,7 @@ public class PackageManager {
 	private PackageStateReport report = null;
 	private Canceller canceller = null;
 	private boolean doAutoUpdate = false;
+	private Preferences preferences = Preferences.userNodeForPackage(getClass());
 
 	public static PackageManager getInstance() {
 		if (instance == null) {
@@ -186,8 +188,22 @@ public class PackageManager {
 
 	public void initialize(Boot.Level verbose) {
 
-		doAutoUpdate = Boolean.parseBoolean(
-				Preferences.userNodeForPackage(getClass()).get(DO_AUTO_UPDATES, Boolean.FALSE.toString()));
+		doAutoUpdate = Boolean.parseBoolean(preferences.get(DO_AUTO_UPDATES, Boolean.FALSE.toString()));
+
+		String liteVersion = preferences.get(LITE_VERSION_INSTALLED, "UNKNOWN");
+		if (Boot.PROM_VERSION.startsWith(Boot.LITE_PREFIX) && !liteVersion.equals(Boot.PROM_VERSION)) {
+			preferences.put(LITE_VERSION_INSTALLED, Boot.PROM_VERSION);
+			if (verbose == Level.ALL) {
+				System.out.println(">>> New ProM-Lite installation found.");
+				System.out.println(">>> Clearing package cache.");
+			}
+			try {
+				cleanPackageCache();
+			} catch (BackingStoreException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
 
 		getPackagesDirectory().mkdirs();
 		File config = getConfigFile();
@@ -236,11 +252,14 @@ public class PackageManager {
 				try {
 					PackageConfigPerister.read(conn.getInputStream(), repositories, available, installed, canceller);
 					time += System.currentTimeMillis();
-					System.out.println("Read package in " + time + " milliseconds.");
+					if (Boot.VERBOSE == Level.ALL) {
+						System.out.println("Read package in " + time + " milliseconds.");
+					}
 				} catch (SocketTimeoutException e) {
 					time += System.currentTimeMillis();
-					System.err.println("ERR");// NExt;
-					System.err.println("Failed to read package in " + time + " milliseconds.");
+					if (Boot.VERBOSE != Level.NONE) {
+						System.err.println("Failed to read package in " + time + " milliseconds.");
+					}
 				}
 			}
 			read.addAll(toRead);
@@ -253,10 +272,11 @@ public class PackageManager {
 	private void writeDefaultConfigIfNeeded(File config) throws IOException {
 		config.createNewFile();
 		if (config.length() == 0) {
-			PackageConfigPerister.write(config,
-					new HashSet<Repository>(
-							Arrays.asList(new Repository[] { new Repository(Boot.DEFAULT_REPOSITORY) })),
-					new HashSet<PackageDescriptor>(), new HashSet<PackageDescriptor>());
+			PackageConfigPerister
+					.write(config,
+							new HashSet<Repository>(Arrays.asList(new Repository[] { new Repository(
+									Boot.DEFAULT_REPOSITORY) })), new HashSet<PackageDescriptor>(),
+							new HashSet<PackageDescriptor>());
 		}
 	}
 
@@ -427,11 +447,15 @@ public class PackageManager {
 		}
 
 		if (installed.isEmpty()) {
-			System.out.println(">>> All dependencies have been resolved");
+			if (Boot.VERBOSE == Level.ALL) {
+				System.out.println(">>> All dependencies have been resolved");
+			}
 		} else {
-			System.err.println(">>> The dependencies for the following packages have not been resolved:");
-			for (PackageDescriptor pack : installed) {
-				System.err.println(">>>     " + pack + " " + pack.getDependencies());
+			if (Boot.VERBOSE != Level.NONE) {
+				System.err.println(">>> The dependencies for the following packages have not been resolved:");
+				for (PackageDescriptor pack : installed) {
+					System.err.println(">>>     " + pack + " " + pack.getDependencies());
+				}
 			}
 		}
 
@@ -550,8 +574,8 @@ public class PackageManager {
 		return null;
 	}
 
-	public PackageDescriptor[] findOrInstallPackages(String... packageNames)
-			throws UnknownPackageTypeException, UnknownPackageException, CancelledException {
+	public PackageDescriptor[] findOrInstallPackages(String... packageNames) throws UnknownPackageTypeException,
+			UnknownPackageException, CancelledException {
 
 		if (doAutoUpdate) {
 			update(false, Level.NONE);
@@ -1031,11 +1055,18 @@ public class PackageManager {
 	@Deprecated
 	public void setAutoUpdate(boolean doAutoUpdate) {
 		this.doAutoUpdate = doAutoUpdate;
-		Preferences.userNodeForPackage(getClass()).put(DO_AUTO_UPDATES, Boolean.toString(doAutoUpdate));
+		this.preferences.put(DO_AUTO_UPDATES, Boolean.toString(doAutoUpdate));
 
 	}
 
+	/**
+	 * Cleans the package cache in the registry. This is automatically done for
+	 * ProM-Lite the first time when a new version of ProM-Lite is booted.
+	 * 
+	 * @throws BackingStoreException
+	 */
 	public void cleanPackageCache() throws BackingStoreException {
 		PluginCacheEntry.clearSettingsCache();
+
 	}
 }

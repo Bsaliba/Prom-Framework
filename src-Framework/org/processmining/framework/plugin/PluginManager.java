@@ -353,4 +353,6 @@ public interface PluginManager {
 	 * @return a (possibly empty) set of classes (not null)
 	 */
 	Set<Class<?>> getKnownClassesAnnotatedWith(Class<? extends Annotation> annotationType);
+
+
 }

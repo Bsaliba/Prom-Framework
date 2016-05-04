@@ -50,9 +50,16 @@ public class Boot {
 	public static boolean CHECK_PACKAGES;
 
 	public static String AUTO_UPDATE;
-	
+
 	public final static String LAST_RELEASE_AUTOINSTALLED_KEY = "last_release_autoinstalled";
 	public static final String LAST_RELEASE_PACKAGE_KEY = "last_release_package_installed";
+
+	/**
+	 * Versions of ProM.Lite should have a PROM_VERSION in the ini file that
+	 * identifies the specific version. This should be prefixed by the
+	 * LITE_PREFIX
+	 */
+	public static final String LITE_PREFIX = ".Lite";
 
 	static {
 
@@ -79,7 +86,7 @@ public class Boot {
 		PLUGIN_LEVEL_THRESHOLD = PluginLevel.NightlyBuild;
 		CONNECT_TIMEOUT = 100;
 		READ_TIMEOUT = 1000;
-		
+
 		Properties ini = new Properties();
 		FileInputStream is;
 		try {
@@ -106,7 +113,7 @@ public class Boot {
 
 				CONNECT_TIMEOUT = Integer.parseInt(ini.getProperty("CONNECT_TIMEOUT", "100"));
 				READ_TIMEOUT = Integer.parseInt(ini.getProperty("READ_TIMEOUT", "1000"));
-				
+
 				try {
 					VERBOSE = Level.valueOf(ini.getProperty("VERBOSE", Level.ALL.name()));
 				} catch (IllegalArgumentException e) {
@@ -131,15 +138,15 @@ public class Boot {
 				PathHacker.addLibraryPathFromDirectory(new File("." + File.separator + MACRO_FOLDER));
 
 				try {
-					DEFAULT_REPOSITORY = new URL(
-							ini.getProperty("PACKAGE_URL", "http://www.promtools.org/prom6/packages"
-									+ PROM_VERSION.replaceAll("\\.", "") + "/packages.xml"));
+					DEFAULT_REPOSITORY = new URL(ini.getProperty("PACKAGE_URL",
+							"http://www.promtools.org/prom6/packages" + PROM_VERSION.replaceAll("\\.", "")
+									+ "/packages.xml"));
 				} catch (MalformedURLException e) {
 					try {
 						DEFAULT_REPOSITORY = new URL("http://www.promtools.org/prom6/packages"
 								+ PROM_VERSION.replaceAll("\\.", "") + "/packages.xml");
 					} catch (MalformedURLException e1) {
-						assert(false);
+						assert (false);
 					}
 				}
 
@@ -186,11 +193,15 @@ public class Boot {
 				}
 			} catch (IOException e) {
 				//					throw new RuntimeException("Error while reading ProM.ini file. Exiting ProM.", e);
-				System.err.println("Error while reading ProM.ini file.\n" + e + "\nReverting to default settings.");
+				if (VERBOSE != Level.NONE) {
+					System.err.println("Error while reading ProM.ini file.\n" + e + "\nReverting to default settings.");
+				}
 			}
 		} catch (FileNotFoundException e) {
 			//				throw new RuntimeException("ProM.ini file not found. Exiting ProM.", e);
-			System.err.println("ProM.ini file not found.\n" + e + "\nReverting to default settings.");
+			if (VERBOSE != Level.NONE) {
+				System.err.println("ProM.ini file not found.\n" + e + "\nReverting to default settings.");
+			}
 		}
 
 	}
@@ -223,8 +234,8 @@ public class Boot {
 		long startPackages = System.currentTimeMillis();
 		packages.initialize(VERBOSE);
 		if (VERBOSE == Level.ALL) {
-			System.out.println(">>> Scanning for packages took " + (System.currentTimeMillis() - startPackages) / 1000.0
-					+ " seconds");
+			System.out.println(">>> Scanning for packages took " + (System.currentTimeMillis() - startPackages)
+					/ 1000.0 + " seconds");
 		}
 
 		long startPlugins = System.currentTimeMillis();
@@ -363,7 +374,7 @@ public class Boot {
 				}
 			}
 		} catch (MalformedURLException e) {
-			assert(false);
+			assert (false);
 		}
 
 	}

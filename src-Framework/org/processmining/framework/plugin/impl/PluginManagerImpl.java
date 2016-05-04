@@ -300,7 +300,8 @@ public final class PluginManagerImpl implements PluginManager {
 			//isAnnotated = (pluginClass.getAnnotations().length > 0);
 
 			// register all annotated classes
-			if (pluginClass.isAnnotationPresent(KeepInProMCache.class) && !Modifier.isAbstract(pluginClass.getModifiers())) {
+			if (pluginClass.isAnnotationPresent(KeepInProMCache.class)
+					&& !Modifier.isAbstract(pluginClass.getModifiers())) {
 				Annotation[] annotations = pluginClass.getAnnotations();
 				isAnnotated = true;
 				for (int i = 0; i < annotations.length; i++) {
