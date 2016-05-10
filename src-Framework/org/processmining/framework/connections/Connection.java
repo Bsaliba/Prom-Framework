@@ -3,6 +3,8 @@ package org.processmining.framework.connections;
 import java.util.Collection;
 import java.util.Set;
 
+import org.processmining.framework.annotations.AuthoredType;
+import org.processmining.framework.annotations.Icon;
 import org.processmining.framework.util.collection.MultiSet;
 
 /**
@@ -24,6 +26,8 @@ import org.processmining.framework.util.collection.MultiSet;
  * @author bfvdonge
  * 
  */
+@AuthoredType(typeName = "Connection", affiliation = AuthoredType.TUE, author = "B.F. van Dongen", email = "b.f.v.dongen@tue.nl")
+@Icon(icon = "resourcetype_connection_30x35.png")
 public interface Connection {
 
 	/**
