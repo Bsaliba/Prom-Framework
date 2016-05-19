@@ -32,12 +32,14 @@ public class ProMTask implements Task<ProMPOResource>, ProgressEventListener, Lo
 	private final java.util.List<Collection<ProMPOResource>> parameterValues;
 	private final java.util.List<ProvidedObjectID> providedObjectIds;
 	private boolean active;
+	private final UIPluginContext pluginContext;
 
 	public ProMTask(UIContext context, ProMAction action, java.util.List<Collection<ProMPOResource>> parameterValues,
 			UIPluginContext pluginContext, TaskListener listener) {
 		this.context = context;
 		this.action = action;
 		this.parameterValues = parameterValues;
+		this.pluginContext = pluginContext;
 		this.listener = listener;
 		changeProgressIndeterminate(true);
 
@@ -68,18 +70,23 @@ public class ProMTask implements Task<ProMPOResource>, ProgressEventListener, Lo
 
 	public void destroy() {
 		if (result != null) {
-			// We cancel all futures that might exist in this
-			// result. Canceling the first only would also work,
-			// but this is potentially faster.
-			try {
-				for (int i = 0; i < result.getSize(); i++) {
-					Object o = result.getResult(i);
-					if (o instanceof ProMFuture<?>) {
-						result.<ProMFuture<?>>getResult(i).cancel(!action.handlesCancel());
+			if (pluginContext.getProgress() != null) {
+				// We have a progress. Have it take care of the futures and such.
+				pluginContext.getProgress().cancel();
+			} else {
+				// We cancel all futures that might exist in this
+				// result. Canceling the first only would also work,
+				// but this is potentially faster.
+				try {
+					for (int i = 0; i < result.getSize(); i++) {
+						Object o = result.getResult(i);
+						if (o instanceof ProMFuture<?>) {
+							result.<ProMFuture<?>>getResult(i).cancel(!action.handlesCancel());
+						}
 					}
+				} catch (NullPointerException _) {
+					// Happens when task terminates before we can cancel all children
 				}
-			} catch (NullPointerException _) {
-				// Happens when task terminates before we can cancel all children
 			}
 			for (ProvidedObjectID id : getProvidedObjectIds()) {
 				try {
