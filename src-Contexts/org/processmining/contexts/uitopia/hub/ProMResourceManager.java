@@ -89,7 +89,6 @@ public class ProMResourceManager extends UpdateSignaller implements ResourceMana
 
 	private int selectedOption;
 	private String selectedPlugin;
-	private boolean importResourceResult;
 
 	private ProMResourceManager(UIContext context) {
 
@@ -349,18 +348,16 @@ public class ProMResourceManager extends UpdateSignaller implements ResourceMana
 
 	/**
 	 * Start the import dialog for a resource. Can be called from the EDT or any
-	 * other thread.
-	 * Makes sure that the actual import is not run in the EDT.
+	 * other thread. Makes sure that the actual import is not run in the EDT.
 	 */
-	public synchronized boolean importResource() {
-		importResourceResult = false;
+	public boolean importResource() {
 		if (EventQueue.isDispatchThread()) {
 			/*
 			 * Called from the EDT. Spawn a new thread to do the import.
 			 */
 			Runnable importThread = new Runnable() {
 				public void run() {
-					importResourceResult = importResourceNotInEDT();
+					importResourceNotInEDT();
 				}
 			};
 			(new Thread(importThread)).start();
@@ -368,9 +365,9 @@ public class ProMResourceManager extends UpdateSignaller implements ResourceMana
 			/*
 			 * Not called from the EDT. OK.
 			 */
-			importResourceResult = importResourceNotInEDT();
+			importResourceNotInEDT();
 		}
-		return importResourceResult;
+		return true;
 	}
 
 	/*
@@ -448,18 +445,17 @@ public class ProMResourceManager extends UpdateSignaller implements ResourceMana
 	}
 
 	/**
-	 * Can be called from the EDT or any other thread.
-	 * Makes sure that the actual import is not run in the EDT.
+	 * Can be called from the EDT or any other thread. Makes sure that the
+	 * actual import is not run in the EDT.
 	 */
-	public synchronized boolean importResource(final PluginParameterBinding binding, final File... files) {
-		importResourceResult = false;
+	public boolean importResource(final PluginParameterBinding binding, final File... files) {
 		if (EventQueue.isDispatchThread()) {
 			/*
 			 * Called from the EDT. Spawn a new thread to do the import.
 			 */
 			Runnable importThread = new Runnable() {
 				public void run() {
-					importResourceResult = importResourceNotInEDT(binding, files);
+					importResourceNotInEDT(binding, files);
 				}
 			};
 			(new Thread(importThread)).start();
@@ -467,9 +463,9 @@ public class ProMResourceManager extends UpdateSignaller implements ResourceMana
 			/*
 			 * Not called from the EDT. OK.
 			 */
-			importResourceResult = importResourceNotInEDT(binding, files);
+			importResourceNotInEDT(binding, files);
 		}
-		return importResourceResult;
+		return true;
 	}
 
 	/*
@@ -547,8 +543,9 @@ public class ProMResourceManager extends UpdateSignaller implements ResourceMana
 							// TODO Auto-generated method stub
 							//							System.out.println("[PromResourceManager] EDT shows import plugin dialog");
 							selectedPlugin = (String) JOptionPane.showInputDialog(context.getUI(),
-									"Available Import Plugins for file " + files[0].getName() + ":", "Select an import plugin...",
-									JOptionPane.PLAIN_MESSAGE, null, possibilities, preferredImport);
+									"Available Import Plugins for file " + files[0].getName() + ":",
+									"Select an import plugin...", JOptionPane.PLAIN_MESSAGE, null, possibilities,
+									preferredImport);
 						}
 
 					});
