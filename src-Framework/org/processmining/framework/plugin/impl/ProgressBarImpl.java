@@ -90,6 +90,13 @@ public class ProgressBarImpl implements Progress {
 
 	public void cancel() {
 		canceled = true;
+		// BVD: Cancel all children too!
+		for (PluginContext child : context.getChildContexts()) {
+			if (child != null && child.getProgress() != null) {
+				child.getProgress().cancel();
+			}
+		}
+		// Now cancel ProMFutures
 		PluginExecutionResult results = context.getResult();
 		for (int i = 0; i < results.getSize(); i++) {
 			Object o = results.getResult(i);
