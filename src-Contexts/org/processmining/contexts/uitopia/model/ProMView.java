@@ -45,22 +45,23 @@ import com.google.common.base.Throwables;
 public class ProMView implements View {
 
 	private final class ProMViewRunnable implements Runnable {
-		
+
 		private JComponent content;
 		private ProgressOverlayDialog dialog;
-		
+
 		private String message;
 		private String stacktrace;
-		private PluginDescriptor descriptor;		
-		
-		public ProMViewRunnable(JComponent content, ProgressOverlayDialog dialog, String message, String stacktrace, PluginDescriptor descriptor){
+		private PluginDescriptor descriptor;
+
+		public ProMViewRunnable(JComponent content, ProgressOverlayDialog dialog, String message, String stacktrace,
+				PluginDescriptor descriptor) {
 			this.content = content;
 			this.dialog = dialog;
 			this.message = message;
 			this.stacktrace = stacktrace;
 			this.descriptor = descriptor;
 		}
-		
+
 		public void run() {
 			component.removeAll();
 			if (content != null) {
@@ -76,29 +77,32 @@ public class ProMView implements View {
 			}
 			if (component.getComponents().length == 0) {
 				component.add(buildErrorComponent(message, stacktrace, descriptor), BorderLayout.CENTER);
-			}	
+			}
 			dialog.changeProgress(dialog.getMaximum());
 		}
-		
-		private JComponent buildErrorComponent(final String message, final String stacktrace, final PluginDescriptor plugin) {
+
+		private JComponent buildErrorComponent(final String message, final String stacktrace,
+				final PluginDescriptor plugin) {
 			final JPanel errorPanel = new JPanel();
 			errorPanel.setLayout(new BoxLayout(errorPanel, BoxLayout.Y_AXIS));
-			String userfriendlyMessage = String.format("<html><h1>Unable to produce the requested visualization</h1><h2>Error Message</h2><h3>%s</b></h3></html>", message);
-			final JEditorPane messagePanel = new JEditorPane("text/html", userfriendlyMessage);				
+			String userfriendlyMessage = String.format(
+					"<html><h1>Unable to produce the requested visualization</h1><h2>Error Message</h2><h3>%s</b></h3></html>",
+					message);
+			final JEditorPane messagePanel = new JEditorPane("text/html", userfriendlyMessage);
 			messagePanel.setEditable(false);
 			final JButton debugButton = SlickerFactory.instance().createButton("Show Debug Information");
 			debugButton.setAlignmentX(JComponent.CENTER_ALIGNMENT);
 			debugButton.addActionListener(new ActionListener() {
 
 				public void actionPerformed(ActionEvent e) {
-					String debugMessage = String.format("<html><body><h1>Unable to produce the requested visualization</h1>"
-							+ "<h2>Error Message</h2><h3>%s</b></h3>"
-							+ "<h2>Debug Information for Reporting</h2>"
-							+ "<p><b>Visualizer</b>: %s</p>"
-							+ "<p><b>Stack trace</b>: %s</p>"
-							+ "</body></html>", message, plugin.getName(), stacktrace.replace(System.getProperty("line.separator"), "<p>\n"));
-					messagePanel
-							.setText(debugMessage);
+					String debugMessage = String.format(
+							"<html><body><h1>Unable to produce the requested visualization</h1>"
+									+ "<h2>Error Message</h2><h3>%s</b></h3>"
+									+ "<h2>Debug Information for Reporting</h2>" + "<p><b>Visualizer</b>: %s</p>"
+									+ "<p><b>Stack trace</b>: %s</p>" + "</body></html>",
+							message, plugin.getName(),
+							stacktrace.replace(System.getProperty("line.separator"), "<p>\n"));
+					messagePanel.setText(debugMessage);
 					messagePanel.setCaretPosition(0);
 					debugButton.removeActionListener(this);
 					errorPanel.remove(debugButton);
@@ -218,13 +222,14 @@ public class ProMView implements View {
 		// Record a screen-capture of the currenly visible frame
 		synchronized (original) {
 			Dimension size = component.getSize();
-
-			original = createCompatibleImage(size.width, size.height);
-			Graphics2D g2d = original.createGraphics();
-			component.paint(g2d);
-			g2d.dispose();
-
+			if (size.width > 0 && size.height > 0) {
+				original = createCompatibleImage(size.width, size.height);
+				Graphics2D g2d = original.createGraphics();
+				component.paint(g2d);
+				g2d.dispose();
+			}
 		}
+
 	}
 
 	// This method returns a buffered image with the contents of an image
@@ -277,8 +282,9 @@ public class ProMView implements View {
 				.createChildContext("Visualizing: " + resource.getName());
 		context.getParentContext().getPluginLifeCycleEventListeners().firePluginCreated(context);
 
-		final ProgressOverlayDialog dialog = new ProgressOverlayDialog(manager.getContext().getController()
-				.getMainView(), context, "Please wait while updating visualization...");
+		final ProgressOverlayDialog dialog = new ProgressOverlayDialog(
+				manager.getContext().getController().getMainView(), context,
+				"Please wait while updating visualization...");
 		dialog.setIndeterminate(false);
 
 		Thread thread = new Thread(new Runnable() {
@@ -313,8 +319,7 @@ public class ProMView implements View {
 				} finally {
 					context.getParentContext().deleteChild(context);
 					SwingUtilities.invokeLater(
-						new ProMViewRunnable(content, dialog, message, stacktrace, result.getPlugin())
-					);					
+							new ProMViewRunnable(content, dialog, message, stacktrace, result.getPlugin()));
 					synchronized (ProMView.this) {
 						working = false;
 						ProMView.this.notifyAll();
@@ -327,8 +332,8 @@ public class ProMView implements View {
 			private PluginExecutionResult getVisualizationResult(final UIPluginContext context,
 					ProMCanceller proMCanceller) {
 				PluginParameterBinding parameterBinding = binding.getSecond();
-				List<Class<?>> parameterTypes = parameterBinding.getPlugin().getParameterTypes(
-						parameterBinding.getMethodIndex());
+				List<Class<?>> parameterTypes = parameterBinding.getPlugin()
+						.getParameterTypes(parameterBinding.getMethodIndex());
 				if (parameterTypes.size() == 2 && parameterTypes.get(1) == ProMCanceller.class) {
 					return parameterBinding.invoke(context, resource.getInstance(), proMCanceller);
 				} else {
