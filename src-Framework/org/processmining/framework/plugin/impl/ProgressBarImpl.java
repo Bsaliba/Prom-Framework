@@ -1,5 +1,8 @@
 package org.processmining.framework.plugin.impl;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.processmining.framework.plugin.PluginContext;
 import org.processmining.framework.plugin.PluginExecutionResult;
 import org.processmining.framework.plugin.ProMFuture;
@@ -91,7 +94,8 @@ public class ProgressBarImpl implements Progress {
 	public void cancel() {
 		canceled = true;
 		// BVD: Cancel all children too!
-		for (PluginContext child : context.getChildContexts()) {
+		List<PluginContext> children = new ArrayList<>(context.getChildContexts());
+		for (PluginContext child : children) {
 			if (child != null && child.getProgress() != null) {
 				child.getProgress().cancel();
 			}
