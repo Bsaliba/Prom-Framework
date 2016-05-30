@@ -27,4 +27,4 @@ do
 	add $lib
 done
 
-$JAVA -classpath ${CP} -Djava.library.path=${LIBDIR} -Xmx1G ${MAIN}
+$JAVA -classpath ${CP} -Djava.library.path=${LIBDIR} -Xmx1G -XX:MaxPermSize=256m ${MAIN}
