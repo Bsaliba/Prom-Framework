@@ -5,9 +5,9 @@ import java.io.IOException;
 
 import org.processmining.framework.boot.Boot;
 
-import sun.management.ManagementFactoryHelper;
-
 import com.sun.management.OperatingSystemMXBean;
+
+import sun.management.ManagementFactoryHelper;
 
 public class OsUtil {
 
@@ -108,18 +108,57 @@ public class OsUtil {
 	//		return dir;
 	//	}
 
+	/**
+	 * Returns a handle to the ProM package folder. Creates the folder in case it does not yet exist.
+	 * @return The handle to the folder.
+	 */
 	public static File getProMPackageDirectory() {
-		File dir = new File(Boot.PACKAGE_FOLDER);
-		dir.mkdirs();
-		return dir;
+		return getDirectory(Boot.PACKAGE_FOLDER);
 	}
 
+	/**
+	 * Returns whether the ProM package folder exists on this system.
+	 * @return Whether the folder exists.
+	 */
+	public static boolean hasProMPackageDirectory() {
+		return hasDirectory(Boot.PACKAGE_FOLDER);
+	}
+	
+	/**
+	 * Returns a handle to the ProM workspace folder. Creates the folder in case it does not yet exist.
+	 * @return The handle to the folder.
+	 */
 	public static File getProMWorkspaceDirectory() {
-		File dir = new File(Boot.WORKSPACE_FOLDER);
-		dir.mkdirs();
-		return dir;
+		return getDirectory(Boot.WORKSPACE_FOLDER);
 	}
 
+	/**
+	 * Returns whether the ProM workspace folder exists on this system.
+	 * @return Whether the folder exists.
+	 */
+	public static boolean hasProMWorkspaceDirectory() {
+		return hasDirectory(Boot.WORKSPACE_FOLDER);
+	}
+	
+	/*
+	 * Returns a handle to the folder with provided name. Creates the folder in case it does not yet exist.
+	 * @return The handle to the folder.
+	 */
+	private static File getDirectory(String dirName) {
+		File dir = new File(dirName);
+		dir.mkdirs();
+		return dir;	
+	}
+	
+	/*
+	 * Returns whether the folder with provided name exists on this system.
+	 * @return Whether the folder exists.
+	 */
+	private static boolean hasDirectory(String dirName) {
+		File dir = new File(dirName);
+		return dir.exists();
+	}
+	
 	public static long getPhysicalMemory() {
 		OperatingSystemMXBean operatingSystemMXBean = (OperatingSystemMXBean) ManagementFactoryHelper.getOperatingSystemMXBean();
 		return operatingSystemMXBean.getTotalPhysicalMemorySize();		
