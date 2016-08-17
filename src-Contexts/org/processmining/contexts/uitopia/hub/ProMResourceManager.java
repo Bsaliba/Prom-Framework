@@ -348,32 +348,43 @@ public class ProMResourceManager extends UpdateSignaller implements ResourceMana
 
 	/**
 	 * Start the import dialog for a resource. Can be called from the EDT or any
-	 * other thread. Makes sure that the actual import is not run in the EDT.
+	 * other thread. Makes sure that the dialog-part of the actual import is run in the EDT.
 	 */
 	public boolean importResource() {
 		if (EventQueue.isDispatchThread()) {
 			/*
-			 * Called from the EDT. Spawn a new thread to do the import.
+			 * Called from the EDT. OK.
 			 */
-			Runnable importThread = new Runnable() {
-				public void run() {
-					importResourceNotInEDT();
-				}
-			};
-			(new Thread(importThread)).start();
+			importResourceInEDT();
 		} else {
 			/*
-			 * Not called from the EDT. OK.
+			 * Not called from the EDT. Have the EDT take care of it.
 			 */
-			importResourceNotInEDT();
+			try {
+				SwingUtilities.invokeAndWait(new Runnable() {
+					public void run() {
+						importResourceInEDT();
+					}
+				});
+			} catch (InvocationTargetException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
 		return true;
 	}
 
 	/*
-	 * This method should only be called from a non-EDT thread.
+	 * This method should only be called from the EDT thread.
 	 */
-	private synchronized boolean importResourceNotInEDT() {
+	private synchronized boolean importResourceInEDT() {
+		if (!EventQueue.isDispatchThread()) {
+			System.err.println("Method should only be called from EDT");
+			return false;
+		}
 		synchronized (importPluginAdded) {
 			if (importPluginAdded) {
 				buildImportPlugins();
@@ -394,26 +405,10 @@ public class ProMResourceManager extends UpdateSignaller implements ResourceMana
 		fc.setMultiSelectionEnabled(true);
 		fc.setFileFilter(fc.getAcceptAllFileFilter());
 
-		selectedOption = JFileChooser.CANCEL_OPTION;
 		/*
-		 * HV: This method does not run in the EDT. Delegate the next dialog to
-		 * the EDT, and wait for the answer.
+		 * HV: This method does run in the EDT. 
 		 */
-		try {
-			SwingUtilities.invokeAndWait(new Runnable() {
-				public void run() {
-					//					System.out.println("[PromResourceManager] EDT shows open dialog");
-					selectedOption = fc.showOpenDialog(context.getUI());
-				}
-			});
-		} catch (InvocationTargetException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		int returnVal = selectedOption; //fc.showOpenDialog(context.getUI());
+		int returnVal = fc.showOpenDialog(context.getUI());
 
 		if (returnVal == JFileChooser.APPROVE_OPTION) {
 			/*
@@ -427,7 +422,7 @@ public class ProMResourceManager extends UpdateSignaller implements ResourceMana
 			boolean importedSuccessfully = true;
 			for (final File f : files) {
 				PluginParameterBinding binding = importplugins.get(fc.getFileFilter());
-				importedSuccessfully &= importResourceNotInEDT(binding, f);
+				importedSuccessfully &= importResourceInEDT(binding, f);
 			}
 			return importedSuccessfully;
 
@@ -446,32 +441,43 @@ public class ProMResourceManager extends UpdateSignaller implements ResourceMana
 
 	/**
 	 * Can be called from the EDT or any other thread. Makes sure that the
-	 * actual import is not run in the EDT.
+	 * dialog-par tof the actual import is run in the EDT.
 	 */
 	public boolean importResource(final PluginParameterBinding binding, final File... files) {
 		if (EventQueue.isDispatchThread()) {
 			/*
-			 * Called from the EDT. Spawn a new thread to do the import.
+			 * Called from the EDT. OK.
 			 */
-			Runnable importThread = new Runnable() {
-				public void run() {
-					importResourceNotInEDT(binding, files);
-				}
-			};
-			(new Thread(importThread)).start();
+			importResourceInEDT(binding, files);
 		} else {
 			/*
-			 * Not called from the EDT. OK.
+			 * Not called from the EDT. Have the EDZT take care of it.
 			 */
-			importResourceNotInEDT(binding, files);
+			try {
+				SwingUtilities.invokeAndWait(new Runnable() {
+					public void run() {
+						importResourceInEDT(binding, files);
+					}
+				});
+			} catch (InvocationTargetException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
 		return true;
 	}
 
 	/*
-	 * This method should not be called from the EDT, as it will then block.
+	 * This method should be called from the EDT.
 	 */
-	private synchronized boolean importResourceNotInEDT(PluginParameterBinding binding, final File... files) {
+	private synchronized boolean importResourceInEDT(PluginParameterBinding binding, final File... files) {
+		if (!EventQueue.isDispatchThread()) {
+			System.err.println("Method should only be called from EDT");
+			return false;
+		}
 		synchronized (importPluginAdded) {
 			if (importPluginAdded) {
 				buildImportPlugins();
@@ -511,16 +517,10 @@ public class ProMResourceManager extends UpdateSignaller implements ResourceMana
 			}
 			if (bindings.size() == 0) {
 				/*
-				 * HV: This method does not run in the EDT. Delegate the next
-				 * message to the EDT.
+				 * HV: This method does run in the EDT. 
 				 */
-				SwingUtilities.invokeLater(new Runnable() {
-					public void run() {
-						//						System.out.println("[PromResourceManager] EDT shows message dialog");
-						JOptionPane.showMessageDialog(context.getUI(), "No import plugins available",
+				JOptionPane.showMessageDialog(context.getUI(), "No import plugins available",
 								"No input plugins available!", JOptionPane.ERROR_MESSAGE);
-					}
-				});
 				return false;
 			}
 
@@ -532,32 +532,10 @@ public class ProMResourceManager extends UpdateSignaller implements ResourceMana
 				final String preferredImport = preferences.get(key, possibilities[0]);
 
 				selectedPlugin = null;
-				try {
-					/*
-					 * HV: This method does not run in the EDT. Delegate the
-					 * next dialog to the EDT, and wait for the answer.
-					 */
-					SwingUtilities.invokeAndWait(new Runnable() {
-
-						public void run() {
-							// TODO Auto-generated method stub
-							//							System.out.println("[PromResourceManager] EDT shows import plugin dialog");
-							selectedPlugin = (String) JOptionPane.showInputDialog(context.getUI(),
+				String selected = (String) JOptionPane.showInputDialog(context.getUI(),
 									"Available Import Plugins for file " + files[0].getName() + ":",
 									"Select an import plugin...", JOptionPane.PLAIN_MESSAGE, null, possibilities,
 									preferredImport);
-						}
-
-					});
-				} catch (InvocationTargetException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				} catch (InterruptedException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-				String selected = selectedPlugin; //(String) JOptionPane.showInputDialog(context.getUI(), "Available Import Plugins:",
-				//"Select an import plugin...", JOptionPane.PLAIN_MESSAGE, null, possibilities, preferredImport);
 
 				if (selected == null) {
 					return false;
@@ -572,6 +550,23 @@ public class ProMResourceManager extends UpdateSignaller implements ResourceMana
 			return false;
 		}
 
+		// HV: Dialog-part is now done, hence we can off-load the actual importing to another thread.
+		// This frees the EDT for showing the progress bar while doing the import.
+		final PluginParameterBinding finalBinding = binding;
+		Runnable importThread = new Runnable() {
+			public void run() {
+				importResourceNotInEDT(finalBinding, files);
+			}
+		};
+		(new Thread(importThread)).start();
+		return true;
+	}
+	
+	private boolean importResourceNotInEDT(final PluginParameterBinding binding, final File... files) {
+		if (EventQueue.isDispatchThread()) {
+			System.err.println("Method should never be called from EDT");
+			return false;
+		}
 		for (File f : files) {
 			UIPluginContext importContext = context.getMainPluginContext()
 					.createChildContext("Opening file with " + binding.getPlugin().getName());
@@ -580,7 +575,7 @@ public class ProMResourceManager extends UpdateSignaller implements ResourceMana
 			ProgressOverlayDialog progress = new ProgressOverlayDialog(context.getController().getMainView(),
 					importContext, "Importing " + binding.getPlugin().getName());
 			context.getController().getMainView().showOverlay(progress);
-			Thread.yield();
+//			Thread.yield();
 
 			PluginExecutionResult result = binding.invoke(importContext, f);
 			context.getProvidedObjectManager().createProvidedObjects(importContext);
@@ -589,15 +584,23 @@ public class ProMResourceManager extends UpdateSignaller implements ResourceMana
 				result.synchronize();
 			} catch (CancellationException e) {
 				context.getController().getMainView().hideOverlay();
-				JOptionPane.showMessageDialog(context.getUI(), "Import of " + files + " cancelled.", "Import cancelled",
-						JOptionPane.WARNING_MESSAGE);
+				SwingUtilities.invokeLater(new Runnable() {
+					public void run() {
+						JOptionPane.showMessageDialog(context.getUI(), "Import of " + files + " cancelled.", "Import cancelled",
+								JOptionPane.WARNING_MESSAGE);
+					}
+				});
 				context.getMainPluginContext().log("Import of " + files + " cancelled.");
 				return false;
-			} catch (Exception e) {
+			} catch (final Exception e) {
 				context.getController().getMainView().hideOverlay();
-				JOptionPane.showMessageDialog(context.getUI(),
-						"<html>Error with import of " + files + ":<br>" + e.getMessage() + "</html>", "Import failed",
-						JOptionPane.ERROR_MESSAGE);
+				SwingUtilities.invokeLater(new Runnable() {
+					public void run() {
+						JOptionPane.showMessageDialog(context.getUI(),
+								"<html>Error with import of " + files + ":<br>" + e.getMessage() + "</html>", "Import failed",
+								JOptionPane.ERROR_MESSAGE);
+					}
+				});
 				context.getMainPluginContext().log("Error with import of " + files + ".", MessageLevel.ERROR);
 				context.getMainPluginContext().log(e);
 				return false;
