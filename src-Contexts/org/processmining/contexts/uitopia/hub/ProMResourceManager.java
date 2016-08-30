@@ -558,11 +558,16 @@ public class ProMResourceManager extends UpdateSignaller implements ResourceMana
 		return true;
 	}
 	
-	private synchronized boolean importResourceNotInEDT(final PluginParameterBinding binding, final File... files) {
+	private boolean importResourceNotInEDT(final PluginParameterBinding binding, final File... files) {
 		if (EventQueue.isDispatchThread()) {
 			System.err.println("Method should never be called from EDT");
 			return false;
 		}
+		/*
+		 * Synchronize on the provided object manager to prevent multiple imports 
+		 * talking at the same time to this manager.
+		 */
+		synchronized(context.getProvidedObjectManager()) {
 		for (File f : files) {
 			UIPluginContext importContext = context.getMainPluginContext()
 					.createChildContext("Opening file with " + binding.getPlugin().getName());
@@ -605,6 +610,7 @@ public class ProMResourceManager extends UpdateSignaller implements ResourceMana
 			}
 
 			context.getController().getMainView().hideOverlay();
+		}
 		}
 		return true;
 
