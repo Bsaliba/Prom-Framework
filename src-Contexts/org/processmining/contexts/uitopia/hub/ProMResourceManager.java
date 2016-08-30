@@ -87,9 +87,6 @@ public class ProMResourceManager extends UpdateSignaller implements ResourceMana
 
 	private ConnectionManager connectionManager;
 
-	private int selectedOption;
-	private String selectedPlugin;
-
 	private ProMResourceManager(UIContext context) {
 
 		this.context = context;
@@ -531,7 +528,6 @@ public class ProMResourceManager extends UpdateSignaller implements ResourceMana
 				final String[] possibilities = bindings.keySet().toArray(new String[0]);
 				final String preferredImport = preferences.get(key, possibilities[0]);
 
-				selectedPlugin = null;
 				String selected = (String) JOptionPane.showInputDialog(context.getUI(),
 									"Available Import Plugins for file " + files[0].getName() + ":",
 									"Select an import plugin...", JOptionPane.PLAIN_MESSAGE, null, possibilities,
@@ -562,7 +558,7 @@ public class ProMResourceManager extends UpdateSignaller implements ResourceMana
 		return true;
 	}
 	
-	private boolean importResourceNotInEDT(final PluginParameterBinding binding, final File... files) {
+	private synchronized boolean importResourceNotInEDT(final PluginParameterBinding binding, final File... files) {
 		if (EventQueue.isDispatchThread()) {
 			System.err.println("Method should never be called from EDT");
 			return false;
