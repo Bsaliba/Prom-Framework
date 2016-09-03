@@ -16,7 +16,7 @@ import org.processmining.models.graphbased.undirected.UndirectedGraphEdge;
 
 public class RemoveEdgePoints {
 
-	@Plugin(name = "Remove edgepoints", level = PluginLevel.Local, parameterLabels = { "graph" }, returnLabels = {}, returnTypes = { }, userAccessible = true, mostSignificantResult = -1)
+	@Plugin(name = "Remove edgepoints", level = PluginLevel.Local, parameterLabels = { "graph" }, returnLabels = {}, returnTypes = {}, userAccessible = true, mostSignificantResult = -1)
 	@UITopiaVariant(affiliation = UITopiaVariant.EHV, author = "B.F. van Dongen", email = "b.f.v.dongen@tue.nl")
 	@SuppressWarnings("rawtypes")
 	public static void removeEdgePoints(PluginContext context, Object graph) throws ConnectionCannotBeObtained {
