@@ -315,7 +315,10 @@
 				</tarfileset>
 				<tarfileset dir="${lib}" prefix="@{name}/lib" mode="755" username="prom" group="prom">
 					<include name="**" />
-					<exclude name="commons-math-3.1.jar" />
+					<exclude name="ProM-Framework.jar" />
+					<exclude name="ProM-Models.jar" />
+					<exclude name="ProM-Contexts.jar" />
+					<exclude name="ProM-Plugins.jar" />
 				</tarfileset>
 				<tarfileset dir="${dist}" prefix="@{name}/dist" mode="755" username="prom" group="prom">
 					<include name="ProM-Framework.jar" />
