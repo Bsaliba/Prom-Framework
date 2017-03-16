@@ -54,8 +54,23 @@
 	
 	<!-- include JUnit to execute unit tests -->
 	<path id="classpath.test">
-		<pathelement location="${test.basedir}/libs-external/junit-4.8.1.jar" />
-		<path refid="classpath.run" />
+      	<fileset dir="${test.basedir}/libs-external">
+      		<include name="cobertura-2.1.1.jar" />
+      		<!-- also include junit here, as we exclude it from anywhere else -->
+        	<include name="lib-cobertura-2.1.1/**/junit*.jar" />
+        	<include name="lib-cobertura-2.1.1/**/slf4j*.jar" />
+      		<!-- the other libraries are only required for the instrumentation -->
+      	</fileset>
+		<fileset dir="${home}/dist/">
+        	<include name="**/*.jar"/>
+      	</fileset>
+      	<fileset dir="${home}/lib/">
+        	<include name="**/*.jar"/>
+      		<!-- exclude any version of junit and ant, as they mess up the tests -->
+      		<exclude name="**/junit*.jar"/>
+      		<exclude name="**/ant*.jar"/>
+      	</fileset>
+		<pathelement location="${dir.test-bin}" />
   	</path>
 	
 	<!-- definitions for cobertura, to generate code coverage reports -->
@@ -64,16 +79,31 @@
       		<include name="cobertura-2.1.1.jar" />
         	<include name="lib-cobertura-2.1.1/**/*.jar" />
       	</fileset>
+		<fileset dir="${home}/dist/">
+        	<include name="**/*.jar"/>
+      	</fileset>
+      	<fileset dir="${home}/lib/">
+        	<include name="**/*.jar"/>
+      		<!-- exclude any version of junit, slf4j, and ant, as they mess up the instrumentation -->
+      		<exclude name="**/junit*.jar"/>
+      		<exclude name="**/slf4j*.jar"/>
+      		<exclude name="**/ant*.jar"/>
+      	</fileset>
+		<pathelement location="${dir.test-bin}" />
   	</path>
+	
 	<!-- load cobertura ant task definition -->
 	<taskdef classpathref="classpath.cobertura" resource="tasks.properties"/>
-		<!-- where to store the instrumented classes -->	
-		<property name="dir.test-instrument" location="${test.basedir}/bin-test-instrument" />
-		<!-- where to store the cobertura logging information -->		
-		<property name="cobertura.datafile" location="${test.basedir}/cobertura.ser" />
+	
+	<!-- where to store the instrumented classes -->	
+	<property name="dir.test-instrument" location="${test.basedir}/bin-test-instrument" />
+	
+	<!-- where to store the cobertura logging information -->		
+	<property name="cobertura.datafile" location="${test.basedir}/cobertura.ser" />
 
 	<!-- instrument all classes specified in classes.coveragereport -->
 	<target name="prepare-cobertura">
+		<delete file="${cobertura.datafile}" />
 		<cobertura-instrument todir="${dir.test-instrument}" classpathref="classpath.cobertura">
 			<ignore regex="org.apache.log4j.*" />
 		    <fileset refid="classes.coveragereport" />
@@ -87,7 +117,11 @@
 		<javac classpathref="classpath.test"
 			srcdir="${dir.test-src}"
          	destdir="${dir.test-bin}"
-         	debug="on" />
+         	debug="on"
+			includeantruntime="false"
+			source="${bytecode_format}"
+			target="${bytecode_format}"
+		/>
 	</target>
 	
 	<property name="myclasspath" refid="classpath.test"/>
@@ -102,13 +136,13 @@
 	    	<!-- parameters to run ProM -->
 	    	<jvmarg value="-ea"/>
 	    	<jvmarg value="-Xmx1G"/>
-	    	<jvmarg value="-Djava.library.path=.//lib;.//stdlib;.//packagelib"/>
+	    	<jvmarg value="-XX:PermSize=256M"/>
+	    	<jvmarg value="-Djava.library.path=.//lib"/>
 	    	<!-- fixed location for cobertura to log method calls and generate report from -->
 	    	<jvmarg value="-Dnet.sourceforge.cobertura.datafile=${cobertura.datafile}"/>
 	    	
 	      <!-- class path for code coverage by cobertura -->
 	      <classpath location="${dir.test-instrument}" />
-	      <classpath refid="classpath.cobertura"/>
 
 	      <!-- class path of the code to test and the Junit framework -->
 	      <classpath refid="classpath.test"/>
@@ -117,7 +151,6 @@
 		  <formatter type="xml"/>
 	      <formatter type="plain"/>
 	    	
-
   	      <!-- JUnit: test cases to run -->
       	  <sysproperty key="test.testFileRoot" path="${dir.testfiles}"/>
   	      <sysproperty key="test.testScriptRoot" path="${dir.autoscripts}"/>
