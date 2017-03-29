@@ -10,7 +10,7 @@
 @set X=%X%;.\dist\ProM-Models.jar
 @set X=%X%;.\dist\ProM-Plugins.jar
 
-@for /R . %%I IN ("\lib\*.jar") DO @call :add .\lib\%%~nI.jar
+@for /R .\lib %%I IN ("*.jar") DO @call :add .\lib\%%~nI.jar
 
 @java -classpath "%X%" -Djava.library.path=.//lib -Xmx1G org.processmining.contexts.uitopia.packagemanager.PMFrame
 
